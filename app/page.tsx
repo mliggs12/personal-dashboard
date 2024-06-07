@@ -1,12 +1,17 @@
-import EmotionalCalibrationModule from "./components/emotionalCalibrationModule";
+'use client'
+
+import { SignInButton, UserButton } from "@clerk/nextjs";
+import { Unauthenticated, Authenticated } from "convex/react";
 
 export default function Dashboard() {
   return (
     <main className="m-2">
-      <h1 className="text-3xl text-center my-4">Personal Dashboard</h1>
-      <div className="flex justify-center">
-        <EmotionalCalibrationModule />
-      </div>
+      <Unauthenticated>
+        <SignInButton />
+      </Unauthenticated>
+      <Authenticated>
+        <UserButton />
+      </Authenticated>
     </main>
   );
 }
