@@ -1,8 +1,10 @@
-export default {
+const authConfig = {
   providers: [
     {
-      domain: "https://your-issuer-url.clerk.accounts.dev/",
+      domain: "https://closing-roughy-37.clerk.accounts.dev",
       applicationID: "convex",
     },
   ]
 };
+
+export default authConfig;
