@@ -1,0 +1,51 @@
+import { defineSchema, defineTable } from "convex/server";
+import { v } from "convex/values";
+import { title } from "process";
+
+export default defineSchema({
+  activities: defineTable({
+    name: v.string(),
+    start: v.number(), // Minutes since midnight
+    length: v.number(), // Duration in minutes
+    isForced: v.boolean(),
+    isRigid: v.boolean(),
+    order: v.number(),
+    scheduleId: v.id("schedules"),
+  }),
+  schedules: defineTable({
+    name: v.string(),
+    date: v.optional(v.string()),
+    isTemplate: v.boolean(),
+    length: v.number(),
+  }).index("by_date", ["date"]),
+  water_logs: defineTable({
+    date: v.string(), // YYYY-MM-DD
+    consumed: v.number(),
+  }).index("by_date", ["date"]),
+  desires: defineTable({
+    name: v.string(),
+    status: v.union(
+      v.literal("active"),
+      v.literal("archived"),
+      v.literal("draft"),
+    ),
+    whatStatements: v.array(v.string()),
+    whyStatements: v.array(v.string()),
+    emotionIds: v.optional(v.array(v.id("emotions"))),
+    notes: v.optional(v.string()),
+  }),
+  emotions: defineTable({
+    name: v.string(),
+  }),
+  beliefs: defineTable({
+    title: v.string(),
+    description: v.optional(v.string()),
+    status: v.union(
+      v.literal("backlog"),
+      v.literal("todo"),
+      v.literal("in_progress"),
+      v.literal("done"),
+      v.literal("archived"),
+    ),
+  }),
+});
