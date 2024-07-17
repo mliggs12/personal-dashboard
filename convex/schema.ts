@@ -4,12 +4,12 @@ import { title } from "process";
 
 export default defineSchema({
   activities: defineTable({
+    index: v.number(),
     name: v.string(),
     start: v.number(), // Minutes since midnight
     length: v.number(), // Duration in minutes
     isForced: v.boolean(),
     isRigid: v.boolean(),
-    order: v.number(),
     scheduleId: v.id("schedules"),
   }),
   schedules: defineTable({

@@ -32,7 +32,7 @@ export async function createSchedule(
   );
 
   // Create a new activity for the schedule
-  await createActivity(scheduleId);
+  await addActivity(scheduleId);
 }
 
 // Retrieves the id of the schedule for today, creating a new schedule if it doesn't exist
@@ -52,47 +52,12 @@ export async function getScheduleByDate(date: string) {
   return schedule;
 }
 
-// Currently if there are no activities for the schedule, a new activity is created
-// export async function getScheduleActivities(scheduleId: Id<"schedules">) {
-//   let activities = await fetchQuery(api.activities.listBySchedule, {
-//     scheduleId,
-//   });
-//   if (activities === undefined) {
-//     console.log("The query returned undefined");
-//   } else if (activities.length === 0) {
-//     console.log(
-//       "The query was successful, but no activities were found. Creating a new activity.",
-//     );
-//     const newActivityId = await addActivity(scheduleId);
-//     console.log(
-//       `Created activity with id: ${newActivityId}. Fetching activities again.`,
-//     );
-//     await addActivity(newActivityId);
-//     return activities;
-//   }
-// }
-
-// export async function preloadTodayScheduleActivities() {
-//   try {
-//     const todayScheduleId: Id<"schedules"> = getTodaySchedule();
-//   }
-//   console.log(`Preloading schedule and activities for Today`);
-//   const preloadedActivities = await preloadQuery(api.activities.listBySchedule, { scheduleId: todayScheduleId });
-// }
-
-export async function createActivity(
-  scheduleId: Id<"schedules">,
-  name?: string,
-) {
-  if (!name) {
-    name = "-";
-  }
-  const activityId = await fetchMutation(api.activities.addActivity, {
+export async function addActivity(scheduleId: Id<"schedules">) {
+  const activityId = await fetchMutation(api.activities.createActivity, {
     scheduleId,
-    name,
+    name: "-",
   });
   console.log(
-    `Created activity '${name}' with id: ${activityId} for schedule ${scheduleId}`,
+    `Created activity with ID ${activityId} for schedule ${scheduleId}`,
   );
-  return activityId;
 }

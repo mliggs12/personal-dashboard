@@ -1,7 +1,7 @@
 "use client";
 
 import { api } from "@/convex/_generated/api";
-import { createActivity } from "./actions";
+import { addActivity } from "./actions";
 import ScheduleTable from "./schedule-table";
 import { getFormattedDate } from "@/lib/utils";
 import { useMutation, useQuery } from "convex/react";
@@ -19,7 +19,7 @@ export default function PlanPage() {
 
   return (
     <main className="w-full flex flex-1 flex-col gap-4 p-2 lg:p-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center mb-2">
         <h1 className="text-lg font-semibold md:text-2xl">Plan</h1>
       </div>
 
@@ -40,9 +40,15 @@ export default function PlanPage() {
       )}
 
       {todaySchedule && activities && (
-        <div className="space-y-4">
+        <div className="space-y-2">
+          <h2 className="text-lg font-semibold">
+            Date: {todaySchedule.date} {todaySchedule.length} <span>hours</span>
+          </h2>
           <ScheduleTable activities={activities} />
-          <Button onClick={() => createActivity(todaySchedule._id)}>
+          <Button
+            onClick={() => addActivity(todaySchedule._id)}
+            className=""
+          >
             Add new activity
           </Button>
         </div>

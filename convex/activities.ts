@@ -10,40 +10,41 @@ export const listBySchedule = query({
     scheduleId: v.id("schedules"),
   },
   async handler(ctx, { scheduleId }) {
-    return await ctx.db
+    const activities = await ctx.db
       .query("activities")
       .filter((q) => q.eq(q.field("scheduleId"), scheduleId))
       .collect();
+    return activities.sort((a, b) => a.index - b.index);
   },
 });
 
-export const addActivity = mutation({
+export const createActivity = mutation({
   args: {
     name: v.string(),
     scheduleId: v.id("schedules"),
   },
   async handler(ctx, { name, scheduleId }) {
-    const activityId = await ctx.db.insert("activities", {
+    const orderedActivities = await listBySchedule(ctx, { scheduleId });
+
+    let newIndex = 0;
+    let newStart = 0;
+
+    if (orderedActivities.length) {
+      const highestIndexActivity =
+        orderedActivities[orderedActivities.length - 1];
+
+      newIndex = highestIndexActivity.index + 1;
+      newStart = highestIndexActivity.start + highestIndexActivity.length;
+    }
+
+    return await ctx.db.insert("activities", {
+      index: newIndex,
       name: name,
-      start: 0,
+      start: newStart,
       length: 25,
       isForced: false,
       isRigid: false,
-      order: 0,
       scheduleId: scheduleId,
     });
-    return activityId;
-  },
-});
-
-export const createSchedule = mutation({
-  args: { name: v.string() },
-  async handler(ctx, { name }) {
-    const scheduleId = await ctx.db.insert("schedules", {
-      name: name,
-      isTemplate: false,
-      length: 17.75,
-    });
-    return scheduleId;
   },
 });

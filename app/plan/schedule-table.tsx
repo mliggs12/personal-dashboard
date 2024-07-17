@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Doc } from "@/convex/_generated/dataModel";
+import { convertMinutesToHours } from "@/lib/utils";
 
 interface ScheduleTableProps {
   activities: Doc<"activities">[];
@@ -37,7 +38,7 @@ export default function ScheduleTable({ activities }: ScheduleTableProps) {
             <TableCell>
               <Checkbox></Checkbox>
             </TableCell>
-            <TableCell>{activity.start}</TableCell>
+            <TableCell>{convertMinutesToHours(activity.start)}</TableCell>
             <TableCell>{activity.name}</TableCell>
             <TableCell>{activity.length}</TableCell>
           </TableRow>
