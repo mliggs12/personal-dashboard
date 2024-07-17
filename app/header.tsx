@@ -13,7 +13,7 @@ export function Header() {
   return (
     <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
       <Link
-        href="#"
+        href="/"
         className="flex items-center gap-2 text-lg font-semibold md:text-base"
       >
         <Package2 className="h-6 w-6" />
@@ -22,34 +22,22 @@ export function Header() {
       <Authenticated>
         <nav className="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6">
           <Link
-            href="#"
+            href="/"
             className="text-foreground transition-colors hover:text-foreground"
           >
             Dashboard
           </Link>
           <Link
-            href="#"
+            href="/plan"
             className="text-muted-foreground transition-colors hover:text-foreground"
           >
-            Page
+            Plan
           </Link>
           <Link
-            href="#"
+            href="/creativity"
             className="text-muted-foreground transition-colors hover:text-foreground"
           >
-            Page
-          </Link>
-          <Link
-            href="#"
-            className="text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Page
-          </Link>
-          <Link
-            href="#"
-            className="text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Page
+            Creativity
           </Link>
         </nav>
         <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
