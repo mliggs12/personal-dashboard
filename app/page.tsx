@@ -1,12 +1,5 @@
-'use client'
-
-import WaterLog from "@/components/water/water-log";
+"use client";
 
 export default function Dashboard() {
-
-  return (
-    <main className="flex-1">
-      <WaterLog />
-    </main>
-  );
+  return <main className="flex-1"></main>;
 }
