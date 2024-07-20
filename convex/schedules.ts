@@ -1,8 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
-import { getFormattedDate } from "../lib/utils";
-
 export const list = query(async (ctx) => {
   return await ctx.db.query("schedules").collect();
 });
@@ -50,8 +48,9 @@ export const updateSchedule = mutation({
     date: v.optional(v.string()),
     isTemplate: v.optional(v.boolean()),
     length: v.optional(v.number()),
+    start: v.optional(v.number()),
   },
-  async handler(ctx, { scheduleId, name, date, isTemplate, length }) {
+  async handler(ctx, { scheduleId, name, date, isTemplate, length, start }) {
     return await ctx.db.patch(scheduleId, {
       name: name,
       date: date,
