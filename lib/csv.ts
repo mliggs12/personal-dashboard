@@ -46,7 +46,7 @@ export async function getAccountData(): Promise<Transaction[]> {
 
   return csvData.map((record) => ({
     date: record.Date,
-    description: record.Description,
+    description: record.Description.replace(/^Visa Check /, ""),
     checkNumber: record["Check Number"],
     amount: record.Amount,
     balance: record.Balance,
