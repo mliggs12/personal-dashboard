@@ -21,15 +21,15 @@ export default defineSchema({
     date: v.string(), // YYYY-MM-DD
     consumed: v.number(),
   }).index("by_date", ["date"]),
-  desires: defineTable({
-    name: v.string(),
+  intentions: defineTable({
+    title: v.string(),
     status: v.union(
       v.literal("active"),
       v.literal("archived"),
       v.literal("draft"),
     ),
-    whatStatements: v.array(v.string()),
-    whyStatements: v.array(v.string()),
+    whatStatements: v.optional(v.array(v.string())),
+    whyStatements: v.optional(v.array(v.string())),
     emotionIds: v.optional(v.array(v.id("emotions"))),
     notes: v.optional(v.string()),
   }),
@@ -46,5 +46,9 @@ export default defineSchema({
       v.literal("done"),
       v.literal("archived"),
     ),
+  }),
+  mindDumpStatements: defineTable({
+    text: v.string(),
+    elevated: v.boolean(),
   }),
 });

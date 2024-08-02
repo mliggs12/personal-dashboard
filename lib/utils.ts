@@ -1,6 +1,8 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
+import { format } from "date-fns";
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -64,4 +66,8 @@ export function formatTimeRange(start: string, end: string): string {
   } else {
     return `${startHours}:${startMinutes} ${startAMPM} - ${endHours}:${endMinutes} ${endAMPM}`;
   }
+}
+
+export function formatTimestamp(timestamp: number) {
+  return format(new Date(timestamp), "yyyy-MM-dd HH:mm");
 }

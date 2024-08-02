@@ -17,6 +17,8 @@ import type {
 import type * as activities from "../activities.js";
 import type * as beliefs from "../beliefs.js";
 import type * as emotions from "../emotions.js";
+import type * as intentions from "../intentions.js";
+import type * as mindDumpStatements from "../mindDumpStatements.js";
 import type * as schedules from "../schedules.js";
 import type * as water_logs from "../water_logs.js";
 
@@ -32,6 +34,8 @@ declare const fullApi: ApiFromModules<{
   activities: typeof activities;
   beliefs: typeof beliefs;
   emotions: typeof emotions;
+  intentions: typeof intentions;
+  mindDumpStatements: typeof mindDumpStatements;
   schedules: typeof schedules;
   water_logs: typeof water_logs;
 }>;
