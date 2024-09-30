@@ -2,15 +2,16 @@
 
 import { api } from "@/convex/_generated/api";
 import { addActivity } from "./actions";
-import ScheduleTable from "./schedule-table";
-import { getFormattedDate } from "@/lib/utils";
-import { useMutation, useQuery } from "convex/react";
-import CreateScheduleButton from "./create-schedule-button";
+import ScheduleTable from "./components/schedule-table";
+import { useQuery } from "convex/react";
+import CreateScheduleButton from "./schedules/create-schedule-button";
 import { Button } from "@/components/ui/button";
+import { TemplateSelect } from "./components/template-select";
+import { formatTimestamp } from "@/lib/utils";
 
-export default function PlanPage() {
+export default function PlanDashboard() {
   const todaySchedule = useQuery(api.schedules.getByDate, {
-    date: getFormattedDate(new Date()),
+    date: formatTimestamp(Date.now()),
   });
   const activities = useQuery(
     api.activities.listBySchedule,
@@ -18,15 +19,16 @@ export default function PlanPage() {
   );
 
   return (
-    <main className="w-full flex flex-1 flex-col gap-4 p-2 lg:p-4">
-      <div className="flex items-center mb-2">
-        <h1 className="text-lg font-semibold md:text-2xl">Plan</h1>
+    <div className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
+      <div className="flex items-center">
+        <h1 className="text-lg md:text-2xl font-semibold">Plan</h1>
       </div>
 
-      {todaySchedule === undefined && <p>Loading...</p>}
+      {todaySchedule === undefined ||
+        (activities === undefined && <p>Loading...</p>)}
 
       {todaySchedule === null && (
-        <div className="min-h-screen flex flex-1 items-center justify-center rounded-lg border border-dashed shadow-sm">
+        <div className="min-h-[calc(100vh_-_175px)] flex flex-1 items-center justify-center rounded-lg border border-dashed shadow-sm">
           <div className="flex flex-col items-center gap-1 text-center">
             <h3 className="text-2xl font-bold tracking-tight">
               No schedule for today
@@ -41,6 +43,7 @@ export default function PlanPage() {
 
       {todaySchedule && activities && (
         <div className="space-y-2">
+          <TemplateSelect />
           <h2 className="text-lg font-semibold">
             Date: {todaySchedule.date} {todaySchedule.length} <span>hours</span>
           </h2>
@@ -53,6 +56,6 @@ export default function PlanPage() {
           </Button>
         </div>
       )}
-    </main>
+    </div>
   );
 }

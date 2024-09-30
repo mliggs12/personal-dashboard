@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 
 export interface Event {
   id: string;
+  date: string;
   summary: string;
   time: string;
 }

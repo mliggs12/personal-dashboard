@@ -18,8 +18,12 @@ import type * as activities from "../activities.js";
 import type * as beliefs from "../beliefs.js";
 import type * as emotions from "../emotions.js";
 import type * as intentions from "../intentions.js";
-import type * as mindDumpStatements from "../mindDumpStatements.js";
+import type * as intentions_handler from "../intentions_handler.js";
+import type * as notes from "../notes.js";
+import type * as projects from "../projects.js";
 import type * as schedules from "../schedules.js";
+import type * as sessions from "../sessions.js";
+import type * as tasks from "../tasks.js";
 import type * as water_logs from "../water_logs.js";
 
 /**
@@ -35,8 +39,12 @@ declare const fullApi: ApiFromModules<{
   beliefs: typeof beliefs;
   emotions: typeof emotions;
   intentions: typeof intentions;
-  mindDumpStatements: typeof mindDumpStatements;
+  intentions_handler: typeof intentions_handler;
+  notes: typeof notes;
+  projects: typeof projects;
   schedules: typeof schedules;
+  sessions: typeof sessions;
+  tasks: typeof tasks;
   water_logs: typeof water_logs;
 }>;
 export declare const api: FilterApi<

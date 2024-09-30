@@ -2,6 +2,7 @@ import EventCard from "./event-card";
 
 interface Event {
   id: string;
+  date: string;
   summary: string;
   time: string;
 }

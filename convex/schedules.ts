@@ -5,10 +5,39 @@ export const list = query(async (ctx) => {
   return await ctx.db.query("schedules").collect();
 });
 
+export const listTemplates = query(async (ctx) => {
+  return await ctx.db
+    .query("schedules")
+    .filter((q) => q.eq(q.field("isTemplate"), true))
+    .collect();
+});
+
 export const get = query({
   args: { scheduleId: v.id("schedules") },
   async handler(ctx, { scheduleId }) {
-    return await ctx.db.get(scheduleId);
+    const schedule = await ctx.db.get(scheduleId);
+
+    if (!schedule) {
+      throw new Error("Schedule not found");
+    }
+
+    return schedule;
+  },
+});
+
+export const getOrderedActivities = query({
+  args: { scheduleId: v.id("schedules") },
+  async handler(ctx, { scheduleId }) {
+    const activities = await ctx.db
+      .query("activities")
+      .filter((q) => q.eq(q.field("scheduleId"), scheduleId))
+      .collect();
+
+    if (activities.length === 0) {
+      return [];
+    }
+
+    return activities.sort((a, b) => a.index - b.index);
   },
 });
 
@@ -57,5 +86,23 @@ export const updateSchedule = mutation({
       isTemplate: isTemplate,
       length: length,
     });
+  },
+});
+
+export const deleteSchedule = mutation({
+  args: {
+    scheduleId: v.id("schedules"),
+  },
+  async handler(ctx, { scheduleId }) {
+    return await ctx.db.delete(scheduleId);
+  },
+});
+
+export const templateSchedules = query({
+  async handler(ctx) {
+    return await ctx.db
+      .query("schedules")
+      .filter((q) => q.eq(q.field("isTemplate"), true))
+      .collect();
   },
 });

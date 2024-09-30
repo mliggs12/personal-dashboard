@@ -7,10 +7,6 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function getFormattedDate(date: Date) {
-  return date.toISOString().split("T")[0];
-}
-
 export function convertMinutesToHours(minutes: number) {
   const hours = Math.floor(minutes / 60);
   const remainingMinutes = minutes % 60;
@@ -68,6 +64,30 @@ export function formatTimeRange(start: string, end: string): string {
   }
 }
 
-export function formatTimestamp(timestamp: number) {
-  return format(new Date(timestamp), "yyyy-MM-dd HH:mm");
+export function formatTimestamp(timestamp: number): string {
+  const date = new Date(timestamp);
+  const dateString = date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+  const timeString = date.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+
+  return `${dateString} at ${timeString}`;
+}
+
+export function getLocalDateString() {
+  return format(new Date(), "yyyy-MM-dd");
+}
+
+export function formatDuration(duration: number): string {
+  const hours = Math.floor(duration / 3600);
+  const minutes = Math.floor((duration % 3600) / 60);
+  const seconds = duration % 60;
+
+  return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
 }
