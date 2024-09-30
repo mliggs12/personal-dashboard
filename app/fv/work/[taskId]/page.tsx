@@ -17,21 +17,27 @@ export default function TaskPage({
   const [timer, setTimer] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const task = useQuery(api.tasks.get, { taskId: params.taskId }); // Wrap taskId in an object
-  const deleteTask = useMutation(api.tasks.deleteTask);
-  const createTask = useMutation(api.tasks.createTask);
+  const deleteTask = useMutation(api.tasks.remove);
+  const createTask = useMutation(api.tasks.create);
   const completeTask = useMutation(api.tasks.completeTask);
   const preselectedTasks = fetchQuery(api.tasks.preselectedTasks);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: NodeJS.Timeout | null = null;
     if (isRunning) {
       interval = setInterval(() => {
         setTimer((prev) => prev + 1);
       }, 1000);
     } else if (!isRunning && timer !== 0) {
-      clearInterval(interval);
+      if (interval) {
+        clearInterval(interval);
+      }
     }
-    return () => clearInterval(interval);
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
   }, [isRunning, timer]);
 
   const handleStartStop = () => {
@@ -40,8 +46,8 @@ export default function TaskPage({
 
   const handleFinish = async () => {
     await deleteTask({ taskId: params.taskId });
-    if (task?.taskName) {
-      await createTask({ taskName: task.taskName }); // Ensure taskName is defined
+    if (task?.name) {
+      await createTask({ taskName: task.name }); // Ensure taskName is defined
     }
 
     router.push("/fv");
@@ -56,7 +62,7 @@ export default function TaskPage({
     <main className="flex flex-col items-center h-screen p-6">
       <div>{/* <PreselectedTasksList /> */}</div>
       <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-4">{task?.taskName}</h1>
+        <h1 className="text-4xl font-bold mb-4">{task?.name}</h1>
         <p className="text-2xl mb-2">Time: {timer} seconds</p>
         <button
           onClick={handleStartStop}
