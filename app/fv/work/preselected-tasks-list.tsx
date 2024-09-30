@@ -6,7 +6,7 @@ export default async function PreselectedTasksList() {
   const preselectedTasks = await fetchQuery(api.tasks.preselectedTasks);
   return preselectedTasks.map((task: Doc<"tasks">) => (
     <div key={task._id}>
-      <p>{task.taskName}</p>
+      <p>{task.name}</p>
     </div>
   ));
 }

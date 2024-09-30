@@ -4,8 +4,6 @@ import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
 import { useQuery } from "convex/react";
 import { addActivity } from "../../actions";
-import ScheduleProvider from "../../components/schedule-context";
-import ScheduleTable from "../../components/schedule-table";
 import { Id } from "@/convex/_generated/dataModel";
 import { useParams } from "next/navigation";
 
@@ -52,9 +50,6 @@ export default function SchedulePage() {
             Name: {schedule.name} Date: {schedule.date} {schedule.length}{" "}
             <span>hours</span>
           </h2>
-          <ScheduleProvider>
-            <ScheduleTable />
-          </ScheduleProvider>
           <Button
             onClick={() => addActivity(schedule._id)}
             className=""

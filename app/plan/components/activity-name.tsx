@@ -1,4 +1,4 @@
-export default function ActivityName({ onClick }) {
+export default function ActivityName({ onClick }: { onClick: () => void }) {
   return (
     <div>
       <h1>ActivityName</h1>

@@ -2,7 +2,6 @@
 
 import { api } from "@/convex/_generated/api";
 import { addActivity } from "./actions";
-import ScheduleTable from "./components/schedule-table";
 import { useQuery } from "convex/react";
 import CreateScheduleButton from "./schedules/create-schedule-button";
 import { Button } from "@/components/ui/button";
@@ -47,7 +46,6 @@ export default function PlanDashboard() {
           <h2 className="text-lg font-semibold">
             Date: {todaySchedule.date} {todaySchedule.length} <span>hours</span>
           </h2>
-          <ScheduleTable activities={activities} />
           <Button
             onClick={() => addActivity(todaySchedule._id)}
             className=""

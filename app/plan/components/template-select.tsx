@@ -71,7 +71,7 @@ export function TemplateSelect() {
                 <SelectContent>
                   {templateSchedules.map((template) => (
                     <SelectItem
-                      value={template.name}
+                      value={template.name ?? ""}
                       key={template._id}
                       className=""
                     >

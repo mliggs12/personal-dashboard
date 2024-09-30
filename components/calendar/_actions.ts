@@ -39,7 +39,7 @@ export async function getUserEvents(userId: string): Promise<Event[]> {
 
   const data = await response.json();
 
-  const events: Event[] = data.items.map((item) => {
+  const events: Event[] = data.items.map((item: any) => {
     const event = {
       id: item.id,
       date: item.start.dateTime.split("T")[0],
