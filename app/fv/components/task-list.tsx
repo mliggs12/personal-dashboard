@@ -51,7 +51,7 @@ export default function TaskList(props: {
           <Task
             key={task._id}
             data={task}
-            isPreselected={task.isPreselected}
+            isPreselected={task.isPreselected ?? false}
             handleOnChange={() => handleOnChangeTask(task)}
           />
         ))}
