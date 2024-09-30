@@ -1,3 +1,6 @@
+import { CardTitle } from "@/components/ui/card";
+import { Doc } from "@/convex/_generated/dataModel";
+
 export default function IntentionTitle({
   intention,
 }: {
