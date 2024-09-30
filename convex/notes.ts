@@ -35,3 +35,28 @@ export const get = query({
     return note;
   },
 });
+
+export const update = mutation({
+  args: {
+    id: v.id("notes"),
+    title: v.optional(v.string()),
+    text: v.optional(v.string()),
+  },
+  async handler(ctx, { id, title, text }) {
+    try {
+      const existingNote = await ctx.db.get(id);
+
+      const updatedNote = {
+        ...existingNote,
+        title: title ?? existingNote?.title ?? "",
+        text: text ?? existingNote?.text ?? "",
+        updatedAt: Date.now(),
+      };
+
+      await ctx.db.patch(id, updatedNote);
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  },
+});

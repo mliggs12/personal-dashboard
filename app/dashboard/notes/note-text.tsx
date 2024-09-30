@@ -1,17 +1,17 @@
 import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/convex/_generated/api";
-import { Doc } from "@/convex/_generated/dataModel";
+import { Doc, Id } from "@/convex/_generated/dataModel";
 import { useMutation } from "convex/react";
 import { useState, useEffect } from "react";
 
 export default function NoteText({ note }: { note: Doc<"notes"> }) {
   const [notes, setNotes] = useState(note.text);
-  const updateNotes = useMutation(api.notes.updateNotes);
+  const updateNotes = useMutation(api.notes.update);
 
   useEffect(() => {
     const saveInterval = setInterval(() => {
       if (notes !== note.text) {
-        updateNotes({ notes: notes! });
+        updateNotes({ id: note._id as Id<"notes">, text: notes! });
       }
     }, 2500);
 
