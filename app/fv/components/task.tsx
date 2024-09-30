@@ -10,7 +10,7 @@ export default function Task({
   isPreselected: boolean;
   handleOnChange: (selected: boolean) => void;
 }) {
-  const { taskName, _id } = data;
+  const { name: taskName, _id } = data;
 
   const handleClick = () => {
     handleOnChange(!isPreselected);
