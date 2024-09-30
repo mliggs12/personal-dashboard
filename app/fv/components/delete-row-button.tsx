@@ -7,7 +7,9 @@ export default function DeleteRowButton({
   selectedRows: any;
 }) {
   const handleBatchDelete = () => {
-    const tasksToDelete = selectedRows.map((row) => row.original);
+    const tasksToDelete = selectedRows.map(
+      (row: { original: any }) => row.original,
+    );
   };
 
   return (
