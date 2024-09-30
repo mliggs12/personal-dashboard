@@ -8,7 +8,6 @@ import ScheduleProvider from "../../components/schedule-context";
 import ScheduleTable from "../../components/schedule-table";
 import { Id } from "@/convex/_generated/dataModel";
 import { useParams } from "next/navigation";
-import ScheduleManager from "../../components/schedule-manager";
 
 export default function SchedulePage() {
   const { scheduleId } = useParams<{ scheduleId: Id<"schedules"> }>();
@@ -54,7 +53,6 @@ export default function SchedulePage() {
             <span>hours</span>
           </h2>
           <ScheduleProvider>
-            <ScheduleManager scheduleId={scheduleId} />
             <ScheduleTable />
           </ScheduleProvider>
           <Button
