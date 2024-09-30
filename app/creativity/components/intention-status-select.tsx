@@ -27,7 +27,7 @@ export default function IntentionStatusSelect({
   intention: Doc<"intentions">;
 }) {
   const [statusValue, setStatusValue] = useState(intention.status);
-  const updateStatus = useMutation(api.intentions.updateStatus);
+  const updateStatus = useMutation(api.intentions.update);
 
   const handleStatusChange = async (
     value: "draft" | "to_tithe" | "allowing" | "done",

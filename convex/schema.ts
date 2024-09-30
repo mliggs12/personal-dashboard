@@ -25,7 +25,7 @@ export default defineSchema({
   }).index("by_date", ["date"]),
 
   intentions: defineTable({
-    title: v.string(),
+    title: v.optional(v.string()),
     status: v.optional(
       v.union(
         v.literal("draft"),

@@ -95,15 +95,26 @@ export const update = mutation({
     ctx,
     { id, title, status, whatStatements, whyStatements, emotionId, notes },
   ) {
-    await ctx.db.patch(id, {
-      title,
-      status,
-      whatStatements,
-      whyStatements,
-      emotionId,
-      notes,
-      updatedAt: Date.now(),
-    });
+    try {
+      const existingIntention = await ctx.db.get(id);
+
+      const updatedIntention = {
+        ...existingIntention,
+        title: title ?? existingIntention?.title ?? "",
+        status: status ?? existingIntention?.status ?? "draft",
+        whatStatements:
+          whatStatements ?? existingIntention?.whatStatements ?? [],
+        whyStatements: whyStatements ?? existingIntention?.whyStatements ?? [],
+        emotionId: emotionId ?? existingIntention?.emotionId,
+        notes: notes ?? existingIntention?.notes,
+        updatedAt: Date.now(),
+      };
+
+      await ctx.db.patch(id, updatedIntention);
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
   },
 });
 
