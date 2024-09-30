@@ -2,7 +2,6 @@ import { api } from "@/convex/_generated/api";
 import { Doc } from "@/convex/_generated/dataModel";
 import { useMutation } from "convex/react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import debounce from "lodash/debounce";
 import { Input } from "@/components/ui/input";
 
 export default function BeliefTitle({ belief }: { belief: Doc<"beliefs"> }) {
@@ -11,17 +10,9 @@ export default function BeliefTitle({ belief }: { belief: Doc<"beliefs"> }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const updateTitle = useMutation(api.beliefs.updateTitle);
 
-  const debouncedUpdate = useCallback(
-    debounce((newTitle: string) => {
-      updateTitle({ beliefId: belief._id, title: newTitle });
-    }, 500),
-    [belief._id, updateTitle],
-  );
-
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newTitle = e.target.value;
     setTitle(newTitle);
-    debouncedUpdate(newTitle);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
