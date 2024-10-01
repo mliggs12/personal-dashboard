@@ -45,8 +45,6 @@ export default function ProjectForm({
     resolver: zodResolver(formSchema),
   });
 
-  const [selectedSessionId, setSelectedSessionId] =
-    useState<Id<"sessions"> | null>(null);
   const [selectedProjectId, setSelectedProjectId] =
     useState<Id<"projects"> | null>(null);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
@@ -84,12 +82,8 @@ export default function ProjectForm({
     setPauseDuration(duration);
   }
 
-  async function handleResume() {
-    setIsTimerRunning(true);
-    setStartTime(new Date());
-  }
-
   async function handleSave() {
+    const duration = new Date().getTime() - startTime!.getTime();
     await saveSession({
       projectId: selectedProjectId as Id<"projects">,
       duration,
@@ -107,9 +101,6 @@ export default function ProjectForm({
   }
 
   async function handleDiscard() {
-    await discardSession({
-      sessionId: selectedSessionId as Id<"sessions">,
-    });
     setIsTimerRunning(false);
     setStartTime(null);
     setDuration(0);

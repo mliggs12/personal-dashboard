@@ -16,6 +16,7 @@ export function convertMinutesToHours(minutes: number) {
 
   return `${hours}:${remainingMinutes}`;
 }
+
 export function convertToReadableTime(isoTimestamp: string): string {
   const date = new Date(isoTimestamp);
 
@@ -90,4 +91,32 @@ export function formatDuration(duration: number): string {
   const seconds = duration % 60;
 
   return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+}
+
+export function formatDurationVerbose(duration: number): string {
+  const hours = Math.floor(duration / 3600000);
+  const minutes = Math.floor((duration % 3600000) / 60000);
+  const seconds = Math.floor((duration % 60000) / 1000);
+
+  if (hours > 0) {
+    return `${hours} hours, ${minutes} minutes, ${seconds} seconds`;
+  } else if (minutes > 0) {
+    return `${minutes} minutes, ${seconds} seconds`;
+  } else {
+    return `${seconds} seconds`;
+  }
+}
+
+function calculateStartTime(creationTime: number, duration: number): number {
+  return creationTime - duration;
+}
+
+export function formatTimePeriod(
+  creationTime: number,
+  duration: number,
+): string {
+  const startTime = calculateStartTime(creationTime, duration);
+  const endTime = creationTime;
+
+  return `${format(startTime, "h:mm:ss a")} - ${format(endTime, "h:mm:ss a")}`;
 }

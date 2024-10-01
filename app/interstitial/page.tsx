@@ -1,28 +1,32 @@
 "use client";
 
-import { useMutation, useQuery } from "convex/react";
-import ProjectSelect from "./components/project-select";
+import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import ProjectForm from "./components/project-form";
-import AddProjectDialog from "./components/add-project-dialog";
 import { Toaster } from "@/components/ui/toaster";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import SessionsList from "./components/sessions-list";
 
 export default function InterstitialPage() {
-  const projects = useQuery(api.projects.list) ?? [];
-  const createProject = useMutation(api.projects.create);
+  const projects = useQuery(api.projects.list);
+  const sessions = useQuery(api.sessions.todaySessions);
 
   return (
-    <div className="h-full p-8 md:flex">
-      {/* <ProjectSelect projects={projects} /> */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Project</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ProjectForm projects={projects} />
-        </CardContent>
-      </Card>
+    <div className="h-full p-8 md:flex space-x-4">
+      <div>
+        <Card className="min-w-[415px]">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-md">Project</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ProjectForm projects={projects ?? []} />
+          </CardContent>
+        </Card>
+      </div>
+      <SessionsList
+        sessions={sessions ?? []}
+        projects={projects ?? []}
+      />
       <Toaster />
     </div>
   );
