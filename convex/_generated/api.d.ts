@@ -23,6 +23,7 @@ import type * as notes from "../notes.js";
 import type * as projects from "../projects.js";
 import type * as schedules from "../schedules.js";
 import type * as sessions from "../sessions.js";
+import type * as statements from "../statements.js";
 import type * as tasks from "../tasks.js";
 import type * as water_logs from "../water_logs.js";
 
@@ -44,6 +45,7 @@ declare const fullApi: ApiFromModules<{
   projects: typeof projects;
   schedules: typeof schedules;
   sessions: typeof sessions;
+  statements: typeof statements;
   tasks: typeof tasks;
   water_logs: typeof water_logs;
 }>;

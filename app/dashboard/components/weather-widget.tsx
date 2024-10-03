@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-export default async function WeatherWidget() {
+export async function WeatherWidget() {
   const weatherData = await getCurrentWeatherData();
 
   return (
@@ -12,12 +12,16 @@ export default async function WeatherWidget() {
         <div className="space-y-4">
           <div>
             <h4 className="text-xl font-semibold">Current</h4>
-            <p>Temperature: {Math.round(weatherData.current.temp)}°F</p>
-            <p>
-              Description:{" "}
-              {`${weatherData.current.weather[0].main}, 
-              ${weatherData.current.weather[0].description}`}
-            </p>
+            {weatherData && (
+              <>
+                <p>Temperature: {Math.round(weatherData?.current?.temp)}°F</p>
+                <p>
+                  Description:{" "}
+                  {`${weatherData?.current?.weather[0].main}, 
+              ${weatherData?.current?.weather[0].description}`}
+                </p>
+              </>
+            )}
           </div>
           <div>
             <h4 className="text-xl font-semibold">Daily Summary</h4>

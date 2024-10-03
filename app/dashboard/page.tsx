@@ -1,11 +1,22 @@
+"use client";
+
+import Link from "next/link";
 import { formatTimestamp } from "@/lib/utils";
 import WeatherWidget from "./components/weather-widget";
 import NotesWidget from "./components/notes-widget";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useRef, useState } from "react";
+import { ArrowUpRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function DashboardPage() {
+  const statements = useQuery(api.statements.todayMindDumpStatements);
+
+  if (statements === undefined) {
+    return <div>Loading...</div>;
+  }
+
   // const generateUploadUrl = useMutation(api.files.generateUploadUrl);
   // const sendImage = useMutation(api.files.sendImage);
 
@@ -43,9 +54,19 @@ export default function DashboardPage() {
               <p className="text-lg">{formatTimestamp(Date.now())}</p>
             </div>
           </div>
+          <Button
+            asChild
+            size="sm"
+            className="ml-auto gap-1"
+          >
+            <Link href="/me5">
+              Mind Dump
+              <ArrowUpRight className="h-4 w-4" />
+            </Link>
+          </Button>
           <div className="flex justify-between">
             <NotesWidget />
-            <WeatherWidget />
+            {/* <WeatherWidget /> */}
           </div>
         </div>
       </div>

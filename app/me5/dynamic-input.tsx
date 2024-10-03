@@ -1,4 +1,5 @@
-// components/DynamicInput.tsx
+"use client";
+
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
@@ -8,12 +9,19 @@ import Link from "next/link";
 export default function DynamicInput() {
   const [inputValue, setInputValue] = useState("");
   const [answers, setAnswers] = useState<string[]>([]);
-  const createBelief = useMutation(api.beliefs.create);
+  const createStatement = useMutation(api.statements.createMindDumpStatement);
+  const todayStatements = useQuery(api.statements.todayMindDumpStatements);
+
+  useEffect(() => {
+    if (todayStatements) {
+      setAnswers(todayStatements.map((statement) => statement.text));
+    }
+  }, [todayStatements]);
 
   const handleEnterKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && inputValue.trim()) {
       const value = inputValue.trim();
-      createBelief({ title: value, status: "active" });
+      createStatement({ text: value });
       setAnswers((prev) => [...prev, value]);
       setInputValue("");
     }

@@ -9,7 +9,6 @@ import { useParams } from "next/navigation";
 
 export default function BeliefsPage() {
   const beliefs = useQuery(api.beliefs.activeBeliefs);
-  const { beliefId } = useParams<{ beliefId: string }>();
 
   return (
     <main className="w-full space-y-8">

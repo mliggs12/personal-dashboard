@@ -16,3 +16,12 @@
    - Consider using a checkbox that applies a strikethrough.
 7. Move on to as many more items on the original list and repeat the process.
 8. When satisfied end the process and move on to "Positive Aspects" then "Rampage of Appreciation".
+
+## Additional steps
+
+- Group together related items
+- For tasks you need to do and feel no resistance about doing, put in your time management system or TODO list
+  - "Time management system" is an apt description for what I am building overall. Tithing and managing your focus and time.
+- Create a "What's Bothering Me" list for the "root issues" of all the bad-feeling ones.
+  - This is really interesting and a piece I skipped over before.
+  - Once all the bad-feeling statements are grouped by relation, we actively determine the root limiting belief of each and then place this on a new list to be worked through.

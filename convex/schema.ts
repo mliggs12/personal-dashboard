@@ -67,10 +67,12 @@ export default defineSchema({
     ),
   }),
 
-  mindDumpStatements: defineTable({
+  // Statements for many use cases
+  statements: defineTable({
+    date: v.string(),
     text: v.string(),
-    elevated: v.boolean(),
-  }),
+    type: v.union(v.literal("what"), v.literal("why"), v.literal("mind_dump")),
+  }).index("by_type", ["type"]),
 
   // Tithe Tracker
   // ------------------

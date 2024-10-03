@@ -32,7 +32,7 @@ export const create = mutation({
     status: v.optional(v.union(v.literal("active"), v.literal("backlog"))),
   },
   async handler(ctx, { title, description, status }) {
-    await ctx.db.insert("beliefs", {
+    return await ctx.db.insert("beliefs", {
       title,
       description,
       status: status || "backlog",
