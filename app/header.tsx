@@ -27,10 +27,9 @@ import { HeaderActions } from "./header-actions";
 import CreateNoteInput from "@/components/create-note-input";
 
 const tools: { title: string; href: string }[] = [
-  { title: "Chatbot", href: "/chatbot" },
   { title: "ME-5", href: "/me5" },
+  { title: "SN", href: "/me5/list" },
   { title: "Water", href: "/water" },
-  { title: "Chatbot", href: "/chatbot" },
 ];
 
 export function Header() {
