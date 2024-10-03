@@ -91,3 +91,24 @@ export const deleteBelief = mutation({
     await ctx.db.delete(beliefId);
   },
 });
+
+export const activeBeliefsToday = query({
+  args: {},
+  async handler(ctx) {
+    // Current UTC timestamp
+    const now = Date.now();
+
+    // Convert to local time (UTC-6) and set start of day to 3 AM
+    const localOffset = -6 * 60 * 60 * 1000; // UTC-6 in milliseconds
+    const localNow = new Date(now + localOffset);
+    const startOfDay = new Date(localNow);
+    startOfDay.setHours(3, 0, 0, 0);
+    // Convert back to UTC for comparison with _creationTime
+    const startOfDayUTC = new Date(startOfDay.getTime() - localOffset);
+
+    return await ctx.db
+      .query("beliefs")
+      .filter((q) => q.gte(q.field("_creationTime"), startOfDayUTC.getTime()))
+      .collect();
+  },
+});

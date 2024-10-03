@@ -2,44 +2,19 @@
 
 import Link from "next/link";
 import { formatTimestamp } from "@/lib/utils";
-import NotesWidget from "./components/notes-widget";
-import { useMutation, useQuery } from "convex/react";
+import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { useRef, useState } from "react";
 import { ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import BeliefsCard from "./components/beliefs-card";
 
 export default function DashboardPage() {
   const statements = useQuery(api.statements.todayMindDumpStatements);
+  const beliefs = useQuery(api.beliefs.activeBeliefsToday);
 
   if (statements === undefined) {
     return <div>Loading...</div>;
   }
-
-  // const generateUploadUrl = useMutation(api.files.generateUploadUrl);
-  // const sendImage = useMutation(api.files.sendImage);
-
-  // const imageInput = useRef<HTMLInputElement>(null);
-  // const [selectedImage, setSelectedImage] = useState<File | null>(null);
-
-  // function handleSendImage(event: React.FormEvent<HTMLFormElement>) {
-  //   event.preventDefault();
-
-  //   // Get a short-lived upload URL
-  //   generateUploadUrl().then((postUrl) => {
-  //     // POST the file to the URL
-  //     fetch(postUrl, {
-  //       method: "POST",
-  //       headers: { "Content-Type": selectedImage!.type },
-  //       body: selectedImage,
-  //     });
-  //   });
-  //   // Save the newly allocated storage ID to the database
-  //   sendImage(storageId);
-
-  //   setSelectedImage(null);
-  //   imageInput.current!.value = "";
-  // }
 
   return (
     <div className="container pt-8 pb-8 px-4 sm:px-8">
@@ -63,10 +38,7 @@ export default function DashboardPage() {
               <ArrowUpRight className="h-4 w-4" />
             </Link>
           </Button>
-          <div className="flex justify-between">
-            <NotesWidget />
-            {/* <WeatherWidget /> */}
-          </div>
+          <BeliefsCard />
         </div>
       </div>
     </div>
