@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { formatTimestamp } from "@/lib/utils";
-import WeatherWidget from "./components/weather-widget";
 import NotesWidget from "./components/notes-widget";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
