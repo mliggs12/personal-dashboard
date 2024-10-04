@@ -20,32 +20,19 @@ export const listBySchedule = query({
 
 export const createActivity = mutation({
   args: {
-    name: v.string(),
     scheduleId: v.id("schedules"),
-    start: v.optional(v.number()),
+    start: v.number(),
+    length: v.number(),
   },
-  async handler(ctx, { name, scheduleId, start }) {
-    const orderedActivities = await listBySchedule(ctx, { scheduleId });
-
-    let newIndex = 0;
-    let newStart = start || 0;
-
-    if (orderedActivities.length) {
-      const highestIndexActivity =
-        orderedActivities[orderedActivities.length - 1];
-
-      newIndex = highestIndexActivity.index + 1;
-      newStart = highestIndexActivity.start + highestIndexActivity.length;
-    }
-
+  async handler(ctx, { scheduleId, start, length }) {
     return await ctx.db.insert("activities", {
-      index: newIndex,
-      name: name,
-      start: newStart,
-      length: 25,
+      index: 0,
+      name: "",
       isForced: false,
       isRigid: false,
-      scheduleId: scheduleId,
+      scheduleId,
+      start,
+      length,
     });
   },
 });

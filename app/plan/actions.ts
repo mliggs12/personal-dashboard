@@ -34,9 +34,6 @@ export async function createNewSchedule(
   console.log(
     `Created schedule '${name}' with ID: ${scheduleId}. Creating a new activity...`,
   );
-
-  // Create a new activity for the schedule
-  await addActivity(scheduleId, (start = start));
 }
 
 // Retrieves the id of the schedule for today, creating a new schedule if it doesn't exist
@@ -56,11 +53,16 @@ export async function getScheduleByDate(date: string) {
   return schedule;
 }
 
-export async function addActivity(scheduleId: Id<"schedules">, start?: number) {
+export async function addActivity(
+  scheduleId: Id<"schedules">,
+  name?: string,
+  start?: number,
+  length?: number,
+) {
   const activityId = await fetchMutation(api.activities.createActivity, {
     scheduleId,
-    start: start,
-    name: "-",
+    start: start ?? 420,
+    length: length ?? 17.75,
   });
   console.log(
     `Created activity with ID ${activityId} for schedule ${scheduleId}`,

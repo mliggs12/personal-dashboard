@@ -81,10 +81,6 @@ export function formatTimestamp(timestamp: number): string {
   return `${dateString} at ${timeString}`;
 }
 
-export function getLocalDateString() {
-  return format(new Date(), "yyyy-MM-dd");
-}
-
 export function formatDuration(duration: number): string {
   const hours = Math.floor(duration / 3600);
   const minutes = Math.floor((duration % 3600) / 60);
@@ -119,4 +115,37 @@ export function formatTimePeriod(
   const endTime = creationTime;
 
   return `${format(startTime, "h:mm:ss a")} - ${format(endTime, "h:mm:ss a")}`;
+}
+
+// Plan
+// Take the start time (minutes after midnight) and convert it to a readable time
+export function formatMinToReadable(minutes: number): string {
+  // Convert minutes after midnight to hours and minutes
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+
+  return `${hours}:${mins.toString().padStart(2, "0")}`;
+}
+
+// Convert a time string input and convert it to minutes after midnight
+// e.g. "130" -> 90
+export function convertTimeInputToMinutes(timeString: string): number {
+  const [hours, minutes] = timeString.split(":").map(Number);
+  return hours * 60 + minutes;
+}
+
+// Convert minutes to milliseconds
+export function convertMinutesToMilliseconds(minutes: number): number {
+  return minutes * 60 * 1000;
+}
+
+export function getLocalDateString(timestamp: number) {
+  // Convert the UTC timestamp to a date object in format YYYY-MM-DD
+  const date = new Date(timestamp);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const localDateString = `${year}-${month}-${day}`;
+
+  return localDateString;
 }
