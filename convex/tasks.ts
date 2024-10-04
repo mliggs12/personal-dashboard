@@ -14,12 +14,25 @@ export const get = query({
 });
 
 export const create = mutation({
-  args: { taskName: v.string() },
-  async handler(ctx, { taskName }) {
+  args: {
+    name: v.string(),
+    status: v.union(
+      v.literal("backlog"),
+      v.literal("todo"),
+      v.literal("in_progress"),
+      v.literal("done"),
+      v.literal("cancelled"),
+      v.literal("archived"),
+    ),
+    priority: v.union(v.literal("low"), v.literal("normal"), v.literal("high")),
+    notes: v.optional(v.string()),
+  },
+  async handler(ctx, { name, status, priority, notes }) {
     return await ctx.db.insert("tasks", {
-      name: taskName,
-      status: "backlog",
-      isPreselected: false,
+      name,
+      status,
+      priority,
+      notes,
     });
   },
 });
@@ -45,7 +58,7 @@ export const completeTask = mutation({
   async handler(ctx, { taskId }) {
     try {
       const completedTaskId = await ctx.db.patch(taskId, {
-        isPreselected: false,
+        status: "done",
       });
 
       return completedTaskId;
@@ -57,68 +70,8 @@ export const completeTask = mutation({
   },
 });
 
-export const preselectTask = mutation({
-  args: { taskId: v.id("tasks") },
-  async handler(ctx, { taskId }) {
-    try {
-      const preselectedTaskId = await ctx.db.patch(taskId, {
-        isPreselected: true,
-      });
-
-      return preselectedTaskId;
-    } catch (err) {
-      console.log("Error occurred during preselectTask mutation", err);
-
-      return null;
-    }
-  },
-});
-
-export const unPreselectTask = mutation({
-  args: { taskId: v.id("tasks") },
-  async handler(ctx, { taskId }) {
-    try {
-      const unPreselectedTaskId = await ctx.db.patch(taskId, {
-        isPreselected: false,
-      });
-
-      return unPreselectedTaskId;
-    } catch (err) {
-      console.log("Error occurred during unPreselectTask mutation", err);
-
-      return null;
-    }
-  },
-});
-
-export const unPreselectAll = mutation({
-  handler: async (ctx) => {
-    const preselectedTasks = await ctx.db
-      .query("tasks")
-      .filter((q) => q.eq(q.field("isPreselected"), true))
-      .collect();
-
-    for (const task of preselectedTasks) {
-      await ctx.db.patch(task._id, {
-        isPreselected: false,
-      });
-    }
-  },
-});
-
 export const incompleteTasks = query({
   handler: async (ctx) => {
     return await ctx.db.query("tasks").collect();
-  },
-});
-
-export const preselectedTasks = query({
-  handler: async (ctx) => {
-    const items = await ctx.db
-      .query("tasks")
-      .filter((q) => q.eq(q.field("isPreselected"), true))
-      .collect();
-
-    return items.reverse();
   },
 });

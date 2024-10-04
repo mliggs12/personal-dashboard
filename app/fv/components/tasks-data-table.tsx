@@ -25,10 +25,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import { DataTablePagination } from "./tasks-table-pagination";
-import { DataTableToolbar } from "./tasks-table-toolbar";
+import { TasksTablePagination } from "./tasks-table-pagination";
+import { TasksTableToolbar } from "./tasks-table-toolbar";
 
-interface DataTableProps<TData, TValue> {
+interface TasksTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
 }
@@ -36,7 +36,7 @@ interface DataTableProps<TData, TValue> {
 export function TasksDataTable<TData, TValue>({
   columns,
   data,
-}: DataTableProps<TData, TValue>) {
+}: TasksTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
@@ -69,7 +69,7 @@ export function TasksDataTable<TData, TValue>({
 
   return (
     <div className="space-y-4">
-      <DataTableToolbar table={table} />
+      <TasksTableToolbar table={table} />
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -123,7 +123,7 @@ export function TasksDataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      <DataTablePagination table={table} />
+      <TasksTablePagination table={table} />
     </div>
   );
 }

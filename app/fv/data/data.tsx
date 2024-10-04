@@ -68,8 +68,8 @@ export const priorities = [
     icon: ArrowDownIcon,
   },
   {
-    label: "Medium",
-    value: "medium",
+    label: "Normal",
+    value: "normal",
     icon: ArrowRightIcon,
   },
   {

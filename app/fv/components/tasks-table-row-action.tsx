@@ -31,13 +31,13 @@ import { taskSchema } from "../data/schema";
 import { deleteTask } from "../_actions";
 import { useToast } from "@/hooks/use-toast";
 
-interface DataTableRowActionsProps<TData> {
+interface TasksTableRowActionsProps<TData> {
   row: Row<TData>;
 }
 
-export function DataTableRowActions<TData>({
+export function TasksTableRowActions<TData>({
   row,
-}: DataTableRowActionsProps<TData>) {
+}: TasksTableRowActionsProps<TData>) {
   const { toast } = useToast();
   const task = taskSchema.parse(row.original);
 

@@ -102,7 +102,8 @@ export default defineSchema({
     projectId: v.optional(v.id("projects")),
   }).index("by_projectId", ["projectId"]),
 
-  // Mundane Manager
+  // ======== Mundane Manager ======== //
+  // ================================= //
   tasks: defineTable({
     name: v.string(),
     status: v.union(
@@ -113,15 +114,9 @@ export default defineSchema({
       v.literal("cancelled"),
       v.literal("archived"),
     ),
-    priority: v.optional(
-      v.union(v.literal("low"), v.literal("medium"), v.literal("high")),
-    ),
-    isPreselected: v.optional(v.boolean()),
+    priority: v.union(v.literal("low"), v.literal("normal"), v.literal("high")),
+    notes: v.optional(v.string()),
     updatedAt: v.optional(v.number()),
-  }),
-
-  stringAnswers: defineTable({
-    text: v.string(),
   }),
 
   // Main Dashboard

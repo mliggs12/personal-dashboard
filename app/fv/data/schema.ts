@@ -3,12 +3,9 @@ import { z } from "zod";
 export const taskSchema = z.object({
   _id: z.string(),
   name: z.string(),
-  status: z.optional(
-    z.enum(["backlog", "todo", "in_progress", "done", "cancelled", "archived"]),
-  ),
-  priority: z.optional(z.enum(["low", "medium", "high"])),
-  isCompleted: z.optional(z.boolean()),
-  isPreselected: z.optional(z.boolean()),
+  status: z.string(),
+  priority: z.string(),
+  notes: z.optional(z.string()),
   updatedAt: z.optional(z.number()),
 });
 

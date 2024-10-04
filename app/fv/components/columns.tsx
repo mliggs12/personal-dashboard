@@ -5,7 +5,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { priorities, statuses } from "../data/data";
 import { Task } from "../data/schema";
 import { TasksTableColumnHeader } from "./tasks-table-column-header";
-import { DataTableRowActions } from "./tasks-table-row-action";
+import { TasksTableRowActions } from "./tasks-table-row-action";
 
 export const columns: ColumnDef<Task>[] = [
   {
@@ -35,25 +35,11 @@ export const columns: ColumnDef<Task>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "_id",
-    header: ({ column }: { column: any }) => (
-      <TasksTableColumnHeader
-        column={column}
-        title="Task"
-      />
-    ),
-    cell: ({ row }: { row: any }) => (
-      <div className="w-[80px]">{row.getValue("_id").substring(0, 12)}...</div>
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
-  {
     accessorKey: "name",
     header: ({ column }: { column: any }) => (
       <TasksTableColumnHeader
         column={column}
-        title="Name"
+        title="Task"
       />
     ),
     cell: ({ row }: { row: any }) => {
@@ -63,7 +49,6 @@ export const columns: ColumnDef<Task>[] = [
         </div>
       );
     },
-    enableSorting: false,
     enableHiding: false,
   },
   {
@@ -128,6 +113,6 @@ export const columns: ColumnDef<Task>[] = [
   },
   {
     id: "actions",
-    cell: ({ row }: { row: any }) => <DataTableRowActions row={row} />,
+    cell: ({ row }: { row: any }) => <TasksTableRowActions row={row} />,
   },
 ];
