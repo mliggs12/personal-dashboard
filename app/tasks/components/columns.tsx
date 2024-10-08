@@ -1,11 +1,22 @@
 "use client";
 
-import { ColumnDef } from "@tanstack/react-table";
+import { ColumnDef, Row } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { priorities, statuses } from "../data/data";
 import { Task } from "../data/schema";
 import { TasksTableColumnHeader } from "./tasks-table-column-header";
 import { TasksTableRowActions } from "./tasks-table-row-action";
+
+const statusOrder = [
+  "backlog",
+  "todo",
+  "in_progress",
+  "done",
+  "cancelled",
+  "archived",
+];
+
+const priorityOrder = ["low", "normal", "high"];
 
 export const columns: ColumnDef<Task>[] = [
   {
@@ -53,6 +64,19 @@ export const columns: ColumnDef<Task>[] = [
   },
   {
     accessorKey: "status",
+    sortingFn: (rowA: Row<Task>, rowB: Row<Task>, columnId: string) => {
+      const statusA = rowA.getValue(columnId);
+      const statusB = rowB.getValue(columnId);
+      const indexA = statusOrder.indexOf(statusA as string);
+      const indexB = statusOrder.indexOf(statusB as string);
+
+      // Handle cases where a status might not be in the statusOrder array
+      if (indexA === -1 && indexB === -1) return 0;
+      if (indexA === -1) return 1;
+      if (indexB === -1) return -1;
+
+      return indexA - indexB;
+    },
     header: ({ column }: { column: any }) => (
       <TasksTableColumnHeader
         column={column}
@@ -83,6 +107,19 @@ export const columns: ColumnDef<Task>[] = [
   },
   {
     accessorKey: "priority",
+    sortingFn: (rowA: Row<Task>, rowB: Row<Task>, columnId: string) => {
+      const priorityA = rowA.getValue(columnId);
+      const priorityB = rowB.getValue(columnId);
+      const indexA = priorityOrder.indexOf(priorityA as string);
+      const indexB = priorityOrder.indexOf(priorityB as string);
+
+      // Handle cases where a priority might not be in the priorityOrder array
+      if (indexA === -1 && indexB === -1) return 0;
+      if (indexA === -1) return 1;
+      if (indexB === -1) return -1;
+
+      return indexA - indexB;
+    },
     header: ({ column }: { column: any }) => (
       <TasksTableColumnHeader
         column={column}
