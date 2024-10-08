@@ -14,15 +14,18 @@ export default function SessionsListItem({
       <CardHeader>
         <CardTitle>
           <div className="flex gap-2">
-            <div
-              style={{
-                width: "20px",
-                height: "20px",
-                backgroundColor: project?.color,
-                borderRadius: "50%",
-              }}
-            />
-
+            {!project ? (
+              <h2>Timer</h2>
+            ) : (
+              <div
+                style={{
+                  width: "20px",
+                  height: "20px",
+                  backgroundColor: project?.color,
+                  borderRadius: "50%",
+                }}
+              />
+            )}
             <h2>{project?.name}</h2>
           </div>
         </CardTitle>

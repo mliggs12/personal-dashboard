@@ -1,4 +1,4 @@
-import SessionsListItem from "../sessions-list-item";
+import SessionsListItem from "./sessions-list-item";
 import { Doc } from "@/convex/_generated/dataModel";
 
 export default function SessionList({
