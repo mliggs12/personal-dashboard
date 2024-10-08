@@ -1,12 +1,12 @@
 "use client";
 
 import { api } from "@/convex/_generated/api";
-import { columns } from "../components/columns";
-import { TasksDataTable } from "../components/tasks-data-table";
-import { taskSchema } from "../data/schema";
+import { columns } from "./components/columns";
+import { TasksDataTable } from "./components/tasks-data-table";
+import { taskSchema } from "./data/schema";
 import { useQuery } from "convex/react";
 import { z } from "zod";
-import AddTaskButton from "../components/add-task-button";
+import AddTaskButton from "./components/add-task-button";
 import { Toaster } from "@/components/ui/toaster";
 
 export default function TasksPage() {

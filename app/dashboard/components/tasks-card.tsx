@@ -34,7 +34,7 @@ export default function TasksCard() {
           size="sm"
           className="ml-auto gap-1"
         >
-          <Link href="/fv/tasks">
+          <Link href="/tasks">
             View All
             <ArrowUpRight className="h-4 w-4" />
           </Link>

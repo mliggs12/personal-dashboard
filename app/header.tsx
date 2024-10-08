@@ -1,12 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { Authenticated } from "convex/react";
 import { Menu, Package2, Search, Brain } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { ModeToggle } from "@/components/ui/mode-toggle";
 import {
   NavigationMenu,
@@ -58,7 +56,10 @@ export function Header() {
               <span className="sr-only">Toggle navigation menu</span>
             </Button>
           </SheetTrigger>
-          <SheetContent side="left">
+          <SheetContent
+            side="left"
+            className="sm:max-w-xs"
+          >
             <nav className="grid gap-6 text-lg font-medium">
               <Link
                 href="/"
@@ -69,13 +70,13 @@ export function Header() {
               </Link>
               <Link
                 href="/creativity"
-                className="hover:text-primary dark:hover:text-primary"
+                className="text-muted-foreground hover:text-primary "
               >
                 Creativity
               </Link>
               <Link
                 href="/plan"
-                className="hover:text-primary dark:hover:text-primary"
+                className="text-muted-foreground hover:text-primary"
               >
                 Plan
               </Link>
@@ -85,31 +86,31 @@ export function Header() {
         <nav className="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6">
           <Link
             href="/creativity"
-            className="transition-colors hover:text-primary"
+            className="transition-colors hover:text-primary cursor-pointer"
           >
             Creativity
           </Link>
           <Link
             href="/plan"
-            className="transition-colors hover:text-primary"
+            className="transition-colors hover:text-primary cursor-pointer"
           >
             Plan
           </Link>
           <Link
-            href="/fv/tasks"
-            className="transition-colors hover:text-primary"
+            href="/tasks"
+            className="transition-colors hover:text-primary cursor-pointer"
           >
             Tasks
           </Link>
           <Link
             href="/release"
-            className="transition-colors hover:text-primary"
+            className="transition-colors hover:text-primary cursor-pointer"
           >
             Release
           </Link>
           <Link
             href="/interstitial"
-            className="transition-colors hover:text-primary"
+            className="transition-colors hover:text-primary cursor-pointer"
           >
             Interstitial
           </Link>
