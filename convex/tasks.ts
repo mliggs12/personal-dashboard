@@ -1,3 +1,4 @@
+import { getLocalDateString } from "../lib/utils";
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 
@@ -25,13 +26,15 @@ export const create = mutation({
       v.literal("archived"),
     ),
     priority: v.union(v.literal("low"), v.literal("normal"), v.literal("high")),
+    deadline: v.optional(v.string()), // YYYY-MM-DD
     notes: v.optional(v.string()),
   },
-  async handler(ctx, { name, status, priority, notes }) {
+  async handler(ctx, { name, status, priority, deadline, notes }) {
     return await ctx.db.insert("tasks", {
       name,
       status,
       priority,
+      deadline,
       notes,
     });
   },
@@ -70,8 +73,48 @@ export const completeTask = mutation({
   },
 });
 
-export const incompleteTasks = query({
-  handler: async (ctx) => {
-    return await ctx.db.query("tasks").collect();
+// Get tasks due today or overdue
+export const todayTasks = query({
+  async handler(ctx) {
+    const today = getLocalDateString(Date.now());
+    return (
+      (await ctx.db
+        .query("tasks")
+        .filter((q) =>
+          q.and(
+            q.eq(q.field("status"), "todo" || "in_progress"),
+            q.lte(q.field("deadline"), today),
+          ),
+        )
+        .collect()) || []
+    );
+  },
+});
+
+// Get incomplete tasks with a deadline
+export const deadlineTasks = query({
+  async handler(ctx) {
+    return (
+      (await ctx.db
+        .query("tasks")
+        .filter((q) =>
+          q.and(
+            q.eq(q.field("status"), "todo" || "in_progress"),
+            q.neq(q.field("deadline"), undefined),
+          ),
+        )
+        .collect()) || []
+    );
+  },
+});
+
+export const openTasks = query({
+  async handler(ctx) {
+    return (
+      (await ctx.db
+        .query("tasks")
+        .filter((q) => q.eq(q.field("status"), "backlog"))
+        .collect()) || []
+    );
   },
 });

@@ -116,6 +116,7 @@ export default defineSchema({
     ),
     priority: v.union(v.literal("low"), v.literal("normal"), v.literal("high")),
     notes: v.optional(v.string()),
+    deadline: v.optional(v.string()), // YYYY-MM-DD
     updatedAt: v.optional(v.number()),
   }),
 
