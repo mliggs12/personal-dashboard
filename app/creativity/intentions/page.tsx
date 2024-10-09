@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useMutation, useQuery } from "convex/react";
+
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -18,34 +20,48 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+import { api } from "@/convex/_generated/api";
 import CreateIntentionDialog from "../components/create-intention-dialog";
 import IntentionsTable from "../components/intentions-table";
 import { useIntentions } from "../hooks/use-intentions";
-import { useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
 
-// Define the type for TabType
 type TabType = { readonly value: string; readonly label: string };
 
-// Ensure TABS is typed correctly
 const TABS: TabType[] = [
-  { value: "to_tithe", label: "Tithe" },
+  { value: "tithe", label: "Tithe" },
   { value: "draft", label: "Draft" },
-  { value: "allowing", label: "Allow" },
+  { value: "allow", label: "Allow" },
   { value: "done", label: "Done" },
   { value: "all", label: "All" },
-] as const;
+];
 
 export default function IntentionsPage() {
   const [selectedTab, setSelectedTab] = useState(TABS[0].value);
   const { intentions, isLoading, error } = useIntentions(selectedTab);
-  const checkAllowingIntentions = useMutation(
-    api.intentions_handler.checkAllowingIntentions,
-  );
+
+  const allowIntentions = useQuery(api.intentions.getByStatus, {
+    status: "allow",
+  });
+  const updateIntentionStatus = useMutation(api.intentions.update);
 
   useEffect(() => {
-    checkAllowingIntentions();
-  }, [checkAllowingIntentions]);
+    if (allowIntentions && allowIntentions.length > 0) {
+      const now = new Date();
+      const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
+
+      const outdatedIntentions = allowIntentions.filter(
+        (intention) =>
+          new Date(intention.updatedAt!).getTime() < threeDaysAgo.getTime(),
+      );
+
+      if (outdatedIntentions.length > 0) {
+        outdatedIntentions.forEach((intention) =>
+          updateIntentionStatus({ id: intention._id, status: "tithe" }),
+        );
+      }
+    }
+  }, [allowIntentions, updateIntentionStatus]);
 
   return (
     <main className="w-full space-y-8">

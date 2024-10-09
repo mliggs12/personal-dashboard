@@ -30,8 +30,8 @@ export default defineSchema({
     status: v.optional(
       v.union(
         v.literal("draft"),
-        v.literal("to_tithe"),
-        v.literal("allowing"),
+        v.literal("tithe"),
+        v.literal("allow"),
         v.literal("done"),
       ),
     ),

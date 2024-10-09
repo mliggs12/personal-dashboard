@@ -31,8 +31,8 @@ interface IntentionsTableProps {
 }
 
 const statuses = [
-  { value: "to_tithe", label: "To Tithe" },
-  { value: "allowing", label: "Allowing" },
+  { value: "tithe", label: "To Tithe" },
+  { value: "allow", label: "Allowing" },
   { value: "done", label: "Done" },
   { value: "draft", label: "Draft" },
 ];

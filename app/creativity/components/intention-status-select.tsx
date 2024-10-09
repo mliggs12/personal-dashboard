@@ -15,8 +15,8 @@ import { useMutation } from "convex/react";
 import { useState } from "react";
 
 const statuses = [
-  { value: "to_tithe", label: "Tithe" },
-  { value: "allowing", label: "Allow" },
+  { value: "tithe", label: "Tithe" },
+  { value: "allow", label: "Allow" },
   { value: "done", label: "Done" },
   { value: "draft", label: "Draft" },
 ];
@@ -30,7 +30,7 @@ export default function IntentionStatusSelect({
   const updateStatus = useMutation(api.intentions.update);
 
   const handleStatusChange = async (
-    value: "draft" | "to_tithe" | "allowing" | "done",
+    value: "draft" | "tithe" | "allow" | "done",
   ) => {
     await updateStatus({
       id: intention._id,

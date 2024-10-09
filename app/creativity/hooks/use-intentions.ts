@@ -1,7 +1,7 @@
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 
-type StatusType = "to_tithe" | "draft" | "allowing" | "done" | "all";
+type StatusType = "tithe" | "draft" | "allow" | "done" | "all";
 type TabType = { value: StatusType; label: string };
 
 export function useIntentions(selectedTab: string) {
@@ -12,7 +12,7 @@ export function useIntentions(selectedTab: string) {
     selectedTab === "all"
       ? {} // Use an empty object instead of undefined
       : {
-          status: selectedTab as "to_tithe" | "draft" | "allowing" | "done",
+          status: selectedTab as "tithe" | "draft" | "allow" | "done",
         },
   );
 

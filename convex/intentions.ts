@@ -20,8 +20,8 @@ export const getByStatus = query({
   args: {
     status: v.union(
       v.literal("draft"),
-      v.literal("to_tithe"),
-      v.literal("allowing"),
+      v.literal("tithe"),
+      v.literal("allow"),
       v.literal("done"),
     ),
   },
@@ -81,8 +81,8 @@ export const update = mutation({
     status: v.optional(
       v.union(
         v.literal("draft"),
-        v.literal("to_tithe"),
-        v.literal("allowing"),
+        v.literal("tithe"),
+        v.literal("allow"),
         v.literal("done"),
       ),
     ),
