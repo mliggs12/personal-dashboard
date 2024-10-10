@@ -1,9 +1,19 @@
 "use client";
 
 import { ColumnDef, Row } from "@tanstack/react-table";
+
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
 import { priorities, statuses } from "../data/data";
 import { Task } from "../data/schema";
+
 import { TasksTableColumnHeader } from "./tasks-table-column-header";
 import { TasksTableRowActions } from "./tasks-table-row-action";
 
@@ -93,11 +103,34 @@ export const columns: ColumnDef<Task>[] = [
       }
 
       return (
-        <div className="flex w-[100px] items-center">
-          {status.icon && (
-            <status.icon className="mr-2 h-4 w-4 text-muted-foreground" />
-          )}
-          <span>{status.label}</span>
+        <div className="flex items-center">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="-ml-3 h-8 data-[state=open]:bg-accent"
+              >
+                {status.icon && (
+                  <status.icon className="mr-2 h-4 w-4 text-muted-foreground" />
+                )}
+                <span>{status.label}</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              {statuses.map((status) => (
+                <DropdownMenuItem
+                  key={status.value}
+                  onClick={() => {}}
+                >
+                  {status.icon && (
+                    <status.icon className="mr-2 h-4 w-4 text-muted-foreground" />
+                  )}
+                  <span>{status.label}</span>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       );
     },
@@ -146,6 +179,19 @@ export const columns: ColumnDef<Task>[] = [
     },
     filterFn: (row: any, id: any, value: any) => {
       return value.includes(row.getValue(id));
+    },
+  },
+  {
+    accessorKey: "dueAt",
+    header: ({ column }: { column: any }) => (
+      <TasksTableColumnHeader
+        column={column}
+        title="Due Date"
+      />
+    ),
+    cell: ({ row }: { row: any }) => {
+      const dueAt = row.getValue("dueAt");
+      return <div className="max-w-[100px] truncate font-medium">{dueAt}</div>;
     },
   },
   {
