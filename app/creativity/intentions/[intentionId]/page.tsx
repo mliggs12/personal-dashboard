@@ -16,6 +16,7 @@ import IntentionNotes from "../../components/intention-notes";
 import AddWhyInput from "../../components/add-why-input";
 import { DeleteIntentionButton } from "../../components/delete-intention-button";
 import AddWhatInput from "../../components/add-what-input";
+
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -26,6 +27,9 @@ import {
 } from "@/components/ui/breadcrumb";
 import Link from "next/link";
 import IntentionStatusSelect from "../../components/intention-status-select";
+import { AddTaskWrapper } from "../../components/tasks/add-task-button";
+import { Toaster } from "@/components/ui/toaster";
+import TaskList from "../../components/tasks/task-list";
 
 export default function IntentionPage() {
   const { intentionId } = useParams<{ intentionId: Id<"intentions"> }>();
@@ -33,6 +37,9 @@ export default function IntentionPage() {
     intentionId: intentionId,
   });
   const emotions = useQuery(api.emotions.list);
+  const tasks = useQuery(api.tasks.getByIntention, {
+    intentionId,
+  });
 
   if (intention === undefined || emotions === undefined) {
     return <p>Loading...</p>;
@@ -136,6 +143,13 @@ export default function IntentionPage() {
                 <h4 className="text-3xl">Notes</h4>
                 <IntentionNotes intention={intention} />
               </div>
+              <div className="space-y-2">
+                <h4 className="text-3xl">Tasks</h4>
+                <div className="flex flex-col border-y-2">
+                  <TaskList items={tasks ?? []} />
+                </div>
+                <AddTaskWrapper intentionId={intention._id} />
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -143,6 +157,7 @@ export default function IntentionPage() {
           <IntentionStatusSelect intention={intention} />
         </div>
       </div>
+      <Toaster />
     </main>
   );
 }
