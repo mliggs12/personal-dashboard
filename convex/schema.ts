@@ -42,11 +42,6 @@ export default defineSchema({
     updatedAt: v.optional(v.number()),
   }),
 
-  intentions_handler: defineTable({
-    count: v.optional(v.number()),
-    updatedAt: v.optional(v.number()),
-  }),
-
   emotions: defineTable({
     label: v.string(),
     value: v.string(),
@@ -116,8 +111,9 @@ export default defineSchema({
     ),
     priority: v.union(v.literal("low"), v.literal("normal"), v.literal("high")),
     notes: v.optional(v.string()),
-    deadline: v.optional(v.string()), // YYYY-MM-DD
+    dueAt: v.optional(v.string()), // YYYY-MM-DD
     updatedAt: v.optional(v.number()),
+    intentionId: v.optional(v.id("intentions")),
   }),
 
   // Main Dashboard

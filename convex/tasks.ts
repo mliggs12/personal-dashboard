@@ -26,16 +26,18 @@ export const create = mutation({
       v.literal("archived"),
     ),
     priority: v.union(v.literal("low"), v.literal("normal"), v.literal("high")),
-    deadline: v.optional(v.string()), // YYYY-MM-DD
+    dueAt: v.optional(v.string()), // YYYY-MM-DD
     notes: v.optional(v.string()),
+    intentionId: v.optional(v.id("intentions")),
   },
-  async handler(ctx, { name, status, priority, deadline, notes }) {
+  async handler(ctx, { name, status, priority, dueAt, notes, intentionId }) {
     return await ctx.db.insert("tasks", {
       name,
       status,
       priority,
-      deadline,
+      dueAt,
       notes,
+      intentionId,
     });
   },
 });
@@ -73,6 +75,15 @@ export const completeTask = mutation({
   },
 });
 
+export const unCompleteTask = mutation({
+  args: { taskId: v.id("tasks") },
+  async handler(ctx, { taskId }) {
+    return await ctx.db.patch(taskId, {
+      status: "todo",
+    });
+  },
+});
+
 // Get tasks due today or overdue
 export const todayTasks = query({
   async handler(ctx) {
@@ -83,7 +94,7 @@ export const todayTasks = query({
         .filter((q) =>
           q.and(
             q.eq(q.field("status"), "todo" || "in_progress"),
-            q.lte(q.field("deadline"), today),
+            q.lte(q.field("dueAt"), today),
           ),
         )
         .collect()) || []
@@ -91,7 +102,7 @@ export const todayTasks = query({
   },
 });
 
-// Get incomplete tasks with a deadline
+// Get incomplete tasks with a dueAt
 export const deadlineTasks = query({
   async handler(ctx) {
     return (
@@ -100,7 +111,7 @@ export const deadlineTasks = query({
         .filter((q) =>
           q.and(
             q.eq(q.field("status"), "todo" || "in_progress"),
-            q.neq(q.field("deadline"), undefined),
+            q.neq(q.field("dueAt"), undefined),
           ),
         )
         .collect()) || []
@@ -114,6 +125,18 @@ export const openTasks = query({
       (await ctx.db
         .query("tasks")
         .filter((q) => q.eq(q.field("status"), "backlog"))
+        .collect()) || []
+    );
+  },
+});
+
+export const getByIntention = query({
+  args: { intentionId: v.id("intentions") },
+  async handler(ctx, { intentionId }) {
+    return (
+      (await ctx.db
+        .query("tasks")
+        .filter((q) => q.eq(q.field("intentionId"), intentionId))
         .collect()) || []
     );
   },
