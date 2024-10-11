@@ -1,5 +1,6 @@
 "use client";
 
+import moment from "moment";
 import { ColumnDef, Row } from "@tanstack/react-table";
 
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,8 @@ import { Task } from "../data/schema";
 
 import { TasksTableColumnHeader } from "./tasks-table-column-header";
 import { TasksTableRowActions } from "./tasks-table-row-action";
+import IntentionCell from "./intention-cell";
+import { Id } from "@/convex/_generated/dataModel";
 
 const statusOrder = [
   "backlog",
@@ -64,11 +67,7 @@ export const columns: ColumnDef<Task>[] = [
       />
     ),
     cell: ({ row }: { row: any }) => {
-      return (
-        <div className="max-w-[500px] truncate font-medium">
-          {row.getValue("name")}
-        </div>
-      );
+      return <div className="truncate font-medium">{row.getValue("name")}</div>;
     },
     enableHiding: false,
   },
@@ -191,7 +190,59 @@ export const columns: ColumnDef<Task>[] = [
     ),
     cell: ({ row }: { row: any }) => {
       const dueAt = row.getValue("dueAt");
-      return <div className="max-w-[100px] truncate font-medium">{dueAt}</div>;
+      return (
+        <div className="flex items-center">
+          <span>{dueAt ? moment(dueAt).format("MM/DD") : ""}</span>
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "intentionId",
+    header: ({ column }: { column: any }) => (
+      <TasksTableColumnHeader
+        column={column}
+        title="Intention"
+      />
+    ),
+    cell: ({ row }: { row: any }) => {
+      const intentionId = row.getValue("intentionId");
+      if (!intentionId) {
+        return null;
+      }
+      return <IntentionCell intentionId={intentionId as Id<"intentions">} />;
+    },
+  },
+  {
+    accessorKey: "updatedAt",
+    header: ({ column }: { column: any }) => (
+      <TasksTableColumnHeader
+        column={column}
+        title="Updated At"
+      />
+    ),
+    cell: ({ row }: { row: any }) => {
+      const updatedAt = row.getValue("updatedAt");
+      return <div className="truncate font-medium">{updatedAt}</div>;
+    },
+  },
+  {
+    accessorKey: "_creationTime",
+    header: ({ column }: { column: any }) => (
+      <TasksTableColumnHeader
+        column={column}
+        title="Created At"
+      />
+    ),
+    cell: ({ row }: { row: any }) => {
+      const createdAt = row.getValue("_creationTime");
+      return (
+        <div className="whitespace-nowrap font-medium">
+          <span>
+            {createdAt ? moment(createdAt).format("MM/DD/YYYY, h:mm:ss A") : ""}
+          </span>
+        </div>
+      );
     },
   },
   {
