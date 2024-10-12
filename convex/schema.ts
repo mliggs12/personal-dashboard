@@ -35,8 +35,6 @@ export default defineSchema({
         v.literal("done"),
       ),
     ),
-    whatStatements: v.optional(v.array(v.string())),
-    whyStatements: v.optional(v.array(v.string())),
     emotionId: v.optional(v.id("emotions")),
     notes: v.optional(v.string()),
     updatedAt: v.optional(v.number()),
@@ -65,10 +63,13 @@ export default defineSchema({
 
   // Statements for many use cases
   statements: defineTable({
-    date: v.string(),
+    date: v.optional(v.string()),
     text: v.string(),
     type: v.union(v.literal("what"), v.literal("why"), v.literal("mind_dump")),
-  }).index("by_type", ["type"]),
+    intentionId: v.optional(v.id("intentions")),
+  })
+    .index("by_type", ["type"])
+    .index("by_intentionId", ["intentionId"]),
 
   // Tithe Tracker
   // ------------------

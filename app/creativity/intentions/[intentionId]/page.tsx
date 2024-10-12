@@ -13,9 +13,8 @@ import { useQuery } from "convex/react";
 import { useParams } from "next/navigation";
 import { EmotionSelectForm } from "../../components/emotion-select-form";
 import IntentionNotes from "../../components/intention-notes";
-import AddWhyInput from "../../components/add-why-input";
 import { DeleteIntentionButton } from "../../components/delete-intention-button";
-import AddWhatInput from "../../components/add-what-input";
+import AddStatementInput from "../../components/add-statement-input";
 
 import {
   Breadcrumb,
@@ -30,6 +29,7 @@ import IntentionStatusSelect from "../../components/intention-status-select";
 import { AddTaskWrapper } from "../../components/tasks/add-task-button";
 import { Toaster } from "@/components/ui/toaster";
 import TaskList from "../../components/tasks/task-list";
+import StatementItem from "../../components/statement-item";
 
 export default function IntentionPage() {
   const { intentionId } = useParams<{ intentionId: Id<"intentions"> }>();
@@ -38,6 +38,9 @@ export default function IntentionPage() {
   });
   const emotions = useQuery(api.emotions.list);
   const tasks = useQuery(api.tasks.getByIntention, {
+    intentionId,
+  });
+  const statements = useQuery(api.statements.byIntentionId, {
     intentionId,
   });
 
@@ -96,30 +99,36 @@ export default function IntentionPage() {
               <div className="space-y-2">
                 <h4 className="text-3xl">What?</h4>
                 <ul className="space-y-1">
-                  {intention.whatStatements?.map((statement, index) => (
-                    <li
-                      key={index}
-                      className="text-xl ml-3 hover:text-primary cursor-pointer"
-                    >
-                      {statement}
-                    </li>
-                  ))}
+                  {statements
+                    ?.filter((statement) => statement.type === "what")
+                    .map((whatStatement, index) => (
+                      <StatementItem
+                        key={index}
+                        statement={whatStatement}
+                      />
+                    ))}
                 </ul>
-                <AddWhatInput intention={intention} />
+                <AddStatementInput
+                  intention={intention}
+                  type="what"
+                />
               </div>
               <div className="space-y-2">
                 <h4 className="text-3xl">Why?</h4>
                 <ul className="space-y-1">
-                  {intention.whyStatements?.map((statement, index) => (
-                    <li
-                      key={index}
-                      className="text-xl ml-3 hover:text-primary cursor-pointer"
-                    >
-                      {statement}
-                    </li>
-                  ))}
+                  {statements
+                    ?.filter((statement) => statement.type === "why")
+                    .map((whyStatement, index) => (
+                      <StatementItem
+                        key={index}
+                        statement={whyStatement}
+                      />
+                    ))}
                 </ul>
-                <AddWhyInput intention={intention} />
+                <AddStatementInput
+                  intention={intention}
+                  type="why"
+                />
               </div>
               <div>
                 {emotion ? (

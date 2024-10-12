@@ -6,20 +6,22 @@ import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Doc } from "@/convex/_generated/dataModel";
 
-export default function AddWhatInput({
+export default function AddStatementInput({
   intention,
+  type,
 }: {
   intention: Doc<"intentions">;
+  type: "what" | "why";
 }) {
   const [statement, setStatement] = useState("");
-  const addWhatStatement = useMutation(api.intentions.addWhatStatement);
+  const addStatement = useMutation(api.statements.create);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       if (statement === "") {
         return;
       }
-      addWhatStatement({ intentionId: intention._id, statement });
+      addStatement({ intentionId: intention._id, text: statement, type });
       setStatement("");
     }
   };
@@ -27,7 +29,7 @@ export default function AddWhatInput({
   return (
     <Input
       type="text"
-      placeholder="What statement"
+      placeholder={`${type.charAt(0).toUpperCase() + type.slice(1)} statement`}
       value={statement}
       onChange={(e) => setStatement(e.target.value)}
       onKeyDown={handleKeyDown}

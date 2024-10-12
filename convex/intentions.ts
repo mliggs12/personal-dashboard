@@ -44,10 +44,7 @@ export const create = mutation({
     emotionId: v.optional(v.id("emotions")),
     notes: v.optional(v.string()),
   },
-  async handler(
-    ctx,
-    { title, whatStatements, whyStatements, emotionId, notes },
-  ) {
+  async handler(ctx, { title, emotionId, notes }) {
     if (title === undefined) {
       title = "";
     }
@@ -55,8 +52,6 @@ export const create = mutation({
     const intentionId = await ctx.db.insert("intentions", {
       title,
       status: "draft",
-      whatStatements,
-      whyStatements,
       emotionId,
       notes,
     });
@@ -86,15 +81,10 @@ export const update = mutation({
         v.literal("done"),
       ),
     ),
-    whatStatements: v.optional(v.array(v.string())),
-    whyStatements: v.optional(v.array(v.string())),
     emotionId: v.optional(v.id("emotions")),
     notes: v.optional(v.string()),
   },
-  async handler(
-    ctx,
-    { id, title, status, whatStatements, whyStatements, emotionId, notes },
-  ) {
+  async handler(ctx, { id, title, status, emotionId, notes }) {
     try {
       const existingIntention = await ctx.db.get(id);
 
@@ -102,12 +92,8 @@ export const update = mutation({
         ...existingIntention,
         title: title ?? existingIntention?.title ?? "",
         status: status ?? existingIntention?.status ?? "draft",
-        whatStatements:
-          whatStatements ?? existingIntention?.whatStatements ?? [],
-        whyStatements: whyStatements ?? existingIntention?.whyStatements ?? [],
         emotionId: emotionId ?? existingIntention?.emotionId,
         notes: notes ?? existingIntention?.notes,
-        updatedAt: Date.now(),
       };
 
       await ctx.db.patch(id, updatedIntention);
@@ -138,41 +124,5 @@ export const updateNotes = mutation({
   },
   async handler(ctx, { intentionId, notes }) {
     await ctx.db.patch(intentionId, { notes, updatedAt: Date.now() });
-  },
-});
-
-export const addWhyStatement = mutation({
-  args: {
-    intentionId: v.id("intentions"),
-    statement: v.string(),
-  },
-  async handler(ctx, { intentionId, statement }) {
-    const intention = await ctx.db.get(intentionId);
-    if (!intention) {
-      throw new Error("Intention not found");
-    }
-
-    const whyStatements = intention.whyStatements ?? [];
-    whyStatements.push(statement);
-
-    await ctx.db.patch(intentionId, { whyStatements, updatedAt: Date.now() });
-  },
-});
-
-export const addWhatStatement = mutation({
-  args: {
-    intentionId: v.id("intentions"),
-    statement: v.string(),
-  },
-  async handler(ctx, { intentionId, statement }) {
-    const intention = await ctx.db.get(intentionId);
-    if (!intention) {
-      throw new Error("Intention not found");
-    }
-
-    const whatStatements = intention.whatStatements ?? [];
-    whatStatements.push(statement);
-
-    await ctx.db.patch(intentionId, { whatStatements, updatedAt: Date.now() });
   },
 });
