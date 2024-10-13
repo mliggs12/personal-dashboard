@@ -11,7 +11,7 @@ export default function BeliefsWidget() {
   const recentBeliefs = useQuery(api.beliefs.activeBeliefsToday);
 
   return (
-    <Card className="w-full">
+    <Card className="hidden md:block w-full">
       <CardHeader className="flex flex-row items-center">
         <CardTitle>Beliefs created today</CardTitle>
         <Button

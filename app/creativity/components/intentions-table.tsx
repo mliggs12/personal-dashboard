@@ -24,6 +24,7 @@ import { useRouter } from "next/navigation";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import UpdatedTableCell from "./updated-table-cell";
+import moment from "moment";
 
 interface IntentionsTableProps {
   intentions: Doc<"intentions">[];
@@ -97,11 +98,11 @@ export default function IntentionsTable({
       className: "hidden md:table-cell w-[150px]",
     },
     {
-      name: "Last updated",
+      name: "Updated at",
       className: `hidden ${selectedTab !== "draft" ? "md:table-cell" : ""} w-[200px] whitespace-nowrap`,
     },
     {
-      name: "Created",
+      name: "Created at",
       className: `hidden ${selectedTab === "draft" || selectedTab === "all" ? "md:table-cell" : ""} w-[200px] whitespace-nowrap`,
     },
     {
@@ -138,7 +139,9 @@ export default function IntentionsTable({
                 src=""
               />
             </TableCell>
+            {/* Intention title */}
             <TableCell className="w-full">{intention.title}</TableCell>
+            {/* Status */}
             <TableCell
               className={`hidden ${selectedTab === "all" ? "md:table-cell" : ""} w-[150px] whitespace-nowrap`}
             >
@@ -146,6 +149,7 @@ export default function IntentionsTable({
                 {getStatusLabel(intention.status ?? "")}
               </Badge>
             </TableCell>
+            {/* Emotion */}
             <TableCell className="hidden md:table-cell w-[150px]">
               <Badge
                 variant="outline"
@@ -161,6 +165,7 @@ export default function IntentionsTable({
                 }
               </Badge>
             </TableCell>
+            {/* Updated at */}
             <TableCell
               className={`hidden ${selectedTab !== "draft" ? "md:table-cell" : ""} w-[200px] whitespace-nowrap`}
             >
@@ -170,11 +175,17 @@ export default function IntentionsTable({
                 ""
               )}
             </TableCell>
+            {/* Created at */}
             <TableCell
               className={`hidden ${selectedTab === "draft" || selectedTab === "all" ? "md:table-cell" : ""} w-[200px] whitespace-nowrap`}
             >
-              <UpdatedTableCell updatedAt={new Date(intention._creationTime)} />
+              {intention._creationTime
+                ? moment(intention._creationTime).format(
+                    "MM/DD/YYYY, hh:mm:ss A",
+                  )
+                : ""}
             </TableCell>
+            {/* Actions */}
             <TableCell className="w-[150px]">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

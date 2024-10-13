@@ -62,7 +62,7 @@ export default function StatementItem({
 
   return (
     <li
-      className="text-xl hover:text-primary cursor-pointer ml-2"
+      className="text-xl cursor-pointer ml-2"
       onClick={handleStatementClick}
     >
       {statement.text}
