@@ -37,30 +37,41 @@ export default function Task({
               onCheckedChange={handleOnChange}
             />
             <DialogTrigger asChild>
-              <div className="flex flex-col items-start">
-                <button
+              <button
+                className={clsx(
+                  "flex items-center justify-between w-full",
+                  isCompleted && "text-foreground/30",
+                )}
+              >
+                <span
                   className={clsx(
                     "text-sm font-normal text-left",
-                    isCompleted && "line-through text-foreground/30",
+                    isCompleted && "line-through",
                   )}
                 >
                   {name}
-                </button>
-                {showDetails && (
-                  <div className="flex gap-2">
-                    <div className="flex items-center justify-center gap-1">
-                      <GitBranch className="w-3 h-3 text-foreground/70" />
-                      <p className="text-xs text-foreground/70"></p>
-                    </div>
-                    <div className="flex items-center justify-center gap-1">
-                      <Calendar className="w-3 h-3 text-primary" />
-                      <p className="text-xs text-primary">
-                        {moment(dueAt).format("LL")}
-                      </p>
-                    </div>
+                </span>
+                {dueAt && (
+                  <div className="flex items-center justify-center gap-1">
+                    <p
+                      className={clsx(
+                        "text-sm",
+                        moment(dueAt).isBefore(moment(), "day") &&
+                          "text-destructive",
+                      )}
+                    >
+                      {moment(dueAt).calendar(null, {
+                        sameDay: "[Today]",
+                        nextDay: "[Tomorrow]",
+                        nextWeek: "ddd, MMM DD",
+                        lastDay: "[Yesterday]",
+                        lastWeek: "ddd, MMM DD",
+                        sameElse: "MM/DD",
+                      })}
+                    </p>
                   </div>
                 )}
-              </div>
+              </button>
             </DialogTrigger>
           </div>
         </div>
