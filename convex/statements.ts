@@ -1,6 +1,5 @@
 import { v } from "convex/values";
-import { mutation, MutationCtx, query } from "./_generated/server";
-import { Id } from "./_generated/dataModel";
+import { mutation, query } from "./_generated/server";
 
 export const create = mutation({
   args: {
@@ -59,5 +58,27 @@ export const update = mutation({
   },
   async handler(ctx, { id, text }) {
     await ctx.db.patch(id, { text });
+  },
+});
+
+export const todayMindDumpStatements = query({
+  args: {},
+  async handler(ctx) {
+    const today = new Date();
+    const startOfToday = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate(),
+    );
+    const endOfToday = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate() + 1,
+    );
+
+    return await ctx.db
+      .query("statements")
+      .withIndex("by_type", (q) => q.eq("type", "mind_dump"))
+      .collect();
   },
 });
