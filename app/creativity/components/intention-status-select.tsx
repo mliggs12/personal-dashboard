@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
+import { useMutation } from "convex/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -11,8 +12,6 @@ import {
 } from "@/components/ui/select";
 import { api } from "@/convex/_generated/api";
 import { Doc } from "@/convex/_generated/dataModel";
-import { useMutation } from "convex/react";
-import { useState } from "react";
 
 const statuses = [
   { value: "tithe", label: "Tithe" },
