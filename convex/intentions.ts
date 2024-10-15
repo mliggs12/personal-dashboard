@@ -94,6 +94,7 @@ export const update = mutation({
         status: status ?? existingIntention?.status ?? "draft",
         emotionId: emotionId ?? existingIntention?.emotionId,
         notes: notes ?? existingIntention?.notes,
+        updatedAt: status === "allow" ? Date.now() : undefined,
       };
 
       await ctx.db.patch(id, updatedIntention);
