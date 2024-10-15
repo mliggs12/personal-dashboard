@@ -30,11 +30,12 @@ import { AddTaskWrapper } from "../../components/tasks/add-task-button";
 import { Toaster } from "@/components/ui/toaster";
 import TaskList from "../../components/tasks/task-list";
 import StatementItem from "../../components/statement-item";
+import IntentionTitle from "../../components/intention-title";
 
 export default function IntentionPage() {
   const { intentionId } = useParams<{ intentionId: Id<"intentions"> }>();
   const intention = useQuery(api.intentions.get, {
-    intentionId: intentionId,
+    intentionId,
   });
   const emotions = useQuery(api.emotions.list);
   const tasks = useQuery(api.tasks.getByIntention, {
@@ -44,7 +45,7 @@ export default function IntentionPage() {
     intentionId,
   });
 
-  if (intention === undefined || emotions === undefined) {
+  if (intention === undefined) {
     return <p>Loading...</p>;
   }
 
@@ -52,7 +53,7 @@ export default function IntentionPage() {
     return <p>Intention not found</p>;
   }
 
-  const emotion = emotions.find((e) => e._id === intention.emotionId);
+  const emotion = emotions?.find((e) => e._id === intention.emotionId);
 
   return (
     <main className="w-full space-y-8">
@@ -79,9 +80,7 @@ export default function IntentionPage() {
         <Card className="relative min-w-[750px] min-h-[1100px]">
           <DeleteIntentionButton intentionId={intention._id} />
           <CardHeader>
-            <CardTitle className="text-4xl hover:text-primary cursor-pointer">
-              {intention.title}
-            </CardTitle>
+            <IntentionTitle intention={intention} />
             <CardDescription>
               {intention.updatedAt ? (
                 <p>

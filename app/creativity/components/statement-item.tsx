@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
 import { Input } from "@/components/ui/input";
+import { api } from "@/convex/_generated/api";
 import { Doc } from "@/convex/_generated/dataModel";
 
 export default function StatementItem({
@@ -9,26 +9,16 @@ export default function StatementItem({
 }: {
   statement: Doc<"statements">;
 }) {
+  const [text, setText] = useState(statement.text);
   const [isEditing, setIsEditing] = useState(false);
-  const [editedStatement, setEditedStatement] = useState(statement.text);
   const updateStatement = useMutation(api.statements.update);
 
-  const handleStatementClick = () => {
-    setIsEditing(true);
-  };
-
-  const handleStatementChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEditedStatement(e.target.value);
-  };
-
-  const handleStatementKeyDown = async (
-    e: React.KeyboardEvent<HTMLInputElement>,
-  ) => {
+  const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
-      if (editedStatement !== statement.text) {
+      if (text !== statement.text) {
         await updateStatement({
           id: statement._id,
-          text: editedStatement,
+          text,
         });
       }
       setIsEditing(false);
@@ -38,10 +28,10 @@ export default function StatementItem({
   };
 
   const handleBlur = () => {
-    if (editedStatement !== statement.text) {
+    if (text !== statement.text) {
       updateStatement({
         id: statement._id,
-        text: editedStatement,
+        text,
       });
     }
     setIsEditing(false);
@@ -50,12 +40,12 @@ export default function StatementItem({
   if (isEditing) {
     return (
       <Input
-        value={editedStatement}
-        onChange={handleStatementChange}
-        onKeyDown={handleStatementKeyDown}
-        onBlur={handleBlur}
         autoFocus
-        className="text-xl pl-2 border-none focus:h-7"
+        value={text}
+        onBlur={handleBlur}
+        onChange={(e) => setText(e.target.value)}
+        onKeyDown={handleKeyDown}
+        className="text-xl pl-2 border-none focus:h-7 focus-visible:ring-0 focus-visible:ring-offset-0"
       />
     );
   }
@@ -63,9 +53,9 @@ export default function StatementItem({
   return (
     <li
       className="text-xl cursor-pointer ml-2"
-      onClick={handleStatementClick}
+      onClick={() => setIsEditing(true)}
     >
-      {statement.text}
+      {text}
     </li>
   );
 }

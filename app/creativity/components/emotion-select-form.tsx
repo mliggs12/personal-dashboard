@@ -27,7 +27,6 @@ import { api } from "@/convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
 import CreateEmotionInput from "./create-emotion-input";
 import { Id } from "@/convex/_generated/dataModel";
-import { updateEmotion } from "@/convex/intentions";
 
 const FormSchema = z.object({
   emotionValue: z.string({
@@ -45,7 +44,7 @@ export function EmotionSelectForm({
   });
 
   const emotions = useQuery(api.emotions.list);
-  const updateEmotion = useMutation(api.intentions.updateEmotion);
+  const updateIntention = useMutation(api.intentions.update);
 
   if (emotions === undefined) {
     return <p>Loading...</p>;
@@ -58,20 +57,9 @@ export function EmotionSelectForm({
   function onSubmit(data: z.infer<typeof FormSchema>) {
     const emotion = emotions?.find((e) => e.value === data.emotionValue);
 
-    updateEmotion({
+    updateIntention({
       id: intentionId,
       emotionId: emotion?._id as Id<"emotions">,
-    });
-
-    toast({
-      title: "You submitted the following emotion:",
-      description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">
-            {JSON.stringify(data.emotionValue, null, 2)}
-          </code>
-        </pre>
-      ),
     });
   }
 

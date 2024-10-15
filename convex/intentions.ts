@@ -103,26 +103,3 @@ export const update = mutation({
     }
   },
 });
-
-export const updateEmotion = mutation({
-  args: {
-    id: v.id("intentions"),
-    emotionId: v.id("emotions"),
-  },
-  async handler(ctx, { id, emotionId }) {
-    await ctx.db.patch(id, {
-      emotionId,
-      updatedAt: Date.now(),
-    });
-  },
-});
-
-export const updateNotes = mutation({
-  args: {
-    intentionId: v.id("intentions"),
-    notes: v.string(),
-  },
-  async handler(ctx, { intentionId, notes }) {
-    await ctx.db.patch(intentionId, { notes, updatedAt: Date.now() });
-  },
-});
