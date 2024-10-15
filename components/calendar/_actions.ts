@@ -1,12 +1,5 @@
-import { formatTimeRange } from "@/lib/utils";
 import { clerkClient } from "@clerk/nextjs/server";
-
-interface Event {
-  id: string;
-  date: string;
-  summary: string;
-  time: string;
-}
+import { Event } from "./types";
 
 async function getOauthToken(userId: string): Promise<string> {
   try {
@@ -41,10 +34,13 @@ export async function getUserEvents(userId: string): Promise<Event[]> {
 
   const events: Event[] = data.items.map((item: any) => {
     const event = {
-      id: item.id,
-      date: item.start.dateTime.split("T")[0],
-      summary: item.summary,
-      time: formatTimeRange(item.start.dateTime, item.end.dateTime),
+      _id: item.id,
+      created: new Date(item.created),
+      description: item.description,
+      end: new Date(item.end.dateTime),
+      start: new Date(item.start.dateTime),
+      title: item.summary,
+      recurringEventId: item.recurringEventId,
     };
     return event;
   });

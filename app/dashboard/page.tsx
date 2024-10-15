@@ -1,26 +1,12 @@
-"use client";
-
-import Link from "next/link";
+import CalendarScheduleView from "@/components/calendar/calendar-schedule-view";
 import { formatTimestamp } from "@/lib/utils";
-import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { ArrowUpRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import BeliefsCard from "./components/beliefs-card";
-import NotesWidget from "./components/notes-widget";
+import DashboardClient from "./components/dashboard-client";
 
 export default function DashboardPage() {
-  const statements = useQuery(api.statements.todayMindDumpStatements);
-  const beliefs = useQuery(api.beliefs.activeBeliefsToday);
-
-  if (statements === undefined) {
-    return <div>Loading...</div>;
-  }
-
   return (
     <div className="container p-0 md:py-8 md:px-4">
       <div className="flex flex-col">
-        <div className="flex-1 p-4 p md:p-8 md:pt-6">
+        <div className="flex-1 p-4 md:p-8 md:pt-6">
           <div className="flex items-center justify-between space-y-2">
             <h2 className="text-3xl md:text-7xl font-bold tracking-tight">
               Dashboard
@@ -41,7 +27,7 @@ export default function DashboardPage() {
               living.
             </p>
           </div>
-          <Button
+          {/* <Button
             asChild
             size="sm"
             className="hidden md:flex ml-auto gap-1 mb-4"
@@ -50,9 +36,11 @@ export default function DashboardPage() {
               Mind Dump
               <ArrowUpRight className="h-4 w-4" />
             </Link>
-          </Button>
-          <BeliefsCard />
-          <NotesWidget />
+          </Button> */}
+          <div className="flex gap-4">
+            <DashboardClient />
+            <CalendarScheduleView />
+          </div>
         </div>
       </div>
     </div>

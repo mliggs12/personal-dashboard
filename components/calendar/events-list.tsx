@@ -1,23 +1,33 @@
-import EventCard from "./event-card";
+import moment from "moment";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Event } from "./types";
 
-interface Event {
-  id: string;
-  date: string;
-  summary: string;
-  time: string;
+export function EventCard({ event }: { event: Event }) {
+  return (
+    <Card>
+      <CardHeader className="p-4 pb-0">
+        <CardTitle>{event.title}</CardTitle>
+      </CardHeader>
+      <CardContent className="p-4 pt-0">
+        <p>
+          {moment(event.start).format("MMM D hh:mm A")}
+          {moment(event.start).format("hh:mm A") !==
+            moment(event.end).format("hh:mm A") && (
+            <> - {moment(event.end).format("hh:mm A")}</>
+          )}
+        </p>
+      </CardContent>
+    </Card>
+  );
 }
 
-interface EventsListProps {
-  events: Event[];
-}
-
-export default function EventsList({ events }: EventsListProps) {
+export default function EventsList({ events }: { events: Event[] }) {
   return (
     <div className="flex flex-col gap-2">
-      {events.map((event) => (
+      {events.map((event, index) => (
         <EventCard
-          key={event.id}
-          {...event}
+          key={index}
+          event={event}
         />
       ))}
     </div>
