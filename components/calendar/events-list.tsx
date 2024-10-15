@@ -1,4 +1,4 @@
-import moment from "moment";
+import moment from "moment-timezone";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Event } from "./types";
 
@@ -10,10 +10,10 @@ export function EventCard({ event }: { event: Event }) {
       </CardHeader>
       <CardContent className="p-4 pt-0">
         <p>
-          {moment(event.start).format("MMM D hh:mm A")}
-          {moment(event.start).format("hh:mm A") !==
-            moment(event.end).format("hh:mm A") && (
-            <> - {moment(event.end).format("hh:mm A")}</>
+          {moment(event.start).tz("America/Denver").format("MMM D hh:mm A")}
+          {moment(event.start).tz("America/Denver").format("hh:mm A") !==
+            moment(event.end).tz("America/Denver").format("hh:mm A") && (
+            <> - {moment(event.end).tz("America/Denver").format("hh:mm A")}</>
           )}
         </p>
       </CardContent>

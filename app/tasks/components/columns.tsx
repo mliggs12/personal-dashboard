@@ -1,6 +1,6 @@
 "use client";
 
-import moment from "moment";
+import moment from "moment-timezone";
 import { ColumnDef, Row } from "@tanstack/react-table";
 
 import { Button } from "@/components/ui/button";
@@ -192,7 +192,9 @@ export const columns: ColumnDef<Task>[] = [
       const dueAt = row.getValue("dueAt");
       return (
         <div className="flex items-center">
-          <span>{dueAt ? moment(dueAt).format("MM/DD") : ""}</span>
+          <span>
+            {dueAt ? moment(dueAt).tz("America/Denver").format("MM/DD") : ""}
+          </span>
         </div>
       );
     },
@@ -239,7 +241,11 @@ export const columns: ColumnDef<Task>[] = [
       return (
         <div className="whitespace-nowrap font-medium">
           <span>
-            {createdAt ? moment(createdAt).format("MM/DD/YYYY, h:mm:ss A") : ""}
+            {createdAt
+              ? moment(createdAt)
+                  .tz("America/Denver")
+                  .format("MM/DD/YYYY, h:mm:ss A")
+              : ""}
           </span>
         </div>
       );

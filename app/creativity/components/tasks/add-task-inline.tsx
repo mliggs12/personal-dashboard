@@ -35,7 +35,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import moment from "moment";
+import moment from "moment-timezone";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
@@ -78,7 +78,9 @@ export default function AddTaskInline({
     await createTask({
       name,
       priority: priority as "low" | "normal" | "high",
-      dueAt: dueAt ? moment(dueAt).format("yyyy-MM-DD") : undefined,
+      dueAt: dueAt
+        ? moment(dueAt).tz("America/Denver").format("yyyy-MM-DD")
+        : undefined,
       notes,
       status: "todo",
       intentionId: intentionId as Id<"intentions">,

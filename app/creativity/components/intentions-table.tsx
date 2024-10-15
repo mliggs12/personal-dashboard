@@ -24,7 +24,7 @@ import { useRouter } from "next/navigation";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import UpdatedTableCell from "./updated-table-cell";
-import moment from "moment";
+import moment from "moment-timezone";
 
 interface IntentionsTableProps {
   intentions: Doc<"intentions">[];
@@ -180,9 +180,9 @@ export default function IntentionsTable({
               className={`hidden ${selectedTab === "draft" || selectedTab === "all" ? "md:table-cell" : ""} w-[200px] whitespace-nowrap`}
             >
               {intention._creationTime
-                ? moment(intention._creationTime).format(
-                    "MM/DD/YYYY, hh:mm:ss A",
-                  )
+                ? moment(intention._creationTime)
+                    .tz("America/Denver")
+                    .format("MM/DD/YYYY, hh:mm:ss A")
                 : ""}
             </TableCell>
             {/* Actions */}

@@ -3,7 +3,7 @@ import clsx from "clsx";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Calendar, GitBranch, Tag } from "lucide-react";
-import moment from "moment";
+import moment from "moment-timezone";
 
 export default function Task({
   data,
@@ -56,11 +56,13 @@ export default function Task({
                     <p
                       className={clsx(
                         "text-sm",
-                        moment(dueAt).isBefore(moment(), "day") &&
+                        moment(dueAt)
+                          .tz("America/Denver")
+                          .isBefore(moment().tz("America/Denver"), "day") &&
                           "text-destructive",
                       )}
                     >
-                      {moment(dueAt).calendar(null, {
+                      {moment(dueAt).tz("America/Denver").calendar(null, {
                         sameDay: "[Today]",
                         nextDay: "[Tomorrow]",
                         nextWeek: "ddd, MMM DD",

@@ -1,5 +1,5 @@
+import moment from "moment-timezone";
 import CalendarScheduleView from "@/components/calendar/calendar-schedule-view";
-import { formatTimestamp } from "@/lib/utils";
 import DashboardClient from "./components/dashboard-client";
 
 export default function DashboardPage() {
@@ -12,7 +12,11 @@ export default function DashboardPage() {
               Dashboard
             </h2>
             <div className="hidden md:flex items-center justify-center">
-              <p className="text-lg">{formatTimestamp(Date.now())}</p>
+              <p className="text-lg">
+                {moment(Date.now())
+                  .tz("America/Denver")
+                  .format("MMMM D, YYYY [at] h:mm A")}
+              </p>
             </div>
           </div>
           <div className="border-y-2 p-2 md:p-4 space-y-2 my-2 md:my-12">
