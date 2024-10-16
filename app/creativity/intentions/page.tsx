@@ -51,14 +51,14 @@ export default function IntentionsPage() {
 
   useEffect(() => {
     if (allowIntentions && allowIntentions.length > 0) {
-      const threeDaysAgo = moment().subtract(3, "days");
+      const fourDaysAgo = moment().subtract(4, "days");
 
-      const outdatedIntentions = allowIntentions.filter((intention) =>
-        moment(intention.updatedAt!).isBefore(threeDaysAgo),
+      const titheIntentions = allowIntentions.filter((intention) =>
+        moment(intention.updatedAt!).isBefore(fourDaysAgo),
       );
 
-      if (outdatedIntentions.length > 0) {
-        outdatedIntentions.forEach((intention) =>
+      if (titheIntentions.length > 0) {
+        titheIntentions.forEach((intention) =>
           updateIntentionStatus({ id: intention._id, status: "tithe" }),
         );
       }
