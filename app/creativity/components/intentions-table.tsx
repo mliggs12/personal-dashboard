@@ -21,10 +21,11 @@ import {
 import { MoreHorizontal } from "lucide-react";
 import { Doc } from "@/convex/_generated/dataModel";
 import { useRouter } from "next/navigation";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import UpdatedTableCell from "./updated-table-cell";
 import moment from "moment-timezone";
+import clsx from "clsx";
 
 interface IntentionsTableProps {
   intentions: Doc<"intentions">[];
@@ -32,8 +33,8 @@ interface IntentionsTableProps {
 }
 
 const statuses = [
-  { value: "tithe", label: "To Tithe" },
-  { value: "allow", label: "Allowing" },
+  { value: "tithe", label: "Tithe" },
+  { value: "allow", label: "Allow" },
   { value: "done", label: "Done" },
   { value: "draft", label: "Draft" },
 ];
@@ -51,6 +52,7 @@ export default function IntentionsTable({
 }: IntentionsTableProps) {
   const router = useRouter();
   const emotions = useQuery(api.emotions.list);
+  const deleteIntention = useMutation(api.intentions.remove);
 
   const getEmotionColor = (emotionId: string) => {
     const emotion = emotions?.find((e) => e._id === emotionId);
@@ -91,19 +93,25 @@ export default function IntentionsTable({
     },
     {
       name: "Status",
-      className: `hidden ${selectedTab === "all" ? "md:table-cell" : ""} w-[150px]`,
+      className: `hidden ${selectedTab === "all" ? "table-cell" : ""} w-[150px]`,
     },
     {
       name: "Emotion",
       className: "hidden md:table-cell w-[150px]",
     },
     {
-      name: "Updated at",
-      className: `hidden ${selectedTab !== "draft" ? "md:table-cell" : ""} w-[200px] whitespace-nowrap`,
+      name: "Updated",
+      className: clsx("hidden", {
+        "table-cell w-[200px] whitespace-nowrap": selectedTab === "tithe",
+        "sm:table-cell w-[200px] whitespace-nowrap": selectedTab !== "draft",
+      }),
     },
     {
-      name: "Created at",
-      className: `hidden ${selectedTab === "draft" || selectedTab === "all" ? "md:table-cell" : ""} w-[200px] whitespace-nowrap`,
+      name: "Created",
+      className: clsx("hidden", {
+        "sm:table-cell w-[200px] whitespace-nowrap":
+          selectedTab === "draft" || selectedTab === "all",
+      }),
     },
     {
       name: "",
@@ -143,7 +151,7 @@ export default function IntentionsTable({
             <TableCell className="w-full">{intention.title}</TableCell>
             {/* Status */}
             <TableCell
-              className={`hidden ${selectedTab === "all" ? "md:table-cell" : ""} w-[150px] whitespace-nowrap`}
+              className={`hidden ${selectedTab === "all" ? "table-cell" : ""} w-[150px] whitespace-nowrap`}
             >
               <Badge variant="outline">
                 {getStatusLabel(intention.status ?? "")}
@@ -165,24 +173,22 @@ export default function IntentionsTable({
                 }
               </Badge>
             </TableCell>
-            {/* Updated at */}
+            {/* Updated */}
+            <UpdatedTableCell
+              selectedTab={selectedTab}
+              updatedAt={new Date(intention.updatedAt ?? "")}
+            />
+            {/* Created */}
             <TableCell
-              className={`hidden ${selectedTab !== "draft" ? "md:table-cell" : ""} w-[200px] whitespace-nowrap`}
-            >
-              {intention.updatedAt ? (
-                <UpdatedTableCell updatedAt={new Date(intention.updatedAt)} />
-              ) : (
-                ""
-              )}
-            </TableCell>
-            {/* Created at */}
-            <TableCell
-              className={`hidden ${selectedTab === "draft" || selectedTab === "all" ? "md:table-cell" : ""} w-[200px] whitespace-nowrap`}
+              className={clsx("hidden", {
+                "sm:table-cell w-[200px] whitespace-nowrap":
+                  selectedTab === "draft" || selectedTab === "all",
+              })}
             >
               {intention._creationTime
                 ? moment(intention._creationTime)
                     .tz("America/Denver")
-                    .format("MM/DD/YYYY, hh:mm:ss A")
+                    .format("MMM DD, h:mm A")
                 : ""}
             </TableCell>
             {/* Actions */}
@@ -199,15 +205,25 @@ export default function IntentionsTable({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                  <DropdownMenuLabel className="text-base">
+                    Actions
+                  </DropdownMenuLabel>
                   <DropdownMenuItem
+                    className="text-base"
                     onSelect={() =>
                       router.push(`/creativity/intentions/${intention._id}`)
                     }
                   >
                     Edit
                   </DropdownMenuItem>
-                  <DropdownMenuItem>Delete</DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="text-base"
+                    onSelect={async () => {
+                      await deleteIntention({ id: intention._id });
+                    }}
+                  >
+                    Delete
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </TableCell>

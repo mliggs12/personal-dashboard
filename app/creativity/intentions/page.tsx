@@ -1,8 +1,10 @@
 "use client";
 
+import moment from "moment-timezone";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
+import clsx from "clsx";
 
 import {
   Breadcrumb,
@@ -36,6 +38,8 @@ const TABS: TabType[] = [
   { value: "all", label: "All" },
 ];
 
+const MOBILE_TABS = ["tithe", "all"];
+
 export default function IntentionsPage() {
   const [selectedTab, setSelectedTab] = useState(TABS[0].value);
   const { intentions, isLoading, error } = useIntentions(selectedTab);
@@ -47,12 +51,10 @@ export default function IntentionsPage() {
 
   useEffect(() => {
     if (allowIntentions && allowIntentions.length > 0) {
-      const now = new Date();
-      const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
+      const threeDaysAgo = moment().subtract(3, "days");
 
-      const outdatedIntentions = allowIntentions.filter(
-        (intention) =>
-          new Date(intention.updatedAt!).getTime() < threeDaysAgo.getTime(),
+      const outdatedIntentions = allowIntentions.filter((intention) =>
+        moment(intention.updatedAt!).isBefore(threeDaysAgo),
       );
 
       if (outdatedIntentions.length > 0) {
@@ -64,8 +66,8 @@ export default function IntentionsPage() {
   }, [allowIntentions, updateIntentionStatus]);
 
   return (
-    <main className="w-full space-y-8">
-      <Breadcrumb className="hidden md:flex">
+    <main className="w-full space-y-0 sm:space-y-8">
+      <Breadcrumb className="hidden sm:flex">
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
@@ -92,12 +94,15 @@ export default function IntentionsPage() {
         onValueChange={(value) => setSelectedTab(value)}
       >
         <div className="flex justify-between items-center mb-2">
-          <TabsList className="grid grid-cols-5 gap-2">
+          <TabsList className="grid grid-cols-2 sm:grid-cols-5 gap-2">
             {TABS.map((tab, index) => (
               <TabsTrigger
                 key={index}
                 value={tab.value}
-                className="w-full"
+                className={clsx("w-full", {
+                  hidden: !MOBILE_TABS.includes(tab.value) && true,
+                  "sm:inline-flex": !MOBILE_TABS.includes(tab.value),
+                })}
               >
                 {tab.label}
               </TabsTrigger>
@@ -107,7 +112,7 @@ export default function IntentionsPage() {
         </div>
 
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-0 sm:p-6">
             <CardTitle>Intentions</CardTitle>
             <CardDescription>
               Manage your intentions to tithe and view their progress.
