@@ -32,7 +32,7 @@ const tools: { title: string; href: string }[] = [
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-50 flex items-center justify-between h-16 px-4 md:px-6 shrink-0 gap-4 border-b bg-background">
+    <header className="sticky top-0 z-50 flex items-center justify-between h-16 px-6 shrink-0 gap-4 border-b bg-background">
       <Link
         href="/"
         className="hidden md:flex items-center gap-2 text-lg font-semibold md:text-base"
@@ -159,7 +159,7 @@ export function Header() {
           <CreateNoteInput />
         </div>
       </Authenticated>
-      <div className="flex items-center justify-end gap-4">
+      <div className="flex items-end justify-end gap-4">
         <ModeToggle />
         <HeaderActions />
       </div>
