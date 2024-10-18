@@ -21,10 +21,10 @@ export default function CreateIntentionDialog() {
     >
       <DialogTrigger asChild>
         <Button
-          className="h-8 gap-1"
-          size="sm"
+          className="h-10 gap-1 text-base"
+          size="lg"
         >
-          <PlusCircleIcon className="w-3.5 h-3.5" />
+          <PlusCircleIcon className="w-4 h-4" />
           <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
             New Intention
           </span>

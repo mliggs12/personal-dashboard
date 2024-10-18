@@ -13,7 +13,7 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        "fixed top-16 left-0 z-20 min-h-[calc(100vh-4rem)] -translate-x-full lg:translate-x-0 transition-[width] ease-in-out duration-300",
+        "fixed left-0 z-20 -translate-x-full lg:translate-x-0 transition-[width] ease-in-out duration-300",
         sidebar?.isOpen === false ? "w-[90px]" : "w-72",
       )}
     >

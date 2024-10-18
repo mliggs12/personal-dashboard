@@ -1,10 +1,8 @@
 "use client";
 
 import { api } from "@/convex/_generated/api";
-import { addActivity } from "./actions";
 import { useQuery } from "convex/react";
 import CreateScheduleButton from "./schedules/create-schedule-button";
-import { Button } from "@/components/ui/button";
 import { TemplateSelect } from "./components/template-select";
 import { getLocalDateString } from "@/lib/utils";
 import ScheduleActivitiesTable from "./components/schedule-activities-table/schedule-activities-table";
