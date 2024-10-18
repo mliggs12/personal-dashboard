@@ -21,7 +21,9 @@ const UpdatedTableCell: React.FC<UpdatedTableCellProps> = ({
           selectedTab !== "draft",
       })}
     >
-      {updatedAt ? moment(updatedAt).tz("America/Denver").fromNow() : ""}
+      {updatedAt
+        ? moment(updatedAt).tz("America/Denver").format("MMM D LT")
+        : ""}
     </TableCell>
   );
 };

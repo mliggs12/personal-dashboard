@@ -1,3 +1,5 @@
+import moment from "moment-timezone";
+
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 
@@ -95,7 +97,9 @@ export const update = mutation({
         emotionId: emotionId ?? existingIntention?.emotionId,
         notes: notes ?? existingIntention?.notes,
         updatedAt:
-          status === "allow" ? Date.now() : existingIntention?.updatedAt,
+          status && status !== existingIntention?.status // Currently updatedAt is only updated when the status changes
+            ? moment().tz("America/Denver").valueOf()
+            : existingIntention?.updatedAt ?? undefined,
       };
 
       await ctx.db.patch(id, updatedIntention);

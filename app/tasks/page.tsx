@@ -19,10 +19,12 @@ export default function TasksPage() {
   const tasks = z.array(taskSchema).parse(tasksData);
 
   return (
-    <div className="h-full flex-1 flex-col space-y-8 p-8 md:flex">
+    <div className="w-screen space-y-8 p-8">
       <div className="flex items-center justify-between space-y-2">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Tasks</h2>
+          <h2 className="text-3xl md:text-5xl 2xl:text-7xl font-bold tracking-tight">
+            Tasks
+          </h2>
           <p className="text-muted-foreground">
             Here&apos;s a list of all your tasks!
           </p>

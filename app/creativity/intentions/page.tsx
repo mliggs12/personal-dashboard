@@ -60,7 +60,10 @@ export default function IntentionsPage() {
       });
 
       titheIntentions.forEach((intention) =>
-        updateStatus({ id: intention._id, status: "tithe" }),
+        updateStatus({
+          id: intention._id,
+          status: "tithe",
+        }),
       );
     }
   }, [allowIntentions, updateStatus]);
@@ -71,18 +74,28 @@ export default function IntentionsPage() {
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <Link href="/creativity">Creativity</Link>
+              <Link
+                className="text-base"
+                href="/creativity"
+              >
+                Creativity
+              </Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <Link href="/creativity/intentions">Intentions</Link>
+              <Link
+                className="text-base"
+                href="/creativity/intentions"
+              >
+                Intentions
+              </Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbPage>
+            <BreadcrumbPage className="text-base">
               {TABS.find((tab) => tab.value === selectedTab)?.label}
             </BreadcrumbPage>
           </BreadcrumbItem>
@@ -94,12 +107,12 @@ export default function IntentionsPage() {
         onValueChange={(value) => setSelectedTab(value)}
       >
         <div className="flex justify-between items-center mb-2">
-          <TabsList className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+          <TabsList className="">
             {TABS.map((tab, index) => (
               <TabsTrigger
                 key={index}
                 value={tab.value}
-                className={clsx("w-full", {
+                className={clsx("w-[75px] text-base", {
                   hidden: !MOBILE_TABS.includes(tab.value) && true,
                   "sm:inline-flex": !MOBILE_TABS.includes(tab.value),
                 })}
