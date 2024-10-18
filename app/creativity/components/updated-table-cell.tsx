@@ -15,8 +15,10 @@ const UpdatedTableCell: React.FC<UpdatedTableCellProps> = ({
   return (
     <TableCell
       className={clsx("hidden", {
-        "table-cell w-[200px] whitespace-nowrap": selectedTab === "tithe",
-        "sm:table-cell w-[200px] whitespace-nowrap": selectedTab !== "draft",
+        "table-cell w-[200px] whitespace-nowrap text-lg":
+          selectedTab === "tithe",
+        "sm:table-cell w-[200px] whitespace-nowrap text-lg":
+          selectedTab !== "draft",
       })}
     >
       {updatedAt ? moment(updatedAt).tz("America/Denver").fromNow() : ""}

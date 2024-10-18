@@ -89,28 +89,29 @@ export default function IntentionsTable({
     // },
     {
       name: "Intention",
-      className: "w-full",
+      className: "w-full text-lg",
     },
     {
       name: "Status",
-      className: `hidden ${selectedTab === "all" ? "table-cell" : ""} w-[150px]`,
+      className: clsx("hidden w-[150px] text-lg", {
+        "table-cell": selectedTab === "all",
+      }),
     },
     {
       name: "Emotion",
-      className: "hidden md:table-cell w-[150px]",
+      className: "hidden md:table-cell w-[150px] text-lg",
     },
     {
       name: "Updated",
-      className: clsx("hidden", {
-        "table-cell w-[200px] whitespace-nowrap": selectedTab === "tithe",
-        "sm:table-cell w-[200px] whitespace-nowrap": selectedTab !== "draft",
+      className: clsx("hidden w-[200px] whitespace-nowrap text-lg", {
+        "table-cell": selectedTab === "tithe",
+        "sm:table-cell": selectedTab !== "draft",
       }),
     },
     {
       name: "Created",
-      className: clsx("hidden", {
-        "sm:table-cell w-[200px] whitespace-nowrap":
-          selectedTab === "draft" || selectedTab === "all",
+      className: clsx("hidden w-[200px] whitespace-nowrap text-lg", {
+        "sm:table-cell": selectedTab === "draft" || selectedTab === "all",
       }),
     },
     {
@@ -148,10 +149,12 @@ export default function IntentionsTable({
               />
             </TableCell>
             {/* Intention title */}
-            <TableCell className="w-full">{intention.title}</TableCell>
+            <TableCell className="w-full text-lg">{intention.title}</TableCell>
             {/* Status */}
             <TableCell
-              className={`hidden ${selectedTab === "all" ? "table-cell" : ""} w-[150px] whitespace-nowrap`}
+              className={clsx("hidden w-[150px] whitespace-nowrap", {
+                "table-cell": selectedTab === "all",
+              })}
             >
               <Badge variant="outline">
                 {getStatusLabel(intention.status ?? "")}
@@ -180,8 +183,8 @@ export default function IntentionsTable({
             />
             {/* Created */}
             <TableCell
-              className={clsx("hidden", {
-                "sm:table-cell w-[200px] whitespace-nowrap":
+              className={clsx("hidden w-[200px] whitespace-nowrap text-lg", {
+                "sm:table-cell":
                   selectedTab === "draft" || selectedTab === "all",
               })}
             >
@@ -200,7 +203,7 @@ export default function IntentionsTable({
                     size="icon"
                     variant="ghost"
                   >
-                    <MoreHorizontal className="h-4 w-4" />
+                    <MoreHorizontal className="h-6 w-6" />
                     <span className="sr-only">Toggle menu</span>
                   </Button>
                 </DropdownMenuTrigger>

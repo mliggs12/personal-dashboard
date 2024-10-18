@@ -47,23 +47,23 @@ export default function IntentionsPage() {
   const allowIntentions = useQuery(api.intentions.getByStatus, {
     status: "allow",
   });
-  const updateIntentionStatus = useMutation(api.intentions.update);
+  const updateStatus = useMutation(api.intentions.update);
 
   useEffect(() => {
     if (allowIntentions && allowIntentions.length > 0) {
-      const fourDaysAgo = moment().subtract(4, "days");
+      const today = moment().startOf("day");
 
-      const titheIntentions = allowIntentions.filter((intention) =>
-        moment(intention.updatedAt!).isBefore(fourDaysAgo),
+      const titheIntentions = allowIntentions.filter((intention) => {
+        const updatedDate = moment(intention.updatedAt).startOf("day");
+        const daysDifference = today.diff(updatedDate, "days");
+        return daysDifference > 3;
+      });
+
+      titheIntentions.forEach((intention) =>
+        updateStatus({ id: intention._id, status: "tithe" }),
       );
-
-      if (titheIntentions.length > 0) {
-        titheIntentions.forEach((intention) =>
-          updateIntentionStatus({ id: intention._id, status: "tithe" }),
-        );
-      }
     }
-  }, [allowIntentions, updateIntentionStatus]);
+  }, [allowIntentions, updateStatus]);
 
   return (
     <main className="w-full space-y-0 sm:space-y-8">
