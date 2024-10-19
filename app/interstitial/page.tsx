@@ -23,12 +23,9 @@ export default function InterstitialPage() {
             <ProjectForm projects={projects ?? []} />
           </CardContent>
         </Card>
-        <Timer initialLength={60} />
+        <Timer />
       </div>
-      <SessionsList
-        sessions={sessions ?? []}
-        projects={projects ?? []}
-      />
+      <SessionsList sessions={sessions ?? []} />
       <Toaster />
     </div>
   );

@@ -1,9 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { useEffect, useState, useRef } from "react";
+import { useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import Clock from "./clock";
-import { Input } from "@/components/ui/input";
 import {
   Card,
   CardContent,
@@ -11,16 +10,19 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useAudio } from "@/app/interstitial/hooks/use-audio";
+import SetIntentionButton from "../set-intention-button";
+import { Id } from "@/convex/_generated/dataModel";
 
-export default function Timer({ initialLength }: { initialLength: number }) {
-  const [time, setTime] = useState(initialLength);
-  const [inputTime, setInputTime] = useState(initialLength.toString());
+export default function Timer() {
+  const [time, setTime] = useState<number | null>(null);
+  const [intentionId, setIntentionId] = useState<Id<"intentions"> | null>(null);
+  const [intentionTitle, setIntentionTitle] = useState<string | null>(null);
+  const [intentionWhy, setIntentionWhy] = useState<string | null>(null);
+
   const createSession = useMutation(api.sessions.create);
 
-  useEffect(() => {
-    setTime(initialLength);
-    setInputTime(initialLength.toString());
-  }, [initialLength]);
+  const { play: playAlarmSound } = useAudio("/sound/airplane_chime.mp3");
 
   function regressive(counter: number = 0) {
     setTimeout(() => {
@@ -28,23 +30,25 @@ export default function Timer({ initialLength }: { initialLength: number }) {
         setTime(counter - 1);
         return regressive(counter - 1);
       } else {
+        playAlarmSound();
         createSession({
-          duration: time * 1000,
+          duration: time ?? undefined,
+          intentionId: intentionId ?? undefined,
         });
       }
     }, 1000);
   }
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputTime(e.target.value);
-  };
-
-  const handleSetTime = () => {
-    const newTime = parseInt(inputTime, 10);
-    if (!isNaN(newTime) && newTime > 0) {
-      setTime(newTime);
-      setInputTime(newTime.toString());
-    }
+  const handleIntentionSet = (
+    id: Id<"intentions">,
+    title: string,
+    why: string,
+    time: number,
+  ) => {
+    setIntentionId(id);
+    setIntentionTitle(title);
+    setIntentionWhy(why);
+    setTime(time);
   };
 
   return (
@@ -55,17 +59,17 @@ export default function Timer({ initialLength }: { initialLength: number }) {
       </CardHeader>
       <CardContent>
         <div className="flex items-center mb-4">
-          <Input
-            type="number"
-            value={inputTime}
-            onChange={handleInputChange}
-            className="p-2 border rounded mr-2 w-20"
-          />
-          <Button onClick={handleSetTime}>Set Time</Button>
+          <SetIntentionButton onIntentionSet={handleIntentionSet} />
         </div>
+        {intentionTitle && intentionWhy && (
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold">{intentionTitle}</h3>
+            <p className="">{intentionWhy}</p>
+          </div>
+        )}
         <div className="flex flex-col items-center text-9xl space-y-10 mt-8">
           <Clock time={time} />
-          <Button onClick={() => regressive(time)}>Start</Button>
+          <Button onClick={() => regressive(time ?? undefined)}>Start</Button>
         </div>
       </CardContent>
     </Card>

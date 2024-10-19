@@ -3,18 +3,23 @@ import { mutation, query } from "./_generated/server";
 
 export const create = mutation({
   args: {
-    projectId: v.optional(v.id("projects")),
     duration: v.optional(v.number()),
     pauseDuration: v.optional(v.number()),
     notes: v.optional(v.string()),
+    intentionId: v.optional(v.id("intentions")),
+    projectId: v.optional(v.id("projects")),
   },
-  async handler(ctx, { projectId, duration, pauseDuration, notes }) {
+  async handler(
+    ctx,
+    { duration, pauseDuration, notes, intentionId, projectId },
+  ) {
     try {
       const session = {
-        projectId,
         duration,
         pauseDuration,
         notes,
+        intentionId,
+        projectId,
       };
       return await ctx.db.insert("sessions", session);
     } catch (error) {

@@ -64,8 +64,14 @@ export default defineSchema({
   // Statements for many use cases
   statements: defineTable({
     date: v.optional(v.string()),
+    isComplete: v.optional(v.boolean()),
     text: v.string(),
-    type: v.union(v.literal("what"), v.literal("why"), v.literal("mind_dump")),
+    type: v.union(
+      v.literal("what"),
+      v.literal("why"),
+      v.literal("mind_dump"),
+      v.literal("negative"),
+    ),
     intentionId: v.optional(v.id("intentions")),
   })
     .index("by_type", ["type"])
@@ -95,6 +101,7 @@ export default defineSchema({
     duration: v.optional(v.number()), // seconds
     pauseDuration: v.optional(v.number()), // seconds
     notes: v.optional(v.string()),
+    intentionId: v.optional(v.id("intentions")),
     projectId: v.optional(v.id("projects")),
   }).index("by_projectId", ["projectId"]),
 
@@ -121,6 +128,7 @@ export default defineSchema({
   notes: defineTable({
     title: v.optional(v.string()),
     text: v.optional(v.string()),
+    updated: v.optional(v.number()),
   }),
 
   // Files

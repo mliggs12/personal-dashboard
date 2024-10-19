@@ -41,8 +41,6 @@ export const getByStatus = query({
 export const create = mutation({
   args: {
     title: v.optional(v.string()),
-    whatStatements: v.optional(v.array(v.string())),
-    whyStatements: v.optional(v.array(v.string())),
     emotionId: v.optional(v.id("emotions")),
     notes: v.optional(v.string()),
   },

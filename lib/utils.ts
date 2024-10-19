@@ -1,10 +1,24 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-
+import moment from "moment-timezone";
 import { format } from "date-fns";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
+}
+
+export function formatDurationVerbose(durationInSeconds: number): string {
+  const duration = moment.duration(durationInSeconds, "seconds");
+  const hours = duration.hours();
+  const minutes = duration.minutes();
+  const seconds = duration.seconds();
+
+  const parts = [];
+  if (hours > 0) parts.push(`${hours} hour${hours !== 1 ? "s" : ""}`);
+  if (minutes > 0) parts.push(`${minutes} minute${minutes !== 1 ? "s" : ""}`);
+  if (seconds > 0) parts.push(`${seconds} second${seconds !== 1 ? "s" : ""}`);
+
+  return parts.join(", ");
 }
 
 export function convertMinutesToHours(minutes: number) {
@@ -87,20 +101,6 @@ export function formatDuration(duration: number): string {
   const seconds = duration % 60;
 
   return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
-}
-
-export function formatDurationVerbose(duration: number): string {
-  const hours = Math.floor(duration / 3600000);
-  const minutes = Math.floor((duration % 3600000) / 60000);
-  const seconds = Math.floor((duration % 60000) / 1000);
-
-  if (hours > 0) {
-    return `${hours} hours, ${minutes} minutes, ${seconds} seconds`;
-  } else if (minutes > 0) {
-    return `${minutes} minutes, ${seconds} seconds`;
-  } else {
-    return `${seconds} seconds`;
-  }
 }
 
 function calculateStartTime(creationTime: number, duration: number): number {

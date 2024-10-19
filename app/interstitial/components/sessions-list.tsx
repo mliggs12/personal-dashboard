@@ -1,23 +1,31 @@
-import SessionsListItem from "./sessions-list-item";
+"use client";
+
 import { Doc } from "@/convex/_generated/dataModel";
+import { formatDurationVerbose } from "@/lib/utils";
+import SessionItem from "./session-item";
 
 export default function SessionList({
   sessions,
-  projects,
 }: {
   sessions: Doc<"sessions">[];
-  projects: Doc<"projects">[];
 }) {
-  return (
-    <div className="w-full">
-      {sessions?.map((session, index) => {
-        const project = projects?.find((p) => p._id === session.projectId);
+  const totalDuration =
+    sessions?.reduce((acc, session) => acc + (session?.duration ?? 0), 0) ?? 0;
 
+  return (
+    <div className="w-full space-y-2">
+      <p className="text-xl flex flex-col gap-2 border-2 p-4">
+        Today&apos;s Focus Time:
+        <span className="font-bold text-center text-3xl">
+          {formatDurationVerbose(totalDuration)}
+        </span>
+      </p>
+      {sessions?.map((session, index) => {
         return (
-          <SessionsListItem
+          <SessionItem
             key={index}
             session={session}
-            project={project!}
+            intentionId={session.intentionId!}
           />
         );
       })}
