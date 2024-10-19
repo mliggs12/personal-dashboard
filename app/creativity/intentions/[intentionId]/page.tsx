@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { useParams } from "next/navigation";
 import { EmotionSelectForm } from "../../components/emotion-select-form";
 import IntentionNotes from "../../components/intention-notes";
@@ -31,6 +31,9 @@ import { Toaster } from "@/components/ui/toaster";
 import TaskList from "../../components/tasks/task-list";
 import StatementItem from "../../components/statement-item";
 import IntentionTitle from "../../components/intention-title";
+import { Button } from "@/components/ui/button";
+import { complete } from "@/convex/statements";
+import { cn } from "@/lib/utils";
 
 export default function IntentionPage() {
   const { intentionId } = useParams<{ intentionId: Id<"intentions"> }>();
@@ -44,6 +47,8 @@ export default function IntentionPage() {
   const statements = useQuery(api.statements.byIntentionId, {
     intentionId,
   });
+  const completeStatement = useMutation(api.statements.complete);
+  const unCompleteStatement = useMutation(api.statements.unComplete);
 
   if (intention === undefined) {
     return <p>Loading...</p>;
@@ -146,6 +151,36 @@ export default function IntentionPage() {
                     </div>
                   </h4>
                 )}
+              </div>
+              <div className="space-y-2">
+                <h4 className="text-3xl">What is in the way?</h4>
+                <ul className="space-y-1">
+                  {statements
+                    ?.filter((statement) => statement.type === "negative")
+                    .map((negativeStatement, index) => (
+                      <li
+                        key={index}
+                        onClick={() =>
+                          negativeStatement.isComplete
+                            ? unCompleteStatement({
+                                id: negativeStatement._id,
+                              })
+                            : completeStatement({ id: negativeStatement._id })
+                        }
+                        className={cn(
+                          "cursor-pointer text-xl",
+                          negativeStatement.isComplete &&
+                            "line-through text-foreground/50",
+                        )}
+                      >
+                        {negativeStatement.text}
+                      </li>
+                    ))}
+                </ul>
+                <AddStatementInput
+                  intention={intention}
+                  type="negative"
+                />
               </div>
               <div className="space-y-4">
                 <h4 className="text-3xl">Notes</h4>

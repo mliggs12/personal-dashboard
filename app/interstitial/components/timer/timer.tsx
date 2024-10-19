@@ -35,6 +35,10 @@ export default function Timer() {
           duration: time ?? undefined,
           intentionId: intentionId ?? undefined,
         });
+        setTime(null);
+        setIntentionId(null);
+        setIntentionTitle(null);
+        setIntentionWhy(null);
       }
     }, 1000);
   }

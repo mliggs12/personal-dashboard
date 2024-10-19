@@ -11,7 +11,7 @@ export default function AddStatementInput({
   type,
 }: {
   intention: Doc<"intentions">;
-  type: "what" | "why";
+  type: "what" | "why" | "negative";
 }) {
   const [statement, setStatement] = useState("");
   const addStatement = useMutation(api.statements.create);

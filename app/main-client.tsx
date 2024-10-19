@@ -20,7 +20,7 @@ export default function MainClient({
       <Sidebar />
       <main
         className={cn(
-          "h-full transition-[margin-left] ease-in-out duration-300",
+          "h-screen transition-[margin-left] ease-in-out duration-300",
           sidebar?.isOpen === false ? "lg:ml-[92px]" : "lg:ml-[290px]",
         )}
       >

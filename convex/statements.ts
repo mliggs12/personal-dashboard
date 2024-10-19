@@ -9,6 +9,7 @@ export const create = mutation({
   },
   async handler(ctx, { text, type, intentionId }) {
     return ctx.db.insert("statements", {
+      isComplete: false,
       text,
       type: type as "what" | "why" | "mind_dump",
       intentionId,
@@ -54,10 +55,30 @@ export const byIntentionId = query({
 export const update = mutation({
   args: {
     id: v.id("statements"),
-    text: v.string(),
+    date: v.optional(v.string()),
+    text: v.optional(v.string()),
+    isComplete: v.optional(v.boolean()),
   },
-  async handler(ctx, { id, text }) {
-    await ctx.db.patch(id, { text });
+  async handler(ctx, { id, text, isComplete, date }) {
+    await ctx.db.patch(id, {
+      date: date || undefined,
+      isComplete: isComplete || undefined,
+      text: text || undefined,
+    });
+  },
+});
+
+export const complete = mutation({
+  args: { id: v.id("statements") },
+  async handler(ctx, { id }) {
+    await ctx.db.patch(id, { isComplete: true });
+  },
+});
+
+export const unComplete = mutation({
+  args: { id: v.id("statements") },
+  async handler(ctx, { id }) {
+    await ctx.db.patch(id, { isComplete: false });
   },
 });
 

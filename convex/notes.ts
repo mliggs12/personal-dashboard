@@ -1,5 +1,6 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import moment from "moment-timezone";
 
 export const recent = query({
   async handler(ctx) {
@@ -19,6 +20,17 @@ export const create = mutation({
   },
   async handler(ctx, { title, text }) {
     await ctx.db.insert("notes", { title, text });
+  },
+});
+
+export const list = query({
+  async handler(ctx) {
+    const notes = await ctx.db.query("notes").order("desc").collect();
+    if (!notes) {
+      throw new ConvexError("Unable to retrieve notes");
+    }
+
+    return notes;
   },
 });
 
@@ -50,7 +62,7 @@ export const update = mutation({
         ...existingNote,
         title: title ?? existingNote?.title ?? "",
         text: text ?? existingNote?.text ?? "",
-        updatedAt: Date.now(),
+        updated: moment().valueOf(),
       };
 
       await ctx.db.patch(id, updatedNote);

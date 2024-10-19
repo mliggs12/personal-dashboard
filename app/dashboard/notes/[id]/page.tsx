@@ -18,19 +18,17 @@ export default function NotePage() {
   }
 
   return (
-    <Card className="min-w-[750px] min-h-[1100px]">
-      <CardHeader>
-        <CardTitle className="text-4xl hover:text-primary cursor-pointer">
-          {note.title}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-6">
-          <div className="space-y-4">
-            <NoteText note={note} />
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="flex flex-col items-center h-screen">
+      <Card className="m-3 mr-7 p-4 h-full w-full shadow-none">
+        <CardHeader className="pb-0">
+          <CardTitle className="text-4xl font-semibold hover:text-primary cursor-pointer">
+            {note.title}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="flex mt-0">
+          <NoteText note={note} />
+        </CardContent>
+      </Card>
+    </div>
   );
 }
