@@ -4,6 +4,7 @@ import { ClerkProvider, useAuth } from "@clerk/nextjs";
 import { ConvexReactClient } from "convex/react";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
 import { ThemeProvider } from "@/components/theme-provider";
+import { SidebarProvider } from "@/components/ui/sidebar";
 
 const convex = new ConvexReactClient(
   process.env.NEXT_PUBLIC_CONVEX_URL as string,
@@ -24,7 +25,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           client={convex}
           useAuth={useAuth}
         >
-          {children}
+          <SidebarProvider defaultOpen={false}>{children}</SidebarProvider>
         </ConvexProviderWithClerk>
       </ClerkProvider>
     </ThemeProvider>

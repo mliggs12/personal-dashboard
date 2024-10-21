@@ -109,9 +109,10 @@ export default function AddTaskInline({
                   <Input
                     id="name"
                     type="text"
-                    placeholder="Enter your task name"
+                    placeholder="Task name"
+                    autoComplete="off"
                     required
-                    className="border-none font-semibold text-lg"
+                    className="pl-0 border-none text-xl focus-visible:ring-0 focus-visible:ring-offset-0"
                     {...field}
                   />
                 </FormControl>
@@ -129,7 +130,7 @@ export default function AddTaskInline({
                     <Textarea
                       id="notes"
                       placeholder="Notes"
-                      className="resize-none border-0 focus:border-0 focus:outline-none focus:ring-0"
+                      className="p-0 resize-none border-none text-lg focus-visible:ring-0 focus-visible:ring-offset-0"
                       autoComplete="off"
                       {...field}
                     />
@@ -211,7 +212,7 @@ export default function AddTaskInline({
             />
           </div>
           <CardFooter className="flex flex-col lg:flex-row lg:justify-between gap-2 border-t-2 pt-3">
-            <div className="w-full lg:w-1/4"></div>
+            <div className="w-full lg:w-1/4" />
             <div className="flex gap-3 self-end">
               <Button
                 className="bg-secondary text-secondary-foreground px-6 hover:bg-secondary/90"

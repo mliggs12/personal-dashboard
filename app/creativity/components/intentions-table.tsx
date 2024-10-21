@@ -208,11 +208,11 @@ export default function IntentionsTable({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuLabel className="text-base">
+                  <DropdownMenuLabel className="text-lg">
                     Actions
                   </DropdownMenuLabel>
                   <DropdownMenuItem
-                    className="text-base"
+                    className="text-lg"
                     onSelect={() =>
                       router.push(`/creativity/intentions/${intention._id}`)
                     }
@@ -220,7 +220,7 @@ export default function IntentionsTable({
                     Edit
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    className="text-base"
+                    className="text-lg"
                     onSelect={async () => {
                       await deleteIntention({ id: intention._id });
                     }}

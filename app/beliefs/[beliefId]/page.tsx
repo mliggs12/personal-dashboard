@@ -10,7 +10,6 @@ import BeliefTitle from "./belief-title";
 
 export default function BeliefPage() {
   const { beliefId } = useParams<{ beliefId: Id<"beliefs"> }>();
-  console.log(beliefId);
   const belief = useQuery(api.beliefs.get, {
     beliefId: beliefId,
   });

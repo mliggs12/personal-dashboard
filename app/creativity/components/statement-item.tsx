@@ -46,6 +46,7 @@ export default function StatementItem({
         onChange={(e) => setText(e.target.value)}
         onKeyDown={handleKeyDown}
         className="text-xl pl-2 border-none focus:h-7 focus-visible:ring-0 focus-visible:ring-offset-0"
+        autoComplete="off"
       />
     );
   }

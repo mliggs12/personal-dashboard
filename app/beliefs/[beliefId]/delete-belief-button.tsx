@@ -1,9 +1,8 @@
 "use client";
 
-import { LoadingButton } from "../../loading-button";
+import { LoadingButton } from "@/components/loading-button";
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,

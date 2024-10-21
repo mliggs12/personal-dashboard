@@ -38,7 +38,7 @@ export default function BeliefsPage() {
                 )}
               >
                 <Link
-                  href={`/release/beliefs/${belief._id}`}
+                  href={`/beliefs/${belief._id}`}
                   className="text-xl"
                 >
                   {belief.title}

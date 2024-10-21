@@ -14,9 +14,9 @@ import {
 } from "@/components/ui/form";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { LoadingButton } from "../loading-button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 const formSchema = z.object({
   title: z.string().min(1).max(5000),
@@ -82,12 +82,7 @@ export default function CreateBeliefForm({
           )}
         />
 
-        <LoadingButton
-          isLoading={form.formState.isSubmitting}
-          loadingText="Creating..."
-        >
-          Create
-        </LoadingButton>
+        <Button>Create</Button>
       </form>
     </Form>
   );

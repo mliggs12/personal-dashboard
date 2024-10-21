@@ -5,7 +5,7 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useQuery } from "convex/react";
 import { useParams } from "next/navigation";
-import NoteText from "../note-text";
+import NoteText from "../components/note-text";
 
 export default function NotePage() {
   const { id } = useParams<{ id: Id<"notes"> }>();

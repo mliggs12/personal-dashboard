@@ -26,7 +26,7 @@ export default function IntentionNotes({
     <Textarea
       value={notes}
       onChange={(e) => setNotes(e.target.value)}
-      className="min-h-[425px] text-xl"
+      className="min-h-[160px] text-xl"
     />
   );
 }

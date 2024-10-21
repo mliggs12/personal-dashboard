@@ -6,5 +6,5 @@ import { redirect } from "next/navigation";
 export default function Dashboard() {
   const { isAuthenticated } = useConvexAuth();
 
-  return <>{isAuthenticated ? redirect("/dashboard") : <p>Not signed in</p>}</>;
+  return <>{isAuthenticated ? redirect("/dashboard") : redirect("/login")}</>;
 }

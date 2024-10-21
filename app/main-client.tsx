@@ -1,32 +1,23 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import { useSidebarToggle } from "@/hooks/use-sidebar-toggle";
-import { useStore } from "@/hooks/use-store";
-import { Sidebar } from "./dashboard/components/sidebar/sidebar";
+import AppSidebar from "@/components/app-sidebar";
 import { Toaster } from "@/components/ui/toaster";
+import { Separator } from "@/components/ui/separator";
+import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 
 export default function MainClient({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const sidebar = useStore(useSidebarToggle, (state) => state);
-
-  if (!sidebar) return null;
-
   return (
     <>
-      <Sidebar />
-      <main
-        className={cn(
-          "h-screen transition-[margin-left] ease-in-out duration-300",
-          sidebar?.isOpen === false ? "lg:ml-[92px]" : "lg:ml-[290px]",
-        )}
-      >
-        {children}
+      <AppSidebar />
+      <SidebarInset>
+        <SidebarTrigger className="-ml-1" />
+        <div className="flex gap-24 container mx-auto pt-6">{children}</div>
         <Toaster />
-      </main>
+      </SidebarInset>
     </>
   );
 }
