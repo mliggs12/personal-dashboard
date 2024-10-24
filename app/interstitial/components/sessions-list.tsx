@@ -25,7 +25,6 @@ export default function SessionList({
           <SessionItem
             key={index}
             session={session}
-            intentionId={session.intentionId!}
           />
         );
       })}

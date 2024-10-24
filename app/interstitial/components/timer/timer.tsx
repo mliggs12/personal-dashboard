@@ -12,46 +12,40 @@ import {
 } from "@/components/ui/card";
 import { useAudio } from "@/app/interstitial/hooks/use-audio";
 import SetIntentionButton from "../set-intention-button";
-import { Id } from "@/convex/_generated/dataModel";
 
 export default function Timer() {
-  const [time, setTime] = useState<number | null>(null);
-  const [intentionId, setIntentionId] = useState<Id<"intentions"> | null>(null);
-  const [intentionTitle, setIntentionTitle] = useState<string | null>(null);
-  const [intentionWhy, setIntentionWhy] = useState<string | null>(null);
+  const [time, setTime] = useState<number>(1500); // Initialize with a default number
+  const [isRunning, setIsRunning] = useState<boolean>(false);
+  const [whatStatement, setWhatStatement] = useState<string | null>(null);
+  const [whyStatement, setWhyStatement] = useState<string | null>(null);
 
   const createSession = useMutation(api.sessions.create);
 
   const { play: playAlarmSound } = useAudio("/sound/airplane_chime.mp3");
 
-  function regressive(counter: number = 0) {
+  function regressive(counter: number) {
     setTimeout(() => {
       if (counter > 0) {
         setTime(counter - 1);
+
         return regressive(counter - 1);
       } else {
         playAlarmSound();
         createSession({
-          duration: time ?? undefined,
-          intentionId: intentionId ?? undefined,
+          duration: time,
+          what: whatStatement!,
+          why: whyStatement ?? undefined,
         });
-        setTime(null);
-        setIntentionId(null);
-        setIntentionTitle(null);
-        setIntentionWhy(null);
+        setTime(1500); // Reset to a default number
+        setWhatStatement(null);
+        setWhyStatement(null);
       }
     }, 1000);
   }
 
-  const handleIntentionSet = (
-    id: Id<"intentions">,
-    title: string,
-    why: string,
-    time: number,
-  ) => {
-    setIntentionId(id);
-    setIntentionTitle(title);
-    setIntentionWhy(why);
+  const handleIntentionSet = (what: string, why: string, time: number) => {
+    setWhatStatement(what);
+    setWhyStatement(why);
     setTime(time);
   };
 
@@ -65,15 +59,17 @@ export default function Timer() {
         <div className="flex items-center mb-4">
           <SetIntentionButton onIntentionSet={handleIntentionSet} />
         </div>
-        {intentionTitle && intentionWhy && (
+        {whatStatement && whyStatement && (
           <div className="mb-4">
-            <h3 className="text-lg font-semibold">{intentionTitle}</h3>
-            <p className="">{intentionWhy}</p>
+            <h3 className="text-lg font-semibold">{whatStatement}</h3>
+            <p className="">{whyStatement}</p>
           </div>
         )}
         <div className="flex flex-col items-center text-9xl space-y-10 mt-8">
           <Clock time={time} />
-          <Button onClick={() => regressive(time ?? undefined)}>Start</Button>
+          <Button onClick={() => regressive(time)}>
+            {isRunning ? "Pause" : "Start"}
+          </Button>
         </div>
       </CardContent>
     </Card>

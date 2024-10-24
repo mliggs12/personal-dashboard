@@ -2,7 +2,6 @@
 
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -13,53 +12,72 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 const formSchema = z.object({
-  title: z.string().min(1).max(5000),
+  title: z.string().min(1).max(500),
+  text: z.string().optional(),
 });
 
-export default function CreateIntentionForm({
-  onIntentionCreated,
+export default function AddNoteForm({
+  onNoteCreated,
 }: {
-  onIntentionCreated: () => void;
+  onNoteCreated: () => void;
 }) {
-  const router = useRouter();
-  const createIntention = useMutation(api.intentions.create);
+  const create = useMutation(api.notes.create);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: "",
+      text: "",
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    const intentionId = await createIntention({ title: values.title });
-    onIntentionCreated();
-    router.push(`/creativity/intentions/${intentionId}`);
+  async function createNote(formData: FormData) {
+    const values = Object.fromEntries(formData.entries());
+    await create({
+      title: values.title as string,
+      text: values.text as string,
+    });
+    onNoteCreated();
   }
 
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-8"
+        action={createNote}
+        className="space-y-4"
       >
         <FormField
           control={form.control}
           name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-xl">Title</FormLabel>
               <FormControl>
                 <Input
                   autoComplete="off"
-                  className="text-lg"
-                  placeholder="I want..."
+                  className="text-2xl"
+                  placeholder="Note title"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="text"
+          render={({ field }) => (
+            <FormItem>
+              <FormControl>
+                <Textarea
+                  className="text-2xl"
+                  placeholder="Note text"
                   {...field}
                 />
               </FormControl>

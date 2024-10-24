@@ -11,7 +11,6 @@ import {
 } from "lucide-react";
 import { UserButton } from "@clerk/nextjs";
 
-import NavMain from "@/components/nav-main";
 import { ModeToggle } from "@/components/ui/mode-toggle";
 import {
   Sidebar,
@@ -23,6 +22,8 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
+
+import NavMain from "./nav-main";
 
 const data = {
   navItems: [
@@ -83,10 +84,8 @@ export default function AppSidebar({
         <NavMain items={data.navItems} />
       </SidebarContent>
       <SidebarFooter>
-        <div className="flex items-center justify-end gap-4">
-          <UserButton />
-          <ModeToggle />
-        </div>
+        <ModeToggle />
+        <UserButton />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Shapes, TableProperties, Timer, type LucideIcon } from "lucide-react";
+import { type LucideIcon } from "lucide-react";
 
 import {
   SidebarGroup,
@@ -8,6 +8,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+
+import AddNoteButton from "./add-note-button";
 
 export default function NavMain({
   items,
@@ -34,6 +36,7 @@ export default function NavMain({
                   <span>{item.title}</span>
                 </Link>
               </SidebarMenuButton>
+              {item.title === "Notes" && <AddNoteButton />}
             </SidebarMenuItem>
           ))}
         </SidebarMenu>

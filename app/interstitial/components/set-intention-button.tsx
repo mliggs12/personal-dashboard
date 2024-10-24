@@ -1,3 +1,6 @@
+import { useState } from "react";
+import { PlusCircleIcon } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -7,24 +10,26 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { PlusCircleIcon } from "lucide-react";
-import { useState } from "react";
-import SetIntentionForm from "./set-intention-form";
 import { useToast } from "@/hooks/use-toast";
-import { Id } from "@/convex/_generated/dataModel";
+
+import SetIntentionForm from "./set-intention-form";
 
 export default function SetIntentionButton({
   onIntentionSet,
 }: {
-  onIntentionSet: (
-    intentionId: Id<"intentions">,
-    title: string,
-    why: string,
-    time: number,
-  ) => void;
+  onIntentionSet: (what: string, why: string, time: number) => void;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
+
+  const handleIntentionSet = (what: string, why: string, time: number) => {
+    setIsOpen(false);
+    toast({
+      title: "Intention set",
+      description: `${what} - ${time} seconds`,
+    });
+    onIntentionSet(what, why, time);
+  };
 
   return (
     <Dialog
@@ -44,16 +49,7 @@ export default function SetIntentionButton({
         <DialogHeader>
           <DialogTitle>Set intention</DialogTitle>
         </DialogHeader>
-        <SetIntentionForm
-          onIntentionSet={(intentionId, title, why, time) => {
-            setIsOpen(false);
-            onIntentionSet(intentionId, title, why, time);
-            toast({
-              title: "Intention set",
-              description: `${title} - ${time} seconds`,
-            });
-          }}
-        />
+        <SetIntentionForm onIntentionSet={handleIntentionSet} />
         <DialogFooter></DialogFooter>
       </DialogContent>
     </Dialog>

@@ -15,7 +15,7 @@ export const recent = query({
 
 export const create = mutation({
   args: {
-    title: v.optional(v.string()),
+    title: v.string(),
     text: v.optional(v.string()),
   },
   async handler(ctx, { title, text }) {

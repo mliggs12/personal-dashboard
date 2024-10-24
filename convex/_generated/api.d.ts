@@ -19,12 +19,11 @@ import type * as beliefs from "../beliefs.js";
 import type * as emotions from "../emotions.js";
 import type * as intentions from "../intentions.js";
 import type * as notes from "../notes.js";
-import type * as projects from "../projects.js";
 import type * as schedules from "../schedules.js";
 import type * as sessions from "../sessions.js";
 import type * as statements from "../statements.js";
 import type * as tasks from "../tasks.js";
-import type * as water_logs from "../water_logs.js";
+import type * as waterLog from "../waterLog.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -40,12 +39,11 @@ declare const fullApi: ApiFromModules<{
   emotions: typeof emotions;
   intentions: typeof intentions;
   notes: typeof notes;
-  projects: typeof projects;
   schedules: typeof schedules;
   sessions: typeof sessions;
   statements: typeof statements;
   tasks: typeof tasks;
-  water_logs: typeof water_logs;
+  waterLog: typeof waterLog;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,

@@ -1,9 +1,12 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+import { useMutation } from "convex/react";
 import { z } from "zod";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -12,17 +15,14 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useRouter } from "next/navigation";
+import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 
 const formSchema = z.object({
-  title: z
+  what: z
     .string({
-      required_error: "Intention title is required",
+      required_error: "What statement is required",
     })
     .min(1),
   why: z
@@ -36,57 +36,43 @@ const formSchema = z.object({
 export default function SetIntentionForm({
   onIntentionSet,
 }: {
-  onIntentionSet: (
-    intentionId: Id<"intentions">,
-    title: string,
-    why: string,
-    time: number,
-  ) => void;
+  onIntentionSet: (what: string, why: string, time: number) => void;
 }) {
-  const router = useRouter();
-
-  const createIntention = useMutation(api.intentions.create);
-  const addWhyStatement = useMutation(api.statements.create);
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: "",
+      what: "",
       why: "",
-      time: 60, // Default to 1 minute
+      time: 1500,
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    const intentionId = await createIntention({
-      title: values.title,
-    });
-    await addWhyStatement({
-      intentionId,
-      text: values.why,
-      type: "why",
-    });
-    onIntentionSet(intentionId, values.title, values.why, values.time);
-    router.push(`/interstitial`);
+  async function setIntention(formData: FormData) {
+    const values = Object.fromEntries(formData.entries());
+    onIntentionSet(
+      values.what as string,
+      values.why as string,
+      Number(values.time),
+    );
   }
 
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit(onSubmit)}
+        action={setIntention}
         className="space-y-4"
       >
         <FormField
           control={form.control}
-          name="title"
+          name="what"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="">Title</FormLabel>
+              <FormLabel className="">What?</FormLabel>
               <FormControl>
                 <Input
                   autoComplete="off"
                   className=""
-                  placeholder="Intention title"
+                  placeholder="What do you want to do?"
                   {...field}
                 />
               </FormControl>
@@ -125,7 +111,6 @@ export default function SetIntentionForm({
                   className=""
                   placeholder="Enter time in seconds"
                   {...field}
-                  onChange={(e) => field.onChange(parseInt(e.target.value))}
                 />
               </FormControl>
               <FormMessage />

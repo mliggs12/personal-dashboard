@@ -1,5 +1,5 @@
-import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
+import { defineSchema, defineTable } from "convex/server";
 
 export default defineSchema({
   // SM Plan Clone
@@ -20,10 +20,26 @@ export default defineSchema({
     length: v.optional(v.number()),
   }).index("by_date", ["date"]),
 
-  water_logs: defineTable({
-    date: v.string(), // YYYY-MM-DD
-    consumed: v.number(),
-  }).index("by_date", ["date"]),
+  beliefs: defineTable({
+    title: v.string(),
+    description: v.optional(v.string()),
+    status: v.optional(
+      v.union(
+        v.literal("backlog"),
+        v.literal("todo"),
+        v.literal("in_progress"),
+        v.literal("done"),
+        v.literal("archived"),
+        v.literal("active"),
+      ),
+    ),
+  }),
+
+  emotions: defineTable({
+    label: v.string(),
+    value: v.string(),
+    color: v.optional(v.string()),
+  }),
 
   intentions: defineTable({
     title: v.optional(v.string()),
@@ -40,73 +56,38 @@ export default defineSchema({
     updatedAt: v.optional(v.number()),
   }),
 
-  emotions: defineTable({
-    label: v.string(),
-    value: v.string(),
-    color: v.optional(v.string()),
-  }),
-
-  beliefs: defineTable({
-    title: v.string(),
-    description: v.optional(v.string()),
-    status: v.optional(
-      v.union(
-        v.literal("backlog"),
-        v.literal("todo"),
-        v.literal("in_progress"),
-        v.literal("done"),
-        v.literal("archived"),
-        v.literal("active"),
-      ),
-    ),
-  }),
-
-  // Statements for many use cases
-  statements: defineTable({
-    date: v.optional(v.string()),
-    isComplete: v.optional(v.boolean()),
-    text: v.string(),
-    type: v.union(
-      v.literal("what"),
-      v.literal("why"),
-      v.literal("mind_dump"),
-      v.literal("negative"),
-    ),
-    intentionId: v.optional(v.id("intentions")),
-  })
-    .index("by_type", ["type"])
-    .index("by_intentionId", ["intentionId"]),
-
-  // Tithe Tracker
-  // ------------------
-  // Projects is more general and can refer to a task, intention, focus object, etc.
-  projects: defineTable({
-    name: v.string(),
-    color: v.optional(
-      v.union(
-        v.literal("red"),
-        v.literal("blue"),
-        v.literal("green"),
-        v.literal("yellow"),
-        v.literal("pink"),
-        v.literal("purple"),
-        v.literal("orange"),
-      ),
-    ),
+  notes: defineTable({
+    text: v.optional(v.string()),
+    title: v.optional(v.string()),
+    updated: v.optional(v.number()),
   }),
 
   // Tithe/Focus Sessions as defined in Interstitch
   // All parameters are optional to allow for future use cases
   sessions: defineTable({
-    duration: v.optional(v.number()), // seconds
+    duration: v.number(), // seconds
     pauseDuration: v.optional(v.number()), // seconds
     notes: v.optional(v.string()),
+    what: v.optional(v.string()),
+    why: v.optional(v.string()),
     intentionId: v.optional(v.id("intentions")),
-    projectId: v.optional(v.id("projects")),
-  }).index("by_projectId", ["projectId"]),
+  }),
 
-  // ======== Mundane Manager ======== //
-  // ================================= //
+  statements: defineTable({
+    date: v.optional(v.string()),
+    isComplete: v.optional(v.boolean()),
+    text: v.string(),
+    type: v.union(
+      v.literal("mind_dump"),
+      v.literal("negative"),
+      v.literal("what"),
+      v.literal("why"),
+    ),
+    intentionId: v.optional(v.id("intentions")),
+  })
+    .index("by_intentionId", ["intentionId"])
+    .index("by_type", ["type"]),
+
   tasks: defineTable({
     name: v.string(),
     status: v.union(
@@ -124,16 +105,8 @@ export default defineSchema({
     intentionId: v.optional(v.id("intentions")),
   }),
 
-  // Main Dashboard
-  notes: defineTable({
-    title: v.optional(v.string()),
-    text: v.optional(v.string()),
-    updated: v.optional(v.number()),
-  }),
-
-  // Files
-  files: defineTable({
-    body: v.id("_storage"),
-    format: v.string(),
-  }),
+  waterLog: defineTable({
+    consumed: v.number(),
+    date: v.string(), // YYYY-MM-DD
+  }).index("by_date", ["date"]),
 });

@@ -5,17 +5,7 @@ import { api } from "@/convex/_generated/api";
 import { Doc, Id } from "@/convex/_generated/dataModel";
 import { formatDurationVerbose } from "@/lib/utils";
 
-export default function SessionItem({
-  session,
-  intentionId,
-}: {
-  session: Doc<"sessions">;
-  intentionId: Id<"intentions">;
-}) {
-  const intention = useQuery(api.intentions.get, {
-    intentionId: intentionId as Id<"intentions">,
-  });
-
+export default function SessionItem({ session }: { session: Doc<"sessions"> }) {
   // Calculate start and end times
   const endTime = moment(session._creationTime);
   const startTime = moment(endTime).subtract(session.duration!, "seconds");
@@ -25,8 +15,9 @@ export default function SessionItem({
     <Card className="mb-4">
       <CardHeader>
         <CardTitle>
-          <div className="">
-            <h2>{intention?.title}</h2>
+          <div>
+            <h2>{session.what}</h2>
+            <h2>{session.why}</h2>
           </div>
         </CardTitle>
       </CardHeader>

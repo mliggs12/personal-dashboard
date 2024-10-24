@@ -68,7 +68,7 @@ export function TasksDataTable<TData, TValue>({
   });
 
   return (
-    <div className="space-y-4">
+    <div className="w-fit space-y-4">
       <TasksTableToolbar table={table} />
       <div className="rounded-md border">
         <Table>
