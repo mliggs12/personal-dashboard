@@ -1,18 +1,26 @@
 "use client";
 
+import { Dispatch, SetStateAction } from "react";
+import { useMutation } from "convex/react";
+import { format } from "date-fns";
+import { CalendarIcon, Text } from "lucide-react";
+import moment from "moment-timezone";
+
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { CardFooter } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import {
   Popover,
   PopoverContent,
@@ -27,18 +35,10 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
-import { useToast } from "@/hooks/use-toast";
-import { CalendarIcon, Text } from "lucide-react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Dispatch, SetStateAction } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { cn } from "@/lib/utils";
-import { format } from "date-fns";
-import moment from "moment-timezone";
-import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
+import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
@@ -74,7 +74,6 @@ export default function AddTaskInline({
   async function onSubmit(data: z.infer<typeof formSchema>) {
     const { name, priority, dueAt, notes, intentionId } = data;
 
-    console.log(dueAt);
     await createTask({
       name,
       priority: priority as "low" | "normal" | "high",

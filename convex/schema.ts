@@ -41,6 +41,19 @@ export default defineSchema({
     color: v.optional(v.string()),
   }),
 
+  events: defineTable({
+    summary: v.string(), // The title of the event
+    start: v.string(), // For a recurring event, this is the start time of the first instance
+    end: v.optional(v.string()),
+    updated: v.optional(v.string()),
+    description: v.optional(v.string()),
+    colorId: v.optional(v.id("colors")),
+    // For a recurring event, this is the time at which this event would start according to the recurrence data in the recurrence event identified by recurringEventId
+    originalStart: v.optional(v.string()),
+    recurrence: v.optional(v.string()), // "RRULE:FREQ=DAILY;INTERVAL=1" is an event that recurs every day
+    recurringEventId: v.optional(v.id("events")), // If this event is a recurring event, this will be the id of the event it is based on
+  }),
+
   intentions: defineTable({
     title: v.optional(v.string()),
     status: v.optional(

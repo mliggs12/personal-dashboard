@@ -15,7 +15,7 @@ export default function MainClient({
     <>
       <Authenticated>
         <AppSidebar />
-        <SidebarInset>
+        <SidebarInset className="h-screen overflow-y-hidden">
           <SidebarTrigger className="-ml-1" />
           <div className="container">{children}</div>
           <Toaster />

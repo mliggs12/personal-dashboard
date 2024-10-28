@@ -1,8 +1,10 @@
-import { Plus } from "lucide-react";
 import React, { Dispatch, SetStateAction, useState } from "react";
-import AddTaskInline from "./add-task-inline";
-import { Doc, Id } from "@/convex/_generated/dataModel";
+import { Plus } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
+import { Id } from "@/convex/_generated/dataModel";
+
+import AddTaskInline from "./add-task-inline";
 
 export const AddTaskWrapper = ({
   intentionId,

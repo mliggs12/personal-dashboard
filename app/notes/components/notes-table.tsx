@@ -13,9 +13,14 @@ import {
 } from "@/components/ui/table";
 import { api } from "@/convex/_generated/api";
 import { Doc } from "@/convex/_generated/dataModel";
+import { cn } from "@/lib/utils";
 
 export default function NotesTable() {
   const notes: Doc<"notes">[] | undefined = useQuery(api.notes.list);
+
+  const sortedNotes = notes
+    ? [...notes].sort((a, b) => moment(b.updated).diff(moment(a.updated)))
+    : [];
 
   if (notes === undefined) {
     return <div>Loading...</div>;
@@ -23,22 +28,22 @@ export default function NotesTable() {
 
   return (
     <Table>
-      <TableHeader>
+      <TableHeader className={cn("2xl:text-2xl")}>
         <TableRow>
           <TableHead>Title</TableHead>
           <TableHead>Updated</TableHead>
           <TableHead>Created</TableHead>
         </TableRow>
       </TableHeader>
-      <TableBody>
-        {notes.map((note) => (
+      <TableBody className={cn("2xl:text-2xl")}>
+        {sortedNotes.map((note) => (
           <TableRow key={note._id}>
             <Link
               href={`/notes/${note._id}`}
               className="contents hover:bg-secondary"
             >
               <TableCell>{note.title}</TableCell>
-              <TableCell>{note.updated}</TableCell>
+              <TableCell>{moment(note.updated).fromNow()}</TableCell>
               <TableCell>
                 {moment(note._creationTime).format("MM/DD/YYYY")}
               </TableCell>
