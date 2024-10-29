@@ -30,6 +30,7 @@ export default function NavMain({
               <SidebarMenuButton
                 asChild
                 isActive={item.isActive}
+                tooltip={item.title}
               >
                 <Link href={item.url}>
                   {item.icon && <item.icon />}

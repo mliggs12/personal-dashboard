@@ -33,6 +33,11 @@ const data = {
       icon: Shapes,
     },
     {
+      title: "Tasks",
+      url: "/tasks",
+      icon: SquareCheckBig,
+    },
+    {
       title: "Plan",
       url: "/plan",
       icon: TableProperties,
@@ -52,11 +57,6 @@ const data = {
       url: "/notes",
       icon: SquarePen,
     },
-    {
-      title: "Tasks",
-      url: "/tasks",
-      icon: SquareCheckBig,
-    },
   ],
 };
 
@@ -71,7 +71,10 @@ export default function AppSidebar({
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild>
+            <SidebarMenuButton
+              asChild
+              tooltip="Dashboard"
+            >
               <Link href="/">
                 <Brain />
                 <span>Enthousiazein</span>
