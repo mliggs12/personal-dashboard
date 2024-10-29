@@ -4,7 +4,17 @@ import { useConvexAuth } from "convex/react";
 import { redirect } from "next/navigation";
 
 export default function Dashboard() {
-  const { isAuthenticated } = useConvexAuth();
+  const { isLoading, isAuthenticated } = useConvexAuth();
 
-  return <>{isAuthenticated ? redirect("/dashboard") : redirect("/login")}</>;
+  return (
+    <>
+      {isLoading ? (
+        <div>Loading...</div>
+      ) : isAuthenticated ? (
+        redirect("/dashboard")
+      ) : (
+        redirect("/login")
+      )}
+    </>
+  );
 }
