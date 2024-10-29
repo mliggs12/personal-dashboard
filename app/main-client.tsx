@@ -16,8 +16,8 @@ export default function MainClient({
       <Authenticated>
         <AppSidebar />
         <SidebarInset className="h-screen overflow-y-hidden">
-          <SidebarTrigger className="-ml-1" />
-          <div className="container">{children}</div>
+          {/* <SidebarTrigger className="-ml-1" /> */}
+          <main className="p-2">{children}</main>
           <Toaster />
         </SidebarInset>
       </Authenticated>

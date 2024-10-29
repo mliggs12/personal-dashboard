@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getUserEvents } from "./_actions";
 import EventsList from "./events-list";
+import dayjs from "dayjs";
 
 export default async function CalendarScheduleView() {
   const { userId } = auth();
@@ -11,17 +12,16 @@ export default async function CalendarScheduleView() {
   }
 
   const events = await getUserEvents(userId);
-  console.log(events);
 
-  const currentMonth = new Date().toLocaleString("default", { month: "long" });
+  const currentWeek = dayjs();
 
   return (
-    <Card className="w-[500px] max-h-[1100px]">
-      <CardHeader className="pb-0">
-        <CardTitle className="text-5xl">{currentMonth}</CardTitle>
-      </CardHeader>
-      <CardContent className="p-6">
+    <Card className="w-[450px] h-[500px]">
+      <CardContent className="p-4">
         <EventsList events={events} />
+        <div className="mt-4 text-center text-sm text-muted-foreground">
+          More than 7 days...
+        </div>
       </CardContent>
     </Card>
   );

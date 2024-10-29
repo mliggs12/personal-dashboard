@@ -103,19 +103,25 @@ export default defineSchema({
 
   tasks: defineTable({
     name: v.string(),
-    status: v.union(
-      v.literal("backlog"),
-      v.literal("todo"),
-      v.literal("in_progress"),
-      v.literal("done"),
-      v.literal("cancelled"),
-      v.literal("archived"),
-    ),
-    priority: v.union(v.literal("low"), v.literal("normal"), v.literal("high")),
+    updated: v.optional(v.number()),
     notes: v.optional(v.string()),
-    dueAt: v.optional(v.string()), // YYYY-MM-DD
-    updatedAt: v.optional(v.number()),
+    status: v.optional(
+      v.union(
+        v.literal("backlog"),
+        v.literal("todo"),
+        v.literal("in_progress"),
+        v.literal("done"),
+        v.literal("cancelled"),
+        v.literal("archived"),
+      ),
+    ),
+    priority: v.optional(
+      v.union(v.literal("low"), v.literal("normal"), v.literal("high")),
+    ),
+    due: v.optional(v.string()), // YYYY-MM-DD
+    completed: v.optional(v.number()),
     intentionId: v.optional(v.id("intentions")),
+    parentTaskId: v.optional(v.id("tasks")),
   }),
 
   waterLog: defineTable({

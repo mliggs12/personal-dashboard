@@ -11,7 +11,7 @@ export default function RecentNotesWidget() {
   const recentNotes = useQuery(api.notes.recent);
 
   return (
-    <Card className="w-full max-h-[400px]">
+    <Card className="w-full h-[500px]">
       <CardHeader className="p-3 md:p-6 flex flex-row items-center">
         <CardTitle className="text-xl md:text-2xl font-semibold">
           Recent Notes

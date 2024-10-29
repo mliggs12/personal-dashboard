@@ -1,4 +1,7 @@
+import dayjs from "dayjs";
+
 import { clerkClient } from "@clerk/nextjs/server";
+
 import { Event } from "./types";
 
 async function getOauthToken(userId: string): Promise<string> {
@@ -19,8 +22,10 @@ export async function getUserEvents(userId: string): Promise<Event[]> {
   const headers = new Headers();
   headers.append("Authorization", `Bearer ${token}`);
 
+  const oneWeekFromToday = dayjs().add(7, "day").endOf("day").toISOString();
+
   const response = await fetch(
-    `https://www.googleapis.com/calendar/v3/calendars/primary/events?maxResults=10&orderBy=startTime&singleEvents=true&timeMin=${new Date().toISOString()}`,
+    `https://www.googleapis.com/calendar/v3/calendars/primary/events?maxResults=10&orderBy=startTime&singleEvents=true&timeMin=${dayjs().startOf("hour").toISOString()}&timeMax=${oneWeekFromToday}`,
     {
       headers: headers,
     },

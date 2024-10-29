@@ -1,21 +1,28 @@
-import moment from "moment-timezone";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import dayjs from "dayjs";
+
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+
 import { Event } from "./types";
 
 export function EventCard({ event }: { event: Event }) {
+  const { start, title } = event;
   return (
     <Card>
-      <CardHeader className="p-4 pb-0">
-        <CardTitle>{event.title}</CardTitle>
+      <CardHeader className="flex-row space-y-0 p-3 pb-0">
+        <CardTitle className="w-[110px]">
+          {dayjs(start).format("ddd D")}
+        </CardTitle>
+        <CardDescription className="text-left">{title}</CardDescription>
       </CardHeader>
-      <CardContent className="p-4 pt-0">
-        <p>
-          {moment(event.start).tz("America/Denver").format("MMM D hh:mm A")}
-          {moment(event.start).tz("America/Denver").format("hh:mm A") !==
-            moment(event.end).tz("America/Denver").format("hh:mm A") && (
-            <> - {moment(event.end).tz("America/Denver").format("hh:mm A")}</>
-          )}
-        </p>
+      <CardContent className="p-3 pt-0">
+        <p>{dayjs(start).format("h:mm A")}</p>
       </CardContent>
     </Card>
   );
@@ -23,13 +30,15 @@ export function EventCard({ event }: { event: Event }) {
 
 export default function EventsList({ events }: { events: Event[] }) {
   return (
-    <div className="flex flex-col gap-2">
-      {events.map((event, index) => (
-        <EventCard
-          key={index}
-          event={event}
-        />
-      ))}
-    </div>
+    <ScrollArea>
+      <div className="flex flex-col gap-2">
+        {events.map((event, index) => (
+          <EventCard
+            key={index}
+            event={event}
+          />
+        ))}
+      </div>
+    </ScrollArea>
   );
 }
