@@ -9,7 +9,7 @@ export async function addNewTask(
   status?: string,
   priority?: string,
   notes?: string,
-  dueAt?: string,
+  due?: string,
 ) {
   await fetchMutation(api.tasks.create, {
     name: name ? name : "-",
@@ -33,7 +33,7 @@ export async function addNewTask(
     priority: (priority && ["low", "normal", "high"].includes(priority)
       ? priority
       : "normal") as "low" | "normal" | "high",
-    dueAt: dueAt ?? undefined,
+    due: due ?? undefined,
     notes: notes ?? "",
   });
 }

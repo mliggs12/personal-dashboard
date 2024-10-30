@@ -16,7 +16,7 @@ export default function Task({
   handleOnChange: any;
   showDetails?: boolean;
 }) {
-  const { name, dueAt } = data;
+  const { name, due } = data;
 
   return (
     <div
@@ -51,18 +51,18 @@ export default function Task({
                 >
                   {name}
                 </span>
-                {dueAt && (
+                {due && (
                   <div className="flex items-center justify-center gap-1">
                     <p
                       className={clsx(
                         "text-sm",
-                        moment(dueAt)
+                        moment(due)
                           .tz("America/Denver")
                           .isBefore(moment().tz("America/Denver"), "day") &&
                           "text-destructive",
                       )}
                     >
-                      {moment(dueAt).tz("America/Denver").calendar(null, {
+                      {moment(due).tz("America/Denver").calendar(null, {
                         sameDay: "[Today]",
                         nextDay: "[Tomorrow]",
                         nextWeek: "ddd, MMM DD",

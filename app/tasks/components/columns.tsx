@@ -181,7 +181,7 @@ export const columns: ColumnDef<Task>[] = [
     },
   },
   {
-    accessorKey: "dueAt",
+    accessorKey: "due",
     header: ({ column }: { column: any }) => (
       <TasksTableColumnHeader
         column={column}
@@ -189,11 +189,11 @@ export const columns: ColumnDef<Task>[] = [
       />
     ),
     cell: ({ row }: { row: any }) => {
-      const dueAt = row.getValue("dueAt");
+      const due = row.getValue("due");
       return (
         <div className="flex items-center">
           <span>
-            {dueAt ? moment(dueAt).tz("America/Denver").format("MM/DD") : ""}
+            {due ? moment(due).tz("America/Denver").format("MM/DD") : ""}
           </span>
         </div>
       );
