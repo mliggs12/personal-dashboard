@@ -24,27 +24,32 @@ export const get = query({
 export const create = mutation({
   args: {
     name: v.string(),
-    status: v.union(
-      v.literal("backlog"),
-      v.literal("todo"),
-      v.literal("in_progress"),
-      v.literal("done"),
-      v.literal("cancelled"),
-      v.literal("archived"),
-    ),
-    priority: v.union(v.literal("low"), v.literal("normal"), v.literal("high")),
     due: v.optional(v.string()), // YYYY-MM-DD
     notes: v.optional(v.string()),
+    status: v.optional(
+      v.union(
+        v.literal("backlog"),
+        v.literal("todo"),
+        v.literal("in_progress"),
+        v.literal("done"),
+        v.literal("cancelled"),
+        v.literal("archived"),
+      ),
+    ),
+    priority: v.optional(
+      v.union(v.literal("low"), v.literal("normal"), v.literal("high")),
+    ),
     intentionId: v.optional(v.id("intentions")),
   },
   async handler(ctx, { name, status, priority, due, notes, intentionId }) {
     return await ctx.db.insert("tasks", {
       name,
-      status,
-      priority,
       due,
-      notes,
-      intentionId,
+      updated: Date.now(),
+      notes: notes || "",
+      status: status || "backlog",
+      priority: priority || "normal",
+      intentionId: intentionId || undefined,
     });
   },
 });

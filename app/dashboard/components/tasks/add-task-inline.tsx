@@ -4,7 +4,6 @@ import { Dispatch, SetStateAction } from "react";
 import { useMutation } from "convex/react";
 import { format } from "date-fns";
 import { CalendarIcon, Text } from "lucide-react";
-import moment from "moment-timezone";
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -13,7 +12,6 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { CardFooter } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import {
   Form,
   FormControl,
@@ -21,49 +19,38 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
 import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
+
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import dayjs from "dayjs";
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
-  priority: z.enum(["low", "normal", "high"]),
   due: z.date().optional(),
   notes: z.string().optional(),
-  intentionId: z.string().optional(),
 });
 
 export default function AddTaskInline({
   setShowAddTask,
-  intentionId,
 }: {
   setShowAddTask: Dispatch<SetStateAction<boolean>>;
-  intentionId: Id<"intentions">;
 }) {
   const { toast } = useToast();
   const createTask = useMutation(api.tasks.create);
 
   const defaultValues = {
     name: "",
-    priority: "normal" as "low" | "normal" | "high",
-    due: undefined,
+    due: new Date(),
     notes: "",
-    intentionId: intentionId as Id<"intentions">,
   };
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -72,28 +59,24 @@ export default function AddTaskInline({
   });
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
-    const { name, priority, due, notes, intentionId } = data;
+    const { name, due, notes } = data;
 
     await createTask({
       name,
-      priority: priority as "low" | "normal" | "high",
-      due: due
-        ? moment(due).tz("America/Denver").format("yyyy-MM-DD")
-        : undefined,
+      due: due ? dayjs(due).format("YYYY/MM/DD") : undefined,
       notes,
-      status: "todo",
-      intentionId: intentionId as Id<"intentions">,
     });
 
     toast({
       title: "Task added",
-      duration: 3000,
+      duration: 1500,
     });
     form.reset({ ...defaultValues });
+    setShowAddTask(false);
   }
 
   return (
-    <div>
+    <div className="w-full">
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
@@ -111,7 +94,7 @@ export default function AddTaskInline({
                     placeholder="Task name"
                     autoComplete="off"
                     required
-                    className="pl-0 border-none text-xl focus-visible:ring-0 focus-visible:ring-offset-0"
+                    className="pl-0 border-none focus-visible:ring-0 focus-visible:ring-offset-0"
                     {...field}
                   />
                 </FormControl>
@@ -127,10 +110,7 @@ export default function AddTaskInline({
                   <div className="flex items-start gap-2">
                     <Text className="ml-auto h-4 w-4 opacity-50" />
                     <Textarea
-                      id="notes"
-                      placeholder="Notes"
-                      className="p-0 resize-none border-none text-lg focus-visible:ring-0 focus-visible:ring-offset-0"
-                      autoComplete="off"
+                      className="min-h-[1em] p-0 resize-none border-none focus-visible:ring-0 focus-visible:ring-offset-0"
                       {...field}
                     />
                   </div>
@@ -157,7 +137,7 @@ export default function AddTaskInline({
                           {field.value ? (
                             format(field.value, "PPP")
                           ) : (
-                            <span>Pick a date</span>
+                            <span>Pick a due date</span>
                           )}
                           <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                         </Button>
@@ -179,39 +159,9 @@ export default function AddTaskInline({
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="priority"
-              render={({ field }) => (
-                <FormItem>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value.toLowerCase()}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a Priority" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {["Low", "Normal", "High"].map((item, idx) => (
-                        <SelectItem
-                          key={idx}
-                          value={item.toLowerCase()}
-                        >
-                          {item}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
           </div>
           <CardFooter className="flex flex-col lg:flex-row lg:justify-between gap-2 border-t-2 pt-3">
-            <div className="w-full lg:w-1/4" />
+            <div className="w-full" />
             <div className="flex gap-3 self-end">
               <Button
                 className="bg-secondary text-secondary-foreground px-6 hover:bg-secondary/90"

@@ -1,8 +1,11 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useQuery } from "convex/react";
 import { ArrowUpRight } from "lucide-react";
+
+import AddTaskButton, { AddTaskWrapper } from "./add-task-button";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -50,25 +53,26 @@ export default function TasksCard() {
             <TableHeader>
               <TableRow>
                 <TableHead>Task</TableHead>
-                <TableHead className="w-[100px]">Updated</TableHead>
                 <TableHead className="w-[100px]">Due</TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
+            <TableBody className="border-b">
               {tasks.map((task) => (
                 <TableRow key={task._id}>
                   <TableCell>{task.name}</TableCell>
-                  <TableCell className="">
-                    {task.updated
-                      ? dayjs(task.updated).format("MMM D, YYYY")
-                      : ""}
-                  </TableCell>
-                  <TableCell className="w-[110px]">
+                  <TableCell
+                    className={cn(
+                      "w-[110px]",
+                      dayjs(task.due).isBefore(dayjs(), "day") &&
+                        "text-destructive",
+                    )}
+                  >
                     {task.due ? dayjs(task.due).format("ddd MMM D") : ""}
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
+            <AddTaskWrapper />
           </Table>
         ) : (
           <div className="text-center text-sm text-muted-foreground">

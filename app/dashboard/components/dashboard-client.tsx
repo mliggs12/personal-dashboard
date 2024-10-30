@@ -1,5 +1,5 @@
 import RecentNotesWidget from "./recent-notes-widget";
-import TasksCard from "./tasks-card";
+import TasksCard from "./tasks/tasks-card";
 
 export default function DashboardClient() {
   return (
