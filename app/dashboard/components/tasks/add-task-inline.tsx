@@ -49,7 +49,7 @@ export default function AddTaskInline({
 
   const defaultValues = {
     name: "",
-    due: new Date(),
+    due: undefined,
     notes: "",
   };
 
@@ -64,6 +64,7 @@ export default function AddTaskInline({
     await createTask({
       name,
       due: due ? dayjs(due).format("YYYY/MM/DD") : undefined,
+      status: "todo",
       notes,
     });
 

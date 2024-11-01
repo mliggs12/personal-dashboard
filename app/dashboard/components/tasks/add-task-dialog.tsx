@@ -32,7 +32,7 @@ export default function AddTaskDialog({ data }: { data: Doc<"tasks"> }) {
     const data = [
       {
         labelName: "Due date",
-        value: dayjs(due).format("ddd MMM D"),
+        value: dayjs(due || "").format("ddd MMM D"),
         icon: <Calendar className="w-4 h-4 text-primary capitalize" />,
       },
       {

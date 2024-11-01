@@ -19,11 +19,11 @@ import { AddTaskWrapper } from "./add-task-button";
 import TaskList from "./task-list";
 
 export default function TasksCard() {
-  const tasks = useQuery(api.tasks.deadlineTasks) || [];
+  const tasks = useQuery(api.tasks.doTodayTasks) || [];
 
   return (
-    <Card className="h-full min-w-[550px] overflow-y-auto flex flex-col">
-      <CardHeader className="flex flex-row items-center">
+    <Card className="w-1/2 ml-2">
+      <CardHeader className="flex flex-row items-center border-b-2 p-3">
         <div className="grid gap-2">
           <CardTitle>Do Today Tasks</CardTitle>
           <CardDescription>Tasks due today or overdue</CardDescription>
@@ -39,9 +39,9 @@ export default function TasksCard() {
           </Link>
         </Button>
       </CardHeader>
-      <CardContent className="">
+      <CardContent className="p-3 pt-2">
         {tasks.length > 0 ? (
-          <div className="flex flex-col gap-2 overflow-y-auto">
+          <div className="flex flex-col gap-2">
             <TaskList tasks={tasks} />
             <AddTaskWrapper />
           </div>

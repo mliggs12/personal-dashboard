@@ -1,14 +1,16 @@
 "use client";
 
+import { useConvexAuth, useQuery } from "convex/react";
+import { redirect } from "next/navigation";
+import { z } from "zod";
+
+import { Toaster } from "@/components/ui/toaster";
 import { api } from "@/convex/_generated/api";
+
+import AddTaskButton from "./components/add-task-button";
 import { columns } from "./components/columns";
 import { TasksDataTable } from "./components/tasks-data-table";
 import { taskSchema } from "./data/schema";
-import { useConvexAuth, useQuery } from "convex/react";
-import { z } from "zod";
-import AddTaskButton from "./components/add-task-button";
-import { Toaster } from "@/components/ui/toaster";
-import { redirect } from "next/navigation";
 
 export default function TasksPage() {
   const { isLoading, isAuthenticated } = useConvexAuth();

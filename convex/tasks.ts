@@ -88,17 +88,15 @@ export const unCompleteTask = mutation({
 export const todayTasks = query({
   async handler(ctx) {
     const today = getLocalDateString(Date.now());
-    return (
-      (await ctx.db
-        .query("tasks")
-        .filter((q) =>
-          q.and(
-            q.eq(q.field("status"), "todo" || "in_progress"),
-            q.lte(q.field("due"), today),
-          ),
-        )
-        .collect()) || []
-    );
+    return await ctx.db
+      .query("tasks")
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("status"), "todo" || "in_progress"),
+          q.lte(q.field("due"), today),
+        ),
+      )
+      .collect();
   },
 });
 
@@ -135,7 +133,12 @@ export const doTodayTasks = query({
     const today = dayjs().startOf("day").toISOString();
     return await ctx.db
       .query("tasks")
-      .filter((q) => q.lte(q.field("due"), today))
+      .filter((q) =>
+        q.or(
+          q.eq(q.field("status"), "todo"),
+          q.eq(q.field("status"), "in_progress"),
+        ),
+      )
       .collect();
   },
 });

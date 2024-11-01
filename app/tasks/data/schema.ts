@@ -8,7 +8,7 @@ export const taskSchema = z.object({
   due: z.optional(z.string()),
   notes: z.optional(z.string()),
   intentionId: z.optional(z.string()),
-  updatedAt: z.optional(z.number()),
+  updated: z.optional(z.number()),
   _creationTime: z.optional(z.number()),
 });
 

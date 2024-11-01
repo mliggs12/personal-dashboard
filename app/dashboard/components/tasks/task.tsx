@@ -1,11 +1,14 @@
-import { Checkbox } from "@/components/ui/checkbox";
 import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Doc } from "@/convex/_generated/dataModel";
 import { Calendar, GitBranch } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import AddTaskDialog from "./add-task-dialog";
+
+dayjs.extend(relativeTime);
 
 export default function Task({
   data,
@@ -19,11 +22,12 @@ export default function Task({
   showDetails?: boolean;
 }) {
   const { name, due } = data;
+  const today = dayjs().startOf("day");
 
   return (
     <div
       key={data._id}
-      className="flex items-center space-x-2 border-b-2 p-2 animate-in fade-in"
+      className="w-full flex items-center justify-between space-x-2 border-b p-2 pb-4 animate-in fade-in"
     >
       <Dialog>
         <div className="flex gap-2 items-center justify-end w-full">
@@ -39,15 +43,25 @@ export default function Task({
               onCheckedChange={handleOnChange}
             />
             <DialogTrigger asChild>
-              <div className="flex flex-col items-start">
+              <div className="flex justify-between items-center w-full">
                 <button
                   className={cn(
-                    "text-left",
+                    "",
                     isCompleted && "line-through text-foreground/30",
                   )}
                 >
                   {name}
                 </button>
+                {due && (
+                  <p
+                    className={cn(
+                      "w-[70px] text-xs text-right text-muted-foreground",
+                      dayjs(due) < today && "text-destructive",
+                    )}
+                  >
+                    {due ? dayjs(due).format("ddd MMM D") : ""}
+                  </p>
+                )}
                 {showDetails && (
                   <div className="flex gap-2">
                     <div className="flex items-center justify-center gap-1">

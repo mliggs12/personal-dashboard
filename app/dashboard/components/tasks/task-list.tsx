@@ -23,7 +23,7 @@ export default function TaskList({ tasks }: { tasks: Doc<"tasks">[] }) {
     }
   };
   return (
-    <div className="flex flex-col gap-2 overflow-y-auto">
+    <div className="h-[350px] flex flex-col gap-2 overflow-y-auto">
       {tasks.map((task) => (
         <Task
           key={task._id}

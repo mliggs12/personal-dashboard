@@ -1,6 +1,6 @@
 "use client";
 
-import moment from "moment-timezone";
+import dayjs from "dayjs";
 import { ColumnDef, Row } from "@tanstack/react-table";
 
 import { Button } from "@/components/ui/button";
@@ -185,16 +185,14 @@ export const columns: ColumnDef<Task>[] = [
     header: ({ column }: { column: any }) => (
       <TasksTableColumnHeader
         column={column}
-        title="Due Date"
+        title="Due"
       />
     ),
     cell: ({ row }: { row: any }) => {
       const due = row.getValue("due");
       return (
         <div className="flex items-center">
-          <span>
-            {due ? moment(due).tz("America/Denver").format("MM/DD") : ""}
-          </span>
+          <span>{due ? dayjs(due).format("MM/DD") : ""}</span>
         </div>
       );
     },
@@ -216,16 +214,20 @@ export const columns: ColumnDef<Task>[] = [
     },
   },
   {
-    accessorKey: "updatedAt",
+    accessorKey: "updated",
     header: ({ column }: { column: any }) => (
       <TasksTableColumnHeader
         column={column}
-        title="Updated At"
+        title="Updated"
       />
     ),
     cell: ({ row }: { row: any }) => {
-      const updatedAt = row.getValue("updatedAt");
-      return <div className="truncate font-medium">{updatedAt}</div>;
+      const updated = row.getValue("updated");
+      return (
+        <div className="whitespace-nowrap font-medium">
+          {updated ? dayjs(updated).format("MM/DD/YYYY, h:mm:ss A") : ""}
+        </div>
+      );
     },
   },
   {
@@ -233,20 +235,14 @@ export const columns: ColumnDef<Task>[] = [
     header: ({ column }: { column: any }) => (
       <TasksTableColumnHeader
         column={column}
-        title="Created At"
+        title="Created"
       />
     ),
     cell: ({ row }: { row: any }) => {
-      const createdAt = row.getValue("_creationTime");
+      const created = row.getValue("_creationTime");
       return (
         <div className="whitespace-nowrap font-medium">
-          <span>
-            {createdAt
-              ? moment(createdAt)
-                  .tz("America/Denver")
-                  .format("MM/DD/YYYY, h:mm:ss A")
-              : ""}
-          </span>
+          {created ? dayjs(created).format("MM/DD/YYYY, h:mm:ss A") : ""}
         </div>
       );
     },

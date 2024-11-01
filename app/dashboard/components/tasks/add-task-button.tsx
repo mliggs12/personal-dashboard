@@ -27,7 +27,7 @@ export default function AddTaskButton({
 }) {
   return (
     <Button
-      className="pl-2 flex mt-2 flex-1 bg-background hover:bg-background"
+      className="pl-2 flex flex-1 bg-background hover:bg-background"
       onClick={onClick}
     >
       <div className="flex flex-col items-center justify-center gap-1 text-center">
