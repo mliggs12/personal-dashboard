@@ -32,11 +32,22 @@ import { api } from "@/convex/_generated/api";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import dayjs from "dayjs";
+import { statuses } from "@/app/tasks/data/data";
+import {
+  Select,
+  SelectTrigger,
+  SelectItem,
+  SelectContent,
+  SelectValue,
+} from "@/components/ui/select";
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
   due: z.date().optional(),
   notes: z.string().optional(),
+  status: z.enum(
+    statuses.map((status) => status.value) as [string, ...string[]],
+  ),
 });
 
 export default function AddTaskInline({
@@ -51,6 +62,7 @@ export default function AddTaskInline({
     name: "",
     due: undefined,
     notes: "",
+    status: "todo",
   };
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -59,12 +71,18 @@ export default function AddTaskInline({
   });
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
-    const { name, due, notes } = data;
+    const { name, due, notes, status } = data;
 
     await createTask({
       name,
       due: due ? dayjs(due).format("YYYY/MM/DD") : undefined,
-      status: "todo",
+      status: status as
+        | "backlog"
+        | "todo"
+        | "in_progress"
+        | "done"
+        | "cancelled"
+        | "archived",
       notes,
     });
 
@@ -94,8 +112,9 @@ export default function AddTaskInline({
                     type="text"
                     placeholder="Task name"
                     autoComplete="off"
+                    autoFocus
                     required
-                    className="pl-0 border-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                    className="pl-0 border-none text-lg focus-visible:ring-0 focus-visible:ring-offset-0"
                     {...field}
                   />
                 </FormControl>
@@ -111,7 +130,8 @@ export default function AddTaskInline({
                   <div className="flex items-start gap-2">
                     <Text className="ml-auto h-4 w-4 opacity-50" />
                     <Textarea
-                      className="min-h-[1em] p-0 resize-none border-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                      placeholder="Notes"
+                      className="min-h-[1em] p-0 text-base resize-none border-none focus-visible:ring-0 focus-visible:ring-offset-0"
                       {...field}
                     />
                   </div>
@@ -156,6 +176,36 @@ export default function AddTaskInline({
                       />
                     </PopoverContent>
                   </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="gap-2">
+                        <SelectValue placeholder="Select a status" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {statuses.map((item, idx) => (
+                        <SelectItem
+                          key={idx}
+                          value={item.value}
+                        >
+                          {item.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
                   <FormMessage />
                 </FormItem>
               )}

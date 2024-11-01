@@ -20,6 +20,23 @@ import TaskList from "./task-list";
 
 export default function TasksCard() {
   const tasks = useQuery(api.tasks.doTodayTasks) || [];
+  // Order tasks: first by deadline (if exists), then by updated timestamp
+  const orderedTasks = tasks.sort((a, b) => {
+    // If neither task has a deadline, sort by updated timestamp (newest first)
+    if (!a.due && !b.due) {
+      return dayjs(b.updated).valueOf() - dayjs(a.updated).valueOf();
+    }
+    // If only one task has a deadline, prioritize the task with deadline
+    if (!a.due) return 1; // a goes after b
+    if (!b.due) return -1; // a goes before b
+
+    // If both tasks have deadlines, compare them
+    const dateComparison = dayjs(a.due).valueOf() - dayjs(b.due).valueOf();
+    // If deadlines are the same, sort by updated timestamp
+    return dateComparison === 0
+      ? dayjs(b.updated).valueOf() - dayjs(a.updated).valueOf()
+      : dateComparison;
+  });
 
   return (
     <Card className="w-1/2 ml-2">
@@ -39,10 +56,10 @@ export default function TasksCard() {
           </Link>
         </Button>
       </CardHeader>
-      <CardContent className="p-3 pt-2">
-        {tasks.length > 0 ? (
+      <CardContent className="p-3 pt-0">
+        {orderedTasks.length > 0 ? (
           <div className="flex flex-col gap-2">
-            <TaskList tasks={tasks} />
+            <TaskList tasks={orderedTasks} />
             <AddTaskWrapper />
           </div>
         ) : (

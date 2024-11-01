@@ -130,13 +130,17 @@ export const doTodayTasks = query({
     if (identity === null) {
       throw new Error("Unauthorized");
     }
-    const today = dayjs().startOf("day").toISOString();
+    const today = dayjs().tz(TIMEZONE).format("YYYY/MM/DD");
+
     return await ctx.db
       .query("tasks")
       .filter((q) =>
         q.or(
-          q.eq(q.field("status"), "todo"),
-          q.eq(q.field("status"), "in_progress"),
+          q.and(q.neq(q.field("due"), undefined), q.lte(q.field("due"), today)),
+          q.or(
+            q.eq(q.field("status"), "todo"),
+            q.eq(q.field("status"), "in_progress"),
+          ),
         ),
       )
       .collect();
@@ -169,6 +173,26 @@ export const updateNotes = mutation({
   async handler(ctx, { taskId, notes }) {
     return await ctx.db.patch(taskId, {
       notes: notes || "",
+      updated: Date.now(),
+    });
+  },
+});
+
+export const updateStatus = mutation({
+  args: {
+    taskId: v.id("tasks"),
+    status: v.union(
+      v.literal("backlog"),
+      v.literal("todo"),
+      v.literal("in_progress"),
+      v.literal("done"),
+      v.literal("cancelled"),
+      v.literal("archived"),
+    ),
+  },
+  async handler(ctx, { taskId, status }) {
+    return await ctx.db.patch(taskId, {
+      status,
       updated: Date.now(),
     });
   },

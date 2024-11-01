@@ -27,11 +27,11 @@ export default function Task({
   return (
     <div
       key={data._id}
-      className="w-full flex items-center justify-between space-x-2 border-b p-2 pb-4 animate-in fade-in"
+      className="py-6 border-b w-full flex justify-between space-x-2 animate-in fade-in"
     >
       <Dialog>
         <div className="flex gap-2 items-center justify-end w-full">
-          <div className="flex gap-4 items-center w-full">
+          <div className="flex px-2 gap-4 items-center w-full">
             <Checkbox
               id="task"
               className={cn(
