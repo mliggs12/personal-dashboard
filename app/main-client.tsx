@@ -3,8 +3,8 @@
 import { Authenticated, Unauthenticated } from "convex/react";
 
 import AppSidebar from "@/components/sidebar/app-sidebar";
-import { Toaster } from "@/components/ui/toaster";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import { Toaster } from "@/components/ui/toaster";
 
 export default function MainClient({
   children,
@@ -15,9 +15,10 @@ export default function MainClient({
     <>
       <Authenticated>
         <AppSidebar />
-        <SidebarInset className="h-screen overflow-y-hidden">
+        {/* <main> */}
+        <SidebarInset className="h-dvh">
           {/* <SidebarTrigger className="-ml-1" /> */}
-          <main className="p-2">{children}</main>
+          {children}
           <Toaster />
         </SidebarInset>
       </Authenticated>

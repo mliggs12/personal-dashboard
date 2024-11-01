@@ -1,11 +1,9 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import Link from "next/link";
+import dayjs from "dayjs";
 import { useQuery } from "convex/react";
 import { ArrowUpRight } from "lucide-react";
-
-import AddTaskButton, { AddTaskWrapper } from "./add-task-button";
+import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -15,22 +13,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { api } from "@/convex/_generated/api";
-import dayjs from "dayjs";
+
+import { AddTaskWrapper } from "./add-task-button";
+import TaskList from "./task-list";
 
 export default function TasksCard() {
   const tasks = useQuery(api.tasks.deadlineTasks) || [];
 
   return (
-    <Card>
+    <Card className="h-full min-w-[550px] overflow-y-auto flex flex-col">
       <CardHeader className="flex flex-row items-center">
         <div className="grid gap-2">
           <CardTitle>Do Today Tasks</CardTitle>
@@ -47,33 +39,12 @@ export default function TasksCard() {
           </Link>
         </Button>
       </CardHeader>
-      <CardContent>
+      <CardContent className="">
         {tasks.length > 0 ? (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Task</TableHead>
-                <TableHead className="w-[100px]">Due</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody className="border-b">
-              {tasks.map((task) => (
-                <TableRow key={task._id}>
-                  <TableCell>{task.name}</TableCell>
-                  <TableCell
-                    className={cn(
-                      "w-[110px]",
-                      dayjs(task.due).isBefore(dayjs(), "day") &&
-                        "text-destructive",
-                    )}
-                  >
-                    {task.due ? dayjs(task.due).format("ddd MMM D") : ""}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
+          <div className="flex flex-col gap-2 overflow-y-auto">
+            <TaskList tasks={tasks} />
             <AddTaskWrapper />
-          </Table>
+          </div>
         ) : (
           <div className="text-center text-sm text-muted-foreground">
             No tasks due today

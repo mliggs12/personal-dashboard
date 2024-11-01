@@ -11,14 +11,13 @@ export default function RecentNotesWidget() {
   const recentNotes = useQuery(api.notes.recent);
 
   return (
-    <Card className="w-full h-[500px]">
+    <Card className="w-full">
       <CardHeader className="p-3 md:p-6 flex flex-row items-center">
-        <CardTitle className="text-xl md:text-2xl font-semibold">
-          Recent Notes
-        </CardTitle>
+        <CardTitle className="font-semibold">Recent Notes</CardTitle>
         <Button
           asChild
-          className="h-6 md:h-10 w-fit text-xs md:text-sm ml-auto gap-1"
+          size="sm"
+          className="ml-auto gap-1"
         >
           <Link href="/dashboard/notes">
             View All
@@ -34,11 +33,11 @@ export default function RecentNotesWidget() {
               className="flex items-center gap-2 cursor-pointer hover:bg-secondary w-full p-2 rounded-md"
             >
               <div className="grid gap-1">
-                <p className="text-md md:text-lg font-medium truncate leading-none">
+                <p className="font-medium truncate leading-none">
                   {note.title}
                 </p>
               </div>
-              <div className="hidden md:flex ml-auto text-sm md:text-lg font-medium whitespace-nowrap">
+              <div className="hidden md:flex ml-auto font-medium whitespace-nowrap">
                 {new Date(note._creationTime).toLocaleString()}
               </div>
             </div>

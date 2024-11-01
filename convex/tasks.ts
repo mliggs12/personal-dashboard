@@ -64,17 +64,12 @@ export const remove = mutation({
 export const completeTask = mutation({
   args: { taskId: v.id("tasks") },
   async handler(ctx, { taskId }) {
-    try {
-      const completedTaskId = await ctx.db.patch(taskId, {
-        status: "done",
-      });
-
-      return completedTaskId;
-    } catch (err) {
-      console.log("Error occurred during completeTask mutation", err);
-
-      return null;
-    }
+    const now = Date.now();
+    return await ctx.db.patch(taskId, {
+      status: "done",
+      completed: now,
+      updated: now,
+    });
   },
 });
 
@@ -83,6 +78,8 @@ export const unCompleteTask = mutation({
   async handler(ctx, { taskId }) {
     return await ctx.db.patch(taskId, {
       status: "todo",
+      completed: undefined,
+      updated: Date.now(),
     });
   },
 });
@@ -161,5 +158,15 @@ export const deadlineTasks = query({
         ),
       )
       .collect();
+  },
+});
+
+export const updateNotes = mutation({
+  args: { taskId: v.id("tasks"), notes: v.optional(v.string()) },
+  async handler(ctx, { taskId, notes }) {
+    return await ctx.db.patch(taskId, {
+      notes: notes || "",
+      updated: Date.now(),
+    });
   },
 });

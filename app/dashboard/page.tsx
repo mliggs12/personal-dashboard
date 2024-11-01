@@ -2,13 +2,13 @@ import dayjs from "dayjs";
 
 import CalendarScheduleView from "@/components/calendar/calendar-schedule-view";
 
-import DashboardClient from "./components/dashboard-client";
+import TasksCard from "./components/tasks/tasks-card";
 
 export default function DashboardPage() {
   const now = dayjs();
 
   return (
-    <div className="flex flex-col p-1">
+    <div className="flex flex-col">
       <div className="flex items-center justify-between space-y-2 px-2">
         <h2 className="text-5xl font-bold tracking-tight">Dashboard</h2>
         <div className="hidden md:flex items-center justify-center">
@@ -26,7 +26,7 @@ export default function DashboardPage() {
         </p>
       </div>
       <div className="flex gap-2">
-        <DashboardClient />
+        <TasksCard />
         <CalendarScheduleView />
       </div>
     </div>
