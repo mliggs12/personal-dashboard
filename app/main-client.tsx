@@ -16,7 +16,7 @@ export default function MainClient({
       <Authenticated>
         <AppSidebar />
         {/* <main> */}
-        <SidebarInset className="h-dvh">
+        <SidebarInset className="h-dvh flex gap-24 container pt-2">
           {/* <SidebarTrigger className="-ml-1" /> */}
           {children}
           <Toaster />
@@ -24,7 +24,7 @@ export default function MainClient({
       </Authenticated>
 
       <Unauthenticated>
-        <div className="flex gap-24 container mx-auto pt-6">{children}</div>
+        <div className="flex gap-24 container pt-6">{children}</div>
       </Unauthenticated>
     </>
   );
