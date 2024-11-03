@@ -1,10 +1,10 @@
 const authConfig = {
   providers: [
     {
-      domain: "https://closing-roughy-37.clerk.accounts.dev",
+      domain: "https://clerk.enthousiazein.me",
       applicationID: "convex",
     },
-  ]
+  ],
 };
 
 export default authConfig;
