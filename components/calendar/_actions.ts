@@ -1,16 +1,21 @@
 import dayjs from "dayjs";
 
-import { clerkClient } from "@clerk/nextjs/server";
-
 import { Event } from "./types";
 
 async function getOauthToken(userId: string): Promise<string> {
   try {
-    const response = await clerkClient.users.getUserOauthAccessToken(
-      userId,
-      "oauth_google",
-    );
-    const token = response.data[0].token as string;
+    const token = await fetch("/api/auth/google-token", {
+      headers: {
+        "user-id": userId,
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => data.token);
+
+    if (!token) {
+      throw new Error("No token found");
+    }
+
     return token;
   } catch (error) {
     throw new Error("Failed to retrieve user OAuth token");

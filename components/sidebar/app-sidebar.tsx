@@ -9,7 +9,6 @@ import {
   TableProperties,
   Timer,
 } from "lucide-react";
-import { UserButton } from "@clerk/nextjs";
 
 import { ModeToggle } from "@/components/ui/mode-toggle";
 import {
@@ -88,7 +87,6 @@ export default function AppSidebar({
       </SidebarContent>
       <SidebarFooter>
         <ModeToggle />
-        <UserButton />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

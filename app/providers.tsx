@@ -1,8 +1,6 @@
 "use client";
 
-import { ClerkProvider, useAuth } from "@clerk/nextjs";
-import { ConvexReactClient } from "convex/react";
-import { ConvexProviderWithClerk } from "convex/react-clerk";
+import { ConvexProvider, ConvexReactClient } from "convex/react";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SidebarProvider } from "@/components/ui/sidebar";
 
@@ -18,16 +16,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
       enableSystem
       disableTransitionOnChange
     >
-      <ClerkProvider
-        publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
-      >
-        <ConvexProviderWithClerk
-          client={convex}
-          useAuth={useAuth}
-        >
-          <SidebarProvider defaultOpen={false}>{children}</SidebarProvider>
-        </ConvexProviderWithClerk>
-      </ClerkProvider>
+      <ConvexProvider client={convex}>
+        <SidebarProvider defaultOpen={false}>{children}</SidebarProvider>
+      </ConvexProvider>
     </ThemeProvider>
   );
 }

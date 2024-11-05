@@ -1,16 +1,10 @@
-import { auth } from "@clerk/nextjs/server";
 import { Card, CardContent } from "@/components/ui/card";
 import { getUserEvents } from "./_actions";
 import EventsList from "./events-list";
 
 export default async function CalendarScheduleView() {
-  const { userId } = auth();
-
-  if (!userId) {
-    return null;
-  }
-
-  const events = await getUserEvents(userId);
+  // const events = await getUserEvents(userId);
+  const events = [];
 
   return (
     <Card className="w-[450px] h-full">
