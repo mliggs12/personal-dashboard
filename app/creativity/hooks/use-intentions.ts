@@ -18,7 +18,6 @@ export function useIntentions(selectedTab: string) {
 
   return {
     intentions: result?.sort((a, b) => a.updatedAt! - b.updatedAt!),
-    isLoading: result === undefined,
     error: result instanceof Error ? result : null,
   };
 }

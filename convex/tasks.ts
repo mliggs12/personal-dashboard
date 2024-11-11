@@ -91,10 +91,7 @@ export const todayTasks = query({
     return await ctx.db
       .query("tasks")
       .filter((q) =>
-        q.and(
-          q.eq(q.field("status"), "todo" || "in_progress"),
-          q.lte(q.field("due"), today),
-        ),
+        q.and(q.eq(q.field("status"), "todo"), q.lte(q.field("due"), today)),
       )
       .collect();
   },
@@ -126,10 +123,6 @@ export const getByIntention = query({
 // Get tasks due today or overdue
 export const doTodayTasks = query({
   async handler(ctx) {
-    const identity = await ctx.auth.getUserIdentity();
-    if (identity === null) {
-      throw new Error("Unauthorized");
-    }
     const today = dayjs().tz(TIMEZONE).format("YYYY/MM/DD");
 
     return await ctx.db
@@ -150,10 +143,6 @@ export const doTodayTasks = query({
 // Get all incomplete tasks with a due date that is today or overdue
 export const deadlineTasks = query({
   async handler(ctx) {
-    const identity = await ctx.auth.getUserIdentity();
-    if (identity === null) {
-      throw new Error("Unauthorized");
-    }
     const today = dayjs().tz(TIMEZONE).format("YYYY/MM/DD");
     return await ctx.db
       .query("tasks")

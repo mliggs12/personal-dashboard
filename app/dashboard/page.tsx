@@ -27,7 +27,7 @@ export default function DashboardPage() {
       </div>
       <div className="flex gap-2">
         <TasksCard />
-        <CalendarScheduleView />
+        {/* <CalendarScheduleView /> */}
       </div>
     </div>
   );
