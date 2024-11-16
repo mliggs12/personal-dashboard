@@ -88,7 +88,7 @@ export default function AddTaskInline({
 
     toast({
       title: "Task added",
-      duration: 1500,
+      duration: 3000,
     });
     form.reset({ ...defaultValues });
     setShowAddTask(false);

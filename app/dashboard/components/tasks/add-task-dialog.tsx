@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 
 import { useMutation } from "convex/react";
 import dayjs from "dayjs";
-import { Calendar, Flag, Trash2 } from "lucide-react";
+import { CalendarIcon, Trash2 } from "lucide-react";
 
+import { Calendar } from "@/components/ui/calendar";
 import {
   DialogContent,
   DialogDescription,
@@ -25,41 +26,34 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { priorities, statuses } from "@/app/tasks/data/data";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 export default function AddTaskDialog({ data }: { data: Doc<"tasks"> }) {
   const { name, updated, notes, status, priority, due, _id } = data;
 
   const remove = useMutation(api.tasks.remove);
+  const updateDue = useMutation(api.tasks.updateDue);
   const updateStatus = useMutation(api.tasks.updateStatus);
+  const updatePriority = useMutation(api.tasks.updatePriority);
 
   const { toast } = useToast();
 
-  const [taskDetails, setTaskDetails] = useState<
-    Array<{ labelName: string; value: string; icon: React.ReactNode }>
-  >([]);
+  const [taskDue, setTaskDue] = useState<String | undefined>(due);
+  const [taskStatus, setTaskStatus] = useState(
+    statuses.find((statusInfo) => statusInfo.value === status),
+  );
+  const [taskPriority, setTaskPriority] = useState(
+    priorities.find((priorityInfo) => priorityInfo.value === priority),
+  );
 
-  useEffect(() => {
-    const data = [
-      {
-        labelName: "Due date",
-        value: dayjs(due || "").format("ddd MMM D"),
-        icon: <Calendar className="w-4 h-4 text-primary capitalize" />,
-      },
-      {
-        labelName: "Status",
-        value: status?.toString() || "",
-        icon: <Flag className="w-4 h-4 text-primary capitalize" />,
-      },
-      {
-        labelName: "Priority",
-        value: priority?.toString() || "",
-        icon: <Flag className="w-4 h-4 text-primary capitalize" />,
-      },
-    ];
-    if (data) {
-      setTaskDetails(data);
-    }
-  }, [due, status, priority]);
+  const [calendarDate, setCalendarDate] = useState<Date | undefined>(
+    taskDue ? dayjs(due).toDate() : undefined,
+  );
 
   const handleDeleteTask = (e: any) => {
     e.preventDefault();
@@ -67,6 +61,32 @@ export default function AddTaskDialog({ data }: { data: Doc<"tasks"> }) {
     if (deletedId !== undefined) {
       toast({
         title: "🗑️ Successfully deleted",
+        duration: 3000,
+      });
+    }
+  };
+
+  const handleDueChange = () => {
+    if (calendarDate === undefined && due !== undefined) {
+      updateDue({
+        taskId: _id,
+      });
+      setTaskDue(calendarDate);
+      toast({
+        title: "Due date updated",
+        duration: 3000,
+      });
+    } else if (
+      calendarDate &&
+      dayjs(calendarDate).format("YYYY/MM/DD") !== due
+    ) {
+      updateDue({
+        taskId: _id,
+        due: dayjs(calendarDate).format("YYYY/MM/DD"),
+      });
+      setTaskDue(dayjs(calendarDate).format("YYYY/MM/DD"));
+      toast({
+        title: "Due date updated",
         duration: 3000,
       });
     }
@@ -83,6 +103,17 @@ export default function AddTaskDialog({ data }: { data: Doc<"tasks"> }) {
         | "cancelled"
         | "archived",
     });
+    setTaskStatus(statuses.find((statusInfo) => statusInfo.value === status));
+  };
+
+  const handlePriorityChange = (priority: string) => {
+    updatePriority({
+      taskId: _id,
+      priority: priority as "low" | "normal" | "high",
+    });
+    setTaskPriority(
+      priorities.find((priorityInfo) => priorityInfo.value === priority),
+    );
   };
 
   return (
@@ -97,54 +128,94 @@ export default function AddTaskDialog({ data }: { data: Doc<"tasks"> }) {
         </DialogDescription>
       </DialogHeader>
       <div className="flex flex-col gap-2 w-1/2">
-        {taskDetails.map(({ labelName, value, icon }, idx) =>
-          labelName === "Status" ? (
-            <div
-              key={`${value}-${idx}`}
-              className="grid gap-2 p-4 border-b-2"
+        <div className="grid gap-2 p-2 py-4 border-b-2">
+          <Label className="flex ml-3 items-start text-base">Due date</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                size="sm"
+                variant="ghost"
+                className={cn(
+                  "mr-auto h-8 data-[state=open]:bg-accent",
+                  taskDue === undefined && "text-muted-foreground",
+                )}
+              >
+                <CalendarIcon className="w-4 h-4 capitalize" />
+                {calendarDate ? (
+                  dayjs(calendarDate).format("MMMM DD, YYYY")
+                ) : (
+                  <span>Pick a due date</span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent
+              className="w-auto p-0"
+              align="start"
+              onFocusOutside={() => handleDueChange()}
             >
-              <Label className="flex items-start">{labelName}</Label>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-7 mr-auto p-0 justify-start data-[state=open]:bg-accent text-lg font-normal"
-                  >
-                    {icon}
-                    <span>
-                      {value.charAt(0).toUpperCase() + value.slice(1)}
-                    </span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start">
-                  {statuses.map((status) => (
-                    <DropdownMenuItem
-                      key={status.value}
-                      onClick={() => handleStatusChange(status.value)}
-                    >
-                      {status.icon && (
-                        <status.icon className="mr-2 h-4 w-4 text-muted-foreground" />
-                      )}
-                      <span>{status.label}</span>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          ) : (
-            <div
-              key={`${value}-${idx}`}
-              className="grid gap-2 p-4 border-b-2 w-full"
-            >
-              <Label className="flex items-start">{labelName}</Label>
-              <div className="flex text-left items-center justify-start gap-2 pb-2">
-                {icon}
-                <p>{value.charAt(0).toUpperCase() + value.slice(1)}</p>
-              </div>
-            </div>
-          ),
-        )}
+              <Calendar
+                mode="single"
+                selected={calendarDate}
+                onSelect={setCalendarDate}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+        <div className="grid gap-2 p-2 py-4 border-b-2 text-left">
+          <Label className="flex ml-3 items-start text-base">Status</Label>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="mr-auto h-8 data-[state=open]:bg-accent"
+              >
+                {taskStatus?.icon}
+                <span>{taskStatus?.label}</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              {statuses.map((status, index) => (
+                <DropdownMenuItem
+                  key={index}
+                  onSelect={() => handleStatusChange(status.value)}
+                  className="gap-2"
+                >
+                  {status.icon}
+                  <span>{status.label}</span>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+        <div className="grid gap-2 p-2 py-4 border-b-2 text-left">
+          <Label className="flex ml-3 items-start text-base">Priority</Label>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="mr-auto h-8 data-[state=open]:bg-accent"
+              >
+                {taskPriority?.icon}
+                <span>{taskPriority?.label}</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              {priorities.map((priority, index) => (
+                <DropdownMenuItem
+                  key={index}
+                  onSelect={() => handlePriorityChange(priority.value)}
+                  className="gap-2"
+                >
+                  {priority.icon}
+                  <span>{priority.label}</span>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
         <div className="flex gap-2 p-4 w-full justify-end">
           <form onSubmit={(e) => handleDeleteTask(e)}>
             <Button

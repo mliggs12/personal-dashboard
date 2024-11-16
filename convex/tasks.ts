@@ -129,7 +129,11 @@ export const doTodayTasks = query({
       .query("tasks")
       .filter((q) =>
         q.or(
-          q.and(q.neq(q.field("due"), undefined), q.lte(q.field("due"), today)),
+          q.and(
+            q.neq(q.field("due"), undefined),
+            q.lte(q.field("due"), today),
+            q.neq(q.field("status"), "done"),
+          ),
           q.or(
             q.eq(q.field("status"), "todo"),
             q.eq(q.field("status"), "in_progress"),
@@ -157,11 +161,33 @@ export const deadlineTasks = query({
   },
 });
 
+export const backlogTasks = query({
+  async handler(ctx) {
+    return await ctx.db
+      .query("tasks")
+      .filter((q) => q.eq(q.field("status"), "backlog"))
+      .collect();
+  },
+});
+
 export const updateNotes = mutation({
   args: { taskId: v.id("tasks"), notes: v.optional(v.string()) },
   async handler(ctx, { taskId, notes }) {
     return await ctx.db.patch(taskId, {
       notes: notes || "",
+      updated: Date.now(),
+    });
+  },
+});
+
+export const updateDue = mutation({
+  args: {
+    taskId: v.id("tasks"),
+    due: v.optional(v.string()),
+  },
+  async handler(ctx, { taskId, due }) {
+    return await ctx.db.patch(taskId, {
+      due,
       updated: Date.now(),
     });
   },
@@ -182,6 +208,19 @@ export const updateStatus = mutation({
   async handler(ctx, { taskId, status }) {
     return await ctx.db.patch(taskId, {
       status,
+      updated: Date.now(),
+    });
+  },
+});
+
+export const updatePriority = mutation({
+  args: {
+    taskId: v.id("tasks"),
+    priority: v.union(v.literal("low"), v.literal("normal"), v.literal("high")),
+  },
+  async handler(ctx, { taskId, priority }) {
+    return await ctx.db.patch(taskId, {
+      priority,
       updated: Date.now(),
     });
   },

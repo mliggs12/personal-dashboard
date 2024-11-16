@@ -27,7 +27,7 @@ export default function Task({
   return (
     <div
       key={data._id}
-      className="py-6 border-b w-full flex justify-between space-x-2 animate-in fade-in"
+      className="py-6 px-1 border-b w-full flex justify-between space-x-2 animate-in fade-in hover:bg-secondary hover:cursor-pointer"
     >
       <Dialog>
         <div className="flex gap-2 items-center justify-end w-full">
