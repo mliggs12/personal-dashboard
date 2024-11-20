@@ -118,8 +118,8 @@ export default defineSchema({
     ),
     notes: v.optional(v.string()),
     due: v.optional(v.string()), // YYYY-MM-DD
-    updated: v.optional(v.number()),
     completed: v.optional(v.number()),
+    updated: v.optional(v.number()),
     frequency: v.optional(
       v.union(v.literal("daily"), v.literal("weekly"), v.literal("monthly")), // omitted for single tasks or instances of recurring tasks
     ),

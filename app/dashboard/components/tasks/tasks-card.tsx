@@ -14,11 +14,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { api } from "@/convex/_generated/api";
+import { Task } from "@/types";
 
 import { AddTaskWrapper } from "./add-task-button";
 import TaskList from "./task-list";
 
-function orderTasks(tasks: any) {
+function orderTasks(tasks: Task[]): Task[] {
   // Order tasks: first by deadline (if exists), then by updated timestamp
   const orderedTasks = tasks.sort((a, b) => {
     // If neither task has a deadline, sort by updated timestamp (newest first)
