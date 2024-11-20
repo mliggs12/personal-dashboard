@@ -103,8 +103,6 @@ export default defineSchema({
 
   tasks: defineTable({
     name: v.string(),
-    updated: v.optional(v.number()),
-    notes: v.optional(v.string()),
     status: v.optional(
       v.union(
         v.literal("backlog"),
@@ -118,8 +116,15 @@ export default defineSchema({
     priority: v.optional(
       v.union(v.literal("low"), v.literal("normal"), v.literal("high")),
     ),
+    notes: v.optional(v.string()),
     due: v.optional(v.string()), // YYYY-MM-DD
+    updated: v.optional(v.number()),
     completed: v.optional(v.number()),
+    frequency: v.optional(
+      v.union(v.literal("daily"), v.literal("weekly"), v.literal("monthly")), // omitted for single tasks or instances of recurring tasks
+    ),
+    recurCount: v.optional(v.number()),
+    recurringTaskId: v.optional(v.id("tasks")), // For an instance of a recurring task, this is the id of the parent recurring task
     intentionId: v.optional(v.id("intentions")),
     parentTaskId: v.optional(v.id("tasks")),
   }),

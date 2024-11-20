@@ -18,8 +18,7 @@ import { api } from "@/convex/_generated/api";
 import { AddTaskWrapper } from "./add-task-button";
 import TaskList from "./task-list";
 
-export default function TasksCard() {
-  const tasks = useQuery(api.tasks.doTodayTasks) || [];
+function orderTasks(tasks: any) {
   // Order tasks: first by deadline (if exists), then by updated timestamp
   const orderedTasks = tasks.sort((a, b) => {
     // If neither task has a deadline, sort by updated timestamp (newest first)
@@ -38,7 +37,14 @@ export default function TasksCard() {
       : dateComparison;
   });
 
+  return orderedTasks;
+}
+
+export default function TasksCard() {
+  const tasks = useQuery(api.tasks.doTodayTasks) || [];
+  const orderedTasks = orderTasks(tasks);
   const backlogTasks = useQuery(api.tasks.backlogTasks) || [];
+  const orderedBacklogTasks = orderTasks(backlogTasks);
 
   if (tasks.length === 0) {
     return (
@@ -64,7 +70,7 @@ export default function TasksCard() {
         </CardHeader>
         <CardContent className="p-3 pt-0">
           <div className="flex flex-col gap-2">
-            <TaskList tasks={backlogTasks} />
+            <TaskList tasks={orderedBacklogTasks} />
             <AddTaskWrapper />
           </div>
         </CardContent>
