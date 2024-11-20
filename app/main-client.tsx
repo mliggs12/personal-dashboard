@@ -3,6 +3,7 @@
 import AppSidebar from "@/components/sidebar/app-sidebar";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { Toaster } from "@/components/ui/toaster";
+import { Authenticated } from "convex/react";
 
 export default function MainClient({
   children,
@@ -11,13 +12,15 @@ export default function MainClient({
 }) {
   return (
     <>
-      <AppSidebar />
-      {/* <main> */}
-      <SidebarInset className="h-dvh flex gap-24 container">
-        {/* <SidebarTrigger className="-ml-1" /> */}
-        {children}
-        <Toaster />
-      </SidebarInset>
+      <Authenticated>
+        <AppSidebar />
+        {/* <main> */}
+        <SidebarInset className="h-dvh flex gap-24 container">
+          {/* <SidebarTrigger className="-ml-1" /> */}
+          {children}
+          <Toaster />
+        </SidebarInset>
+      </Authenticated>
     </>
   );
 }

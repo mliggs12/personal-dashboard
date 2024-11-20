@@ -23,6 +23,9 @@ import {
 } from "@/components/ui/sidebar";
 
 import NavMain from "./nav-main";
+import { UserButton } from "@clerk/nextjs";
+
+import { cn } from "@/lib/utils";
 
 const data = {
   navItems: [
@@ -76,7 +79,7 @@ export default function AppSidebar({
             >
               <Link href="/">
                 <Brain />
-                <span>Enthousiazein</span>
+                <span>Dashboard</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -86,7 +89,10 @@ export default function AppSidebar({
         <NavMain items={data.navItems} />
       </SidebarContent>
       <SidebarFooter>
-        <ModeToggle />
+        <div className={cn("flex flex-col gap-2 items-center")}>
+          <ModeToggle />
+          <UserButton />
+        </div>
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
