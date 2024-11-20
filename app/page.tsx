@@ -1,6 +1,6 @@
 "use client";
 
-import { Authenticated, Unauthenticated } from "convex/react";
+import { Authenticated, AuthLoading, Unauthenticated } from "convex/react";
 import DashboardPage from "./dashboard/page";
 import LoginPage from "./login-page";
 
@@ -13,6 +13,7 @@ export default function Home() {
       <Authenticated>
         <DashboardPage />
       </Authenticated>
+      <AuthLoading>Loading...</AuthLoading>
     </>
   );
 }
