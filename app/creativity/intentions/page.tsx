@@ -42,7 +42,7 @@ const MOBILE_TABS = ["tithe", "all"];
 
 export default function IntentionsPage() {
   const [selectedTab, setSelectedTab] = useState(TABS[0].value);
-  const { intentions, isLoading, error } = useIntentions(selectedTab);
+  const { intentions, error } = useIntentions(selectedTab);
 
   const allowIntentions = useQuery(api.intentions.getByStatus, {
     status: "allow",
