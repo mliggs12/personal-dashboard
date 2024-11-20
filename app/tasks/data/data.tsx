@@ -32,32 +32,34 @@ export const statuses = [
   {
     value: "backlog",
     label: "Backlog",
-    icon: QuestionMarkCircledIcon,
+    icon: (
+      <QuestionMarkCircledIcon className="w-4 h-4 text-primary capitalize" />
+    ),
   },
   {
     value: "todo",
     label: "Todo",
-    icon: CircleIcon,
+    icon: <CircleIcon className="w-4 h-4 text-primary capitalize" />,
   },
   {
     value: "in_progress", // Updated to match schema
     label: "In Progress",
-    icon: StopwatchIcon,
+    icon: <StopwatchIcon className="w-4 h-4 text-primary capitalize" />,
   },
   {
     value: "done",
     label: "Done",
-    icon: CheckCircledIcon,
+    icon: <CheckCircledIcon className="w-4 h-4 text-primary capitalize" />,
   },
   {
     value: "cancelled",
     label: "Cancelled",
-    icon: CrossCircledIcon,
+    icon: <CrossCircledIcon className="w-4 h-4 text-primary capitalize" />,
   },
   {
     value: "archived", // Added archived status
     label: "Archived",
-    icon: ArchiveIcon,
+    icon: <ArchiveIcon className="w-4 h-4 text-primary capitalize" />,
   },
 ];
 
@@ -65,16 +67,16 @@ export const priorities = [
   {
     label: "Low",
     value: "low",
-    icon: ArrowDownIcon,
+    icon: <ArrowDownIcon className="w-4 h-4 text-primary capitalize" />,
   },
   {
     label: "Normal",
     value: "normal",
-    icon: ArrowRightIcon,
+    icon: <ArrowRightIcon className="w-4 h-4 text-primary capitalize" />,
   },
   {
     label: "High",
     value: "high",
-    icon: ArrowUpIcon,
+    icon: <ArrowUpIcon className="w-4 h-4 text-primary capitalize" />,
   },
 ];

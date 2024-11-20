@@ -40,6 +40,7 @@ import {
   SelectContent,
   SelectValue,
 } from "@/components/ui/select";
+import SetRecurringPopover from "./set-recurring-popover";
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
@@ -88,7 +89,7 @@ export default function AddTaskInline({
 
     toast({
       title: "Task added",
-      duration: 1500,
+      duration: 3000,
     });
     form.reset({ ...defaultValues });
     setShowAddTask(false);
@@ -213,6 +214,7 @@ export default function AddTaskInline({
           </div>
           <CardFooter className="flex flex-col lg:flex-row lg:justify-between gap-2 border-t-2 pt-3">
             <div className="w-full" />
+            <SetRecurringPopover />
             <div className="flex gap-3 self-end">
               <Button
                 className="bg-secondary text-secondary-foreground px-6 hover:bg-secondary/90"
