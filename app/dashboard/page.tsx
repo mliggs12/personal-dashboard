@@ -1,7 +1,5 @@
 import dayjs from "dayjs";
 
-import CalendarScheduleView from "@/components/calendar/calendar-schedule-view";
-
 import TasksCard from "./components/tasks/tasks-card";
 
 export default function DashboardPage() {
@@ -16,14 +14,8 @@ export default function DashboardPage() {
         </div>
       </div>
       <div className="border-y-2 py-2 px-4 my-2">
-        <h3 className="text-xl font-semibold">Intention for my life</h3>
-        <p className="font-light italic">
-          Alignment with True self
-          <br />
-          To live with a consistent, unconditional feeling of a fullness of
-          being with an inner satisfaction and a passion for life and for
-          living.
-        </p>
+        <h3 className="text-xl font-semibold">Inspiring header</h3>
+        <p className="font-light italic">Some inspiring quote.</p>
       </div>
       <div className="flex gap-2">
         <TasksCard />
