@@ -8,7 +8,7 @@ export type TaskStatus =
   | "cancelled"
   | "archived";
 export type TaskPriority = "low" | "normal" | "high";
-export type TaskFrequency = "daily" | "weekly" | "monthly";
+export type TaskFrequency = "daily" | "3-day" | "weekly";
 
 export interface Task {
   _id: Id<"tasks">;
@@ -25,4 +25,5 @@ export interface Task {
   recurringTaskId?: Id<"tasks">;
   intentionId?: Id<"intentions">;
   parentTaskId?: Id<"tasks">;
+  userId?: Id<"users">;
 }
