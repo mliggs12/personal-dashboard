@@ -1,7 +1,7 @@
 const authConfig = {
   providers: [
     {
-      domain: "https://generous-bee-78.clerk.accounts.dev",
+      domain: process.env.CLERK_DOMAIN,
       applicationID: "convex",
     },
   ],
