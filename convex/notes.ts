@@ -1,10 +1,26 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import moment from "moment-timezone";
 
 export const recent = query({
   async handler(ctx) {
-    const last5 = await ctx.db.query("notes").order("desc").take(5);
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated call to mutation");
+    }
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier),
+      )
+      .unique();
+    if (!user) {
+      throw new Error("Unauthenticated call to mutation");
+    }
+    const last5 = await ctx.db
+      .query("notes")
+      .filter((q) => q.eq(q.field("userId"), user._id))
+      .order("desc")
+      .take(5);
     if (!last5) {
       throw new ConvexError("Unable to retrieve notes");
     }
@@ -19,13 +35,48 @@ export const create = mutation({
     text: v.optional(v.string()),
   },
   async handler(ctx, { title, text }) {
-    await ctx.db.insert("notes", { title, text });
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated call to mutation");
+    }
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier),
+      )
+      .unique();
+    if (!user) {
+      throw new Error("Unauthenticated call to mutation");
+    }
+    await ctx.db.insert("notes", {
+      title,
+      text,
+      updated: Date.now(),
+      userId: user._id,
+    });
   },
 });
 
 export const list = query({
   async handler(ctx) {
-    const notes = await ctx.db.query("notes").order("desc").collect();
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated call to mutation");
+    }
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier),
+      )
+      .unique();
+    if (!user) {
+      throw new Error("Unauthenticated call to mutation");
+    }
+    const notes = await ctx.db
+      .query("notes")
+      .filter((q) => q.eq(q.field("userId"), user._id))
+      .order("desc")
+      .collect();
     if (!notes) {
       throw new ConvexError("Unable to retrieve notes");
     }
@@ -39,6 +90,19 @@ export const get = query({
     id: v.id("notes"),
   },
   async handler(ctx, { id }) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated call to mutation");
+    }
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier),
+      )
+      .unique();
+    if (!user) {
+      throw new Error("Unauthenticated call to mutation");
+    }
     const note = await ctx.db.get(id);
     if (!note) {
       throw new ConvexError("Unable to retrieve note");
@@ -55,6 +119,19 @@ export const update = mutation({
     text: v.optional(v.string()),
   },
   async handler(ctx, { id, title, text }) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated call to mutation");
+    }
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier),
+      )
+      .unique();
+    if (!user) {
+      throw new Error("Unauthenticated call to mutation");
+    }
     try {
       const existingNote = await ctx.db.get(id);
 
@@ -62,7 +139,7 @@ export const update = mutation({
         ...existingNote,
         title: title ?? existingNote?.title ?? "",
         text: text ?? existingNote?.text ?? "",
-        updated: moment().valueOf(),
+        updated: Date.now(),
       };
 
       await ctx.db.patch(id, updatedNote);
