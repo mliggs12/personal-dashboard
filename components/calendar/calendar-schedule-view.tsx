@@ -1,10 +1,10 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { getUserEvents } from "./_actions";
 import EventsList from "./events-list";
+import { Event } from "./types";
 
 export default async function CalendarScheduleView() {
   // const events = await getUserEvents(userId);
-  const events = [];
+  const events: Event[] = [];
 
   return (
     <Card className="w-[450px] h-full">
