@@ -1,9 +1,5 @@
-import { useEffect, useState } from "react";
-
-import { useMutation } from "convex/react";
-import dayjs from "dayjs";
-import { CalendarIcon, Trash2 } from "lucide-react";
-
+import { priorities, statuses } from "@/app/tasks/data/data";
+import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
   DialogContent,
@@ -11,27 +7,27 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { api } from "@/convex/_generated/api";
-import { Doc } from "@/convex/_generated/dataModel";
-import { useToast } from "@/hooks/use-toast";
-
-import TaskNotes from "./task-notes";
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-import { priorities, statuses } from "@/app/tasks/data/data";
+import { Label } from "@/components/ui/label";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { api } from "@/convex/_generated/api";
+import { Doc } from "@/convex/_generated/dataModel";
+import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { useMutation } from "convex/react";
+import dayjs from "dayjs";
+import { CalendarIcon, Trash2 } from "lucide-react";
+import { useState } from "react";
+import TaskNotes from "./task-notes";
 
 export default function AddTaskDialog({ data }: { data: Doc<"tasks"> }) {
   const { name, updated, notes, status, priority, due, _id } = data;

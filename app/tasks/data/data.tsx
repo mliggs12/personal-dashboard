@@ -1,4 +1,5 @@
 import {
+  ArchiveIcon,
   ArrowDownIcon,
   ArrowRightIcon,
   ArrowUpIcon,
@@ -7,7 +8,6 @@ import {
   CrossCircledIcon,
   QuestionMarkCircledIcon,
   StopwatchIcon,
-  ArchiveIcon,
 } from "@radix-ui/react-icons";
 
 export const labels = [
@@ -77,6 +77,24 @@ export const priorities = [
   {
     label: "High",
     value: "high",
+    icon: <ArrowUpIcon className="w-4 h-4 text-primary capitalize" />,
+  },
+];
+
+export const frequencies = [
+  {
+    label: "Daily",
+    value: "daily",
+    icon: <ArrowDownIcon className="w-4 h-4 text-primary capitalize" />,
+  },
+  {
+    label: "3-Day",
+    value: "3-day",
+    icon: <ArrowRightIcon className="w-4 h-4 text-primary capitalize" />,
+  },
+  {
+    label: "Weekly",
+    value: "weekly",
     icon: <ArrowUpIcon className="w-4 h-4 text-primary capitalize" />,
   },
 ];

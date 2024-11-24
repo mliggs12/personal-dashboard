@@ -1,14 +1,6 @@
 "use client";
 
-import { Dispatch, SetStateAction } from "react";
-import { useMutation } from "convex/react";
-import { format } from "date-fns";
-import { CalendarIcon, Text } from "lucide-react";
-
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-
+import { frequencies, priorities, statuses } from "@/app/tasks/data/data";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { CardFooter } from "@/components/ui/card";
@@ -25,31 +17,51 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Textarea } from "@/components/ui/textarea";
-
-import { api } from "@/convex/_generated/api";
-
-import { useToast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
-import dayjs from "dayjs";
-import { statuses } from "@/app/tasks/data/data";
 import {
   Select,
-  SelectTrigger,
-  SelectItem,
   SelectContent,
+  SelectItem,
+  SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import SetRecurringPopover from "./set-recurring-popover";
+import { Textarea } from "@/components/ui/textarea";
+import { api } from "@/convex/_generated/api";
+import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "convex/react";
+import { format } from "date-fns";
+import dayjs from "dayjs";
+import { CalendarIcon, Text } from "lucide-react";
+import { Dispatch, SetStateAction, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
-const formSchema = z.object({
-  name: z.string().min(1, { message: "Name is required" }),
-  due: z.date().optional(),
-  notes: z.string().optional(),
-  status: z.enum(
-    statuses.map((status) => status.value) as [string, ...string[]],
-  ),
-});
+const formSchema = z
+  .object({
+    name: z.string().min(1, { message: "Name is required" }),
+    status: z.enum(
+      statuses.map((status) => status.value) as [string, ...string[]],
+    ),
+    priority: z.enum(
+      priorities.map((priority) => priority.value) as [string, ...string[]],
+    ),
+    notes: z.string().optional(),
+    due: z.date().optional(),
+    frequency: z.enum(["daily", "3-day", "weekly"]).optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.frequency && !data.due) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "Due date is required when recurring frequency is set",
+      path: ["due"],
+    },
+  );
 
 export default function AddTaskInline({
   setShowAddTask,
@@ -59,24 +71,32 @@ export default function AddTaskInline({
   const { toast } = useToast();
   const createTask = useMutation(api.tasks.create);
 
-  const defaultValues = {
-    name: "",
-    due: undefined,
-    notes: "",
-    status: "todo",
-  };
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues,
+    defaultValues: {
+      name: "",
+      status: "todo",
+      priority: "normal",
+      notes: "",
+      due: undefined,
+      frequency: undefined,
+    },
   });
 
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === "frequency" && value.frequency && !value.due) {
+        form.setValue("due", new Date());
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [form]);
+
   async function onSubmit(data: z.infer<typeof formSchema>) {
-    const { name, due, notes, status } = data;
+    const { name, status, priority, notes, due, frequency } = data;
 
     await createTask({
       name,
-      due: due ? dayjs(due).format("YYYY/MM/DD") : undefined,
       status: status as
         | "backlog"
         | "todo"
@@ -84,14 +104,17 @@ export default function AddTaskInline({
         | "done"
         | "cancelled"
         | "archived",
+      priority: priority as "low" | "normal" | "high",
       notes,
+      due: due ? dayjs(due).format("YYYY/MM/DD") : undefined,
+      frequency: frequency as "daily" | "3-day" | "weekly",
     });
 
     toast({
       title: "Task added",
       duration: 3000,
     });
-    form.reset({ ...defaultValues });
+    form.reset();
     setShowAddTask(false);
   }
 
@@ -140,7 +163,7 @@ export default function AddTaskInline({
               </FormItem>
             )}
           />
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <FormField
               control={form.control}
               name="due"
@@ -211,10 +234,69 @@ export default function AddTaskInline({
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              name="priority"
+              render={({ field }) => (
+                <FormItem>
+                  <Select
+                    defaultValue={field.value}
+                    onValueChange={field.onChange}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="gap-2">
+                        <SelectValue placeholder="Select a priority" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {priorities.map((item, idx) => (
+                        <SelectItem
+                          key={idx}
+                          value={item.value}
+                        >
+                          {item.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="frequency"
+              render={({ field }) => (
+                <FormItem>
+                  <Select
+                    defaultValue={field.value}
+                    onValueChange={field.onChange}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="flex gap-2">
+                        <SelectValue placeholder="Set recurring" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {frequencies.map((item, idx) => (
+                        <SelectItem
+                          key={idx}
+                          value={item.value}
+                        >
+                          {item.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
           <CardFooter className="flex flex-col lg:flex-row lg:justify-between gap-2 border-t-2 pt-3">
             <div className="w-full" />
-            <SetRecurringPopover />
             <div className="flex gap-3 self-end">
               <Button
                 className="bg-secondary text-secondary-foreground px-6 hover:bg-secondary/90"

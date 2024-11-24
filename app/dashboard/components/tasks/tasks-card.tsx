@@ -1,7 +1,7 @@
 "use client";
 
-import dayjs from "dayjs";
 import { useQuery } from "convex/react";
+import dayjs from "dayjs";
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 
@@ -14,12 +14,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { api } from "@/convex/_generated/api";
-import { Task } from "@/types";
 
+import { Id } from "@/convex/_generated/dataModel";
 import { AddTaskWrapper } from "./add-task-button";
 import TaskList from "./task-list";
 
-function orderTasks(tasks: Task[]): Task[] {
+function orderTasks(tasks: Id<"tasks">[]): Id<"tasks">[] {
   // Order tasks: first by deadline (if exists), then by updated timestamp
   const orderedTasks = tasks.sort((a, b) => {
     // If neither task has a deadline, sort by updated timestamp (newest first)
@@ -41,6 +41,7 @@ function orderTasks(tasks: Task[]): Task[] {
   return orderedTasks;
 }
 
+// TODO: Set or remove Backlog task logic
 export default function TasksCard() {
   const tasks = useQuery(api.tasks.doTodayTasks) || [];
   const orderedTasks = orderTasks(tasks);

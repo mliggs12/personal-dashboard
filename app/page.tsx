@@ -1,19 +1,21 @@
 "use client";
 
-import { Authenticated, AuthLoading, Unauthenticated } from "convex/react";
+import { useStoreUserEffect } from "@/hooks/useStoreUserEffect";
 import DashboardPage from "./dashboard/page";
 import LoginPage from "./login-page";
 
 export default function Home() {
+  const { isLoading, isAuthenticated } = useStoreUserEffect();
+
   return (
     <>
-      <Unauthenticated>
-        <LoginPage />
-      </Unauthenticated>
-      <Authenticated>
+      {isLoading ? (
+        <>Loading...</>
+      ) : isAuthenticated ? (
         <DashboardPage />
-      </Authenticated>
-      <AuthLoading>Loading...</AuthLoading>
+      ) : (
+        <LoginPage />
+      )}
     </>
   );
 }

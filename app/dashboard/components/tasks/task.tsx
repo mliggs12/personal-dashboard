@@ -1,14 +1,36 @@
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Doc } from "@/convex/_generated/dataModel";
-import { Calendar, GitBranch } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Doc } from "@/convex/_generated/dataModel";
+import { cn } from "@/lib/utils";
+import dayjs from "dayjs";
+import isToday from "dayjs/plugin/isToday";
+import isYesterday from "dayjs/plugin/isYesterday";
+import relativeTime from "dayjs/plugin/relativeTime";
+import { Calendar, GitBranch, Repeat } from "lucide-react";
 import AddTaskDialog from "./add-task-dialog";
 
+dayjs.extend(isToday);
+dayjs.extend(isYesterday);
 dayjs.extend(relativeTime);
+
+function displayDueDate(dueDateString: string) {
+  const dueDate = dayjs(dueDateString, "YYYY/MM/DD");
+  const today = dayjs().startOf("day");
+
+  if (dueDate.isToday()) {
+    return "Today";
+  } else if (dueDate.isYesterday()) {
+    return "Yesterday";
+  } else {
+    return dueDate.from(today);
+  }
+}
 
 export default function Task({
   data,
@@ -21,8 +43,7 @@ export default function Task({
   handleOnChange: any;
   showDetails?: boolean;
 }) {
-  const { name, due } = data;
-  const today = dayjs().startOf("day");
+  const { name, due, recurringTaskId } = data;
 
   return (
     <div
@@ -52,16 +73,34 @@ export default function Task({
                 >
                   {name}
                 </button>
-                {due && (
-                  <p
-                    className={cn(
-                      "w-[70px] text-xs text-right text-muted-foreground",
-                      dayjs(due) < today && "text-destructive",
-                    )}
-                  >
-                    {due ? dayjs(due).format("ddd MMM D") : ""}
-                  </p>
-                )}
+                <div className="flex justify-end items-center">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <Repeat
+                          className={cn(
+                            "hidden w-3 h-3 text-muted-foreground",
+                            recurringTaskId && "flex",
+                          )}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{"Recurring"}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  {due && (
+                    <p
+                      className={cn(
+                        "w-[70px] text-xs text-right text-muted-foreground",
+                        dayjs(due).isBefore(dayjs().startOf("day")) &&
+                          "text-destructive",
+                      )}
+                    >
+                      {displayDueDate(due)}
+                    </p>
+                  )}
+                </div>
                 {showDetails && (
                   <div className="flex gap-2">
                     <div className="flex items-center justify-center gap-1">

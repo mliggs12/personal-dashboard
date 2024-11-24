@@ -1,22 +1,54 @@
+import { v } from "convex/values";
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
-
-import { getLocalDateString } from "../lib/utils";
-import { query, mutation } from "./_generated/server";
-import { v } from "convex/values";
+import { NextDueDate } from "../lib/tasks.utils";
+import { internal } from "./_generated/api";
+import { internalMutation, mutation, query } from "./_generated/server";
 
 dayjs.extend(timezone);
 dayjs.extend(utc);
 const TIMEZONE = "America/Denver";
 
+// TODO: Abstract away user function
+
 export const list = query(async (ctx) => {
-  return await ctx.db.query("tasks").collect();
+  const identity = await ctx.auth.getUserIdentity();
+  if (!identity) {
+    throw new Error("Unauthenticated call to mutation");
+  }
+  const user = await ctx.db
+    .query("users")
+    .withIndex("by_token", (q) =>
+      q.eq("tokenIdentifier", identity.tokenIdentifier),
+    )
+    .unique();
+  if (!user) {
+    throw new Error("Unauthenticated call to mutation");
+  }
+  return await ctx.db
+    .query("tasks")
+    .filter((q) => q.eq(q.field("userId"), user._id))
+    .collect();
 });
 
 export const get = query({
   args: { taskId: v.id("tasks") },
   async handler(ctx, { taskId }) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated call to mutation");
+    }
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier),
+      )
+      .unique();
+    if (!user) {
+      throw new Error("Unauthenticated call to mutation");
+    }
+
     return await ctx.db.get(taskId);
   },
 });
@@ -39,17 +71,122 @@ export const create = mutation({
     ),
     notes: v.optional(v.string()),
     due: v.optional(v.string()), // YYYY-MM-DD
+    frequency: v.optional(
+      v.union(v.literal("daily"), v.literal("3-day"), v.literal("weekly")), // omitted for single tasks or instances of recurring tasks
+    ),
     intentionId: v.optional(v.id("intentions")),
   },
-  async handler(ctx, { name, status, priority, notes, due, intentionId }) {
-    return await ctx.db.insert("tasks", {
+  async handler(
+    ctx,
+    { name, status, priority, notes, due, frequency, intentionId },
+  ) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated call to mutation");
+    }
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier),
+      )
+      .unique();
+    if (!user) {
+      throw new Error("Unauthenticated call to mutation");
+    }
+
+    priority = priority || "normal";
+    notes = notes || "";
+    const recurCount = frequency ? 0 : undefined;
+
+    const taskId = await ctx.db.insert("tasks", {
       name,
-      status: status || "backlog",
-      priority: priority || "normal",
-      notes: notes || "",
+      status: status && frequency ? "in_progress" : "todo",
+      priority,
+      notes,
       due,
       updated: Date.now(),
-      intentionId: intentionId || undefined,
+      frequency,
+      recurCount,
+      intentionId,
+      userId: user._id,
+    });
+
+    if (frequency) {
+      await ctx.runMutation(internal.tasks.createRecurringInstance, {
+        name,
+        priority,
+        notes,
+        due: due!,
+        frequency,
+        recurCount: recurCount!,
+        recurringTaskId: taskId,
+        intentionId,
+        userId: user._id,
+      });
+    }
+  },
+});
+
+export const createRecurringInstance = internalMutation({
+  args: {
+    name: v.string(),
+    priority: v.optional(
+      v.union(v.literal("low"), v.literal("normal"), v.literal("high")),
+    ),
+    notes: v.optional(v.string()),
+    due: v.string(),
+    frequency: v.union(
+      v.literal("daily"),
+      v.literal("3-day"),
+      v.literal("weekly"), // omitted for single tasks or instances of recurring tasks
+    ),
+    recurCount: v.number(),
+    recurringTaskId: v.id("tasks"),
+    intentionId: v.optional(v.id("intentions")),
+    userId: v.id("users"),
+  },
+  async handler(
+    ctx,
+    {
+      name,
+      priority,
+      notes,
+      due,
+      frequency,
+      recurCount,
+      recurringTaskId,
+      intentionId,
+      userId,
+    },
+  ) {
+    await ctx.db.insert("tasks", {
+      name,
+      status: "todo",
+      priority,
+      notes,
+      due: recurCount === 0 ? due : NextDueDate(frequency),
+      updated: Date.now(),
+      recurringTaskId,
+      intentionId,
+      userId,
+    });
+    await ctx.runMutation(internal.tasks.updateRecurCount, { recurringTaskId });
+  },
+});
+
+export const updateRecurCount = internalMutation({
+  args: {
+    recurringTaskId: v.id("tasks"),
+  },
+  async handler(ctx, { recurringTaskId }) {
+    const recurringTask = await ctx.db.get(recurringTaskId);
+    if (!recurringTask) {
+      throw Error("Recurring task not found");
+    }
+
+    return await ctx.db.patch(recurringTaskId, {
+      recurCount: (recurringTask.recurCount! += 1),
+      updated: Date.now(),
     });
   },
 });
@@ -57,6 +194,20 @@ export const create = mutation({
 export const remove = mutation({
   args: { taskId: v.id("tasks") },
   async handler(ctx, { taskId }) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated call to mutation");
+    }
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier),
+      )
+      .unique();
+    if (!user) {
+      throw new Error("Unauthenticated call to mutation");
+    }
+
     return await ctx.db.delete(taskId);
   },
 });
@@ -64,7 +215,48 @@ export const remove = mutation({
 export const completeTask = mutation({
   args: { taskId: v.id("tasks") },
   async handler(ctx, { taskId }) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated call to mutation");
+    }
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier),
+      )
+      .unique();
+    if (!user) {
+      throw new Error("Unauthenticated call to mutation");
+    }
+
     const now = Date.now();
+    const task = await ctx.db.get(taskId);
+    if (!task) throw Error("Task not found");
+    if (task.recurringTaskId !== undefined) {
+      const recurringTask = await ctx.db.get(task.recurringTaskId);
+      if (!recurringTask) throw Error("Recurring task not found");
+      const {
+        name,
+        priority,
+        notes,
+        due,
+        frequency,
+        recurCount,
+        intentionId,
+        userId,
+      } = recurringTask;
+      await ctx.runMutation(internal.tasks.createRecurringInstance, {
+        name,
+        priority,
+        notes,
+        due: due!,
+        frequency: frequency!,
+        recurCount: recurCount!,
+        recurringTaskId: recurringTask._id,
+        intentionId,
+        userId: userId!,
+      });
+    }
     return await ctx.db.patch(taskId, {
       status: "done",
       completed: now,
@@ -76,6 +268,20 @@ export const completeTask = mutation({
 export const unCompleteTask = mutation({
   args: { taskId: v.id("tasks") },
   async handler(ctx, { taskId }) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated call to mutation");
+    }
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier),
+      )
+      .unique();
+    if (!user) {
+      throw new Error("Unauthenticated call to mutation");
+    }
+
     return await ctx.db.patch(taskId, {
       status: "todo",
       completed: undefined,
@@ -84,77 +290,58 @@ export const unCompleteTask = mutation({
   },
 });
 
-// Get tasks due today or overdue
-export const todayTasks = query({
-  async handler(ctx) {
-    const today = getLocalDateString(Date.now());
-    return await ctx.db
-      .query("tasks")
-      .filter((q) =>
-        q.and(q.eq(q.field("status"), "todo"), q.lte(q.field("due"), today)),
-      )
-      .collect();
-  },
-});
-
-export const openTasks = query({
-  async handler(ctx) {
-    return (
-      (await ctx.db
-        .query("tasks")
-        .filter((q) => q.eq(q.field("status"), "backlog"))
-        .collect()) || []
-    );
-  },
-});
-
 export const getByIntention = query({
   args: { intentionId: v.id("intentions") },
   async handler(ctx, { intentionId }) {
-    return (
-      (await ctx.db
-        .query("tasks")
-        .filter((q) => q.eq(q.field("intentionId"), intentionId))
-        .collect()) || []
-    );
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated call to mutation");
+    }
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier),
+      )
+      .unique();
+    if (!user) {
+      throw new Error("Unauthenticated call to mutation");
+    }
+
+    return await ctx.db
+      .query("tasks")
+      .filter((q) => q.eq(q.field("intentionId"), intentionId))
+      .collect();
   },
 });
 
 // Get tasks due today or overdue
 export const doTodayTasks = query({
   async handler(ctx) {
-    const today = dayjs().tz(TIMEZONE).format("YYYY/MM/DD");
-
-    return await ctx.db
-      .query("tasks")
-      .filter((q) =>
-        q.or(
-          q.and(
-            q.neq(q.field("due"), undefined),
-            q.lte(q.field("due"), today),
-            q.neq(q.field("status"), "done"),
-          ),
-          q.or(
-            q.eq(q.field("status"), "todo"),
-            q.eq(q.field("status"), "in_progress"),
-          ),
-        ),
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated call to mutation");
+    }
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier),
       )
-      .collect();
-  },
-});
+      .unique();
+    if (!user) {
+      throw new Error("Unauthenticated call to mutation");
+    }
 
-// Get all incomplete tasks with a due date that is today or overdue
-export const deadlineTasks = query({
-  async handler(ctx) {
-    const today = dayjs().tz(TIMEZONE).format("YYYY/MM/DD");
+    const todayStart = dayjs().startOf("day");
+    const todayEnd = dayjs().endOf("day");
+
     return await ctx.db
       .query("tasks")
       .filter((q) =>
         q.and(
-          q.eq(q.field("completed"), undefined),
-          q.neq(q.field("due"), undefined),
-          q.lte(q.field("due"), today),
+          q.lte(q.field("due"), dayjs().tz(TIMEZONE).format("YYYY/MM/DD")), // TODO: Figure out if timezone is needed and/or which dayjs
+          q.neq(q.field("status"), "done"),
+          q.eq(q.field("frequency"), undefined),
+          q.eq(q.field("userId"), user._id),
         ),
       )
       .collect();
@@ -163,9 +350,28 @@ export const deadlineTasks = query({
 
 export const backlogTasks = query({
   async handler(ctx) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated call to mutation");
+    }
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier),
+      )
+      .unique();
+    if (!user) {
+      throw new Error("Unauthenticated call to mutation");
+    }
+
     return await ctx.db
       .query("tasks")
-      .filter((q) => q.eq(q.field("status"), "backlog"))
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("status"), "backlog"),
+          q.eq(q.field("userId"), user._id),
+        ),
+      )
       .collect();
   },
 });

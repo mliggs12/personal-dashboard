@@ -1,8 +1,8 @@
-import { Doc } from "@/convex/_generated/dataModel";
-import Task from "./task";
-import { useToast } from "@/hooks/use-toast";
 import { api } from "@/convex/_generated/api";
+import { Doc } from "@/convex/_generated/dataModel";
+import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "convex/react";
+import Task from "./task";
 
 export default function TaskList({ tasks }: { tasks: Doc<"tasks">[] }) {
   const { toast } = useToast();
