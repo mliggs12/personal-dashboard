@@ -33,6 +33,8 @@ export default defineSchema({
         v.literal("active"),
       ),
     ),
+    notes: v.optional(v.string()),
+    updated: v.optional(v.number()),
     userId: v.optional(v.id("users")),
   }),
 

@@ -1,8 +1,24 @@
-import { query, mutation } from "./_generated/server";
 import { ConvexError, v } from "convex/values";
+import { mutation, query } from "./_generated/server";
 
 export const list = query(async (ctx) => {
-  return await ctx.db.query("beliefs").collect();
+  const identity = await ctx.auth.getUserIdentity();
+  if (!identity) {
+    throw new Error("Unauthenticated call to mutation");
+  }
+  const user = await ctx.db
+    .query("users")
+    .withIndex("by_token", (q) =>
+      q.eq("tokenIdentifier", identity.tokenIdentifier),
+    )
+    .unique();
+  if (!user) {
+    throw new Error("Unauthenticated call to mutation");
+  }
+  return await ctx.db
+    .query("beliefs")
+    .filter((q) => q.eq(q.field("userId"), user._id))
+    .collect();
 });
 
 export const get = query({
@@ -10,6 +26,19 @@ export const get = query({
     beliefId: v.id("beliefs"),
   },
   async handler(ctx, { beliefId }) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated call to mutation");
+    }
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier),
+      )
+      .unique();
+    if (!user) {
+      throw new Error("Unauthenticated call to mutation");
+    }
     const belief = await ctx.db.get(beliefId);
 
     return belief;
@@ -18,9 +47,27 @@ export const get = query({
 
 export const activeBeliefs = query({
   async handler(ctx) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated call to mutation");
+    }
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier),
+      )
+      .unique();
+    if (!user) {
+      throw new Error("Unauthenticated call to mutation");
+    }
     return await ctx.db
       .query("beliefs")
-      .filter((q) => q.eq(q.field("status"), "active"))
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("status"), "active"),
+          q.eq(q.field("userId"), user._id),
+        ),
+      )
       .collect();
   },
 });
@@ -30,12 +77,29 @@ export const create = mutation({
     title: v.string(),
     description: v.optional(v.string()),
     status: v.optional(v.union(v.literal("active"), v.literal("backlog"))),
+    notes: v.optional(v.string()),
   },
-  async handler(ctx, { title, description, status }) {
+  async handler(ctx, { title, description, status, notes }) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated call to mutation");
+    }
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier),
+      )
+      .unique();
+    if (!user) {
+      throw new Error("Unauthenticated call to mutation");
+    }
     return await ctx.db.insert("beliefs", {
       title,
       description,
       status: status || "backlog",
+      notes: notes || "",
+      updated: Date.now(),
+      userId: user._id,
     });
   },
 });
@@ -46,6 +110,19 @@ export const updateDescription = mutation({
     description: v.string(),
   },
   async handler(ctx, { beliefId, description }) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated call to mutation");
+    }
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier),
+      )
+      .unique();
+    if (!user) {
+      throw new Error("Unauthenticated call to mutation");
+    }
     await ctx.db.patch(beliefId, { description });
   },
 });
@@ -56,6 +133,19 @@ export const updateTitle = mutation({
     title: v.string(),
   },
   async handler(ctx, { beliefId, title }) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated call to mutation");
+    }
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier),
+      )
+      .unique();
+    if (!user) {
+      throw new Error("Unauthenticated call to mutation");
+    }
     await ctx.db.patch(beliefId, { title });
   },
 });
@@ -73,6 +163,19 @@ export const updateStatus = mutation({
     ),
   },
   async handler(ctx, { beliefId, status }) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated call to mutation");
+    }
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier),
+      )
+      .unique();
+    if (!user) {
+      throw new Error("Unauthenticated call to mutation");
+    }
     await ctx.db.patch(beliefId, { status });
   },
 });
@@ -82,6 +185,19 @@ export const deleteBelief = mutation({
     beliefId: v.id("beliefs"),
   },
   async handler(ctx, { beliefId }) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated call to mutation");
+    }
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier),
+      )
+      .unique();
+    if (!user) {
+      throw new Error("Unauthenticated call to mutation");
+    }
     const belief = await ctx.db.get(beliefId);
 
     if (!belief) {
@@ -95,6 +211,19 @@ export const deleteBelief = mutation({
 export const activeBeliefsToday = query({
   args: {},
   async handler(ctx) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated call to mutation");
+    }
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier),
+      )
+      .unique();
+    if (!user) {
+      throw new Error("Unauthenticated call to mutation");
+    }
     // Current UTC timestamp
     const now = Date.now();
 
@@ -108,7 +237,12 @@ export const activeBeliefsToday = query({
 
     return await ctx.db
       .query("beliefs")
-      .filter((q) => q.gte(q.field("_creationTime"), startOfDayUTC.getTime()))
+      .filter((q) =>
+        q.and(
+          q.gte(q.field("_creationTime"), startOfDayUTC.getTime()),
+          q.eq(q.field("userId"), user._id),
+        ),
+      )
       .collect();
   },
 });

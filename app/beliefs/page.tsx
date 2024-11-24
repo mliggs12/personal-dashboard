@@ -1,14 +1,13 @@
 "use client";
 
 import { api } from "@/convex/_generated/api";
-import { useQuery } from "convex/react";
-import CreateBeliefButton from "./create-belief-button";
 import { cn } from "@/lib/utils";
+import { useQuery } from "convex/react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import CreateBeliefButton from "./create-belief-button";
 
 export default function BeliefsPage() {
-  const beliefs = useQuery(api.beliefs.activeBeliefs);
+  const beliefs = useQuery(api.beliefs.list);
 
   return (
     <main className="w-full space-y-8">
