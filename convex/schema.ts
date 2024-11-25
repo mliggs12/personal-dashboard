@@ -11,6 +11,7 @@ export default defineSchema({
     isForced: v.boolean(),
     isRigid: v.boolean(),
     scheduleId: v.id("schedules"),
+    userId: v.optional(v.id("users")),
   }),
 
   schedules: defineTable({
@@ -18,6 +19,7 @@ export default defineSchema({
     date: v.optional(v.string()),
     isTemplate: v.boolean(),
     length: v.optional(v.number()),
+    userId: v.optional(v.id("users")),
   }).index("by_date", ["date"]),
 
   beliefs: defineTable({
@@ -44,20 +46,6 @@ export default defineSchema({
     color: v.optional(v.string()),
   }),
 
-  events: defineTable({
-    summary: v.string(), // The title of the event
-    start: v.string(), // For a recurring event, this is the start time of the first instance
-    end: v.optional(v.string()),
-    updated: v.optional(v.string()),
-    description: v.optional(v.string()),
-    colorId: v.optional(v.id("colors")),
-    // For a recurring event, this is the time at which this event would start according to the recurrence data in the recurrence event identified by recurringEventId
-    originalStart: v.optional(v.string()),
-    recurrence: v.optional(v.string()), // "RRULE:FREQ=DAILY;INTERVAL=1" is an event that recurs every day
-    recurringEventId: v.optional(v.id("events")), // If this event is a recurring event, this will be the id of the event it is based on
-    userId: v.optional(v.id("users")),
-  }),
-
   intentions: defineTable({
     title: v.optional(v.string()),
     status: v.optional(
@@ -70,7 +58,7 @@ export default defineSchema({
     ),
     emotionId: v.optional(v.id("emotions")),
     notes: v.optional(v.string()),
-    updatedAt: v.optional(v.number()),
+    updated: v.optional(v.number()),
     userId: v.optional(v.id("users")),
   }),
 
@@ -104,6 +92,7 @@ export default defineSchema({
       v.literal("why"),
     ),
     intentionId: v.optional(v.id("intentions")),
+    userId: v.optional(v.id("users")),
   })
     .index("by_intentionId", ["intentionId"])
     .index("by_type", ["type"]),
@@ -140,6 +129,7 @@ export default defineSchema({
   waterLog: defineTable({
     consumed: v.number(),
     date: v.string(), // YYYY-MM-DD
+    userId: v.optional(v.id("users")),
   }).index("by_date", ["date"]),
 
   users: defineTable({

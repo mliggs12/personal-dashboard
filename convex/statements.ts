@@ -8,27 +8,45 @@ export const create = mutation({
     intentionId: v.optional(v.id("intentions")),
   },
   async handler(ctx, { text, type, intentionId }) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated");
+    }
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier),
+      )
+      .unique();
+    if (!user) {
+      throw new Error("Unauthenticated call to mutation");
+    }
     return ctx.db.insert("statements", {
       isComplete: false,
       text,
       type: type as "what" | "why" | "mind_dump",
       intentionId,
+      userId: user._id,
     });
-  },
-});
-
-export const createMindDumpStatement = mutation({
-  args: {
-    text: v.string(),
-  },
-  async handler(ctx, { text }) {
-    return await create(ctx, { text, type: "mind_dump" });
   },
 });
 
 export const get = query({
   args: { statementId: v.id("statements") },
   async handler(ctx, { statementId }) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated");
+    }
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier),
+      )
+      .unique();
+    if (!user) {
+      throw new Error("Unauthenticated call to mutation");
+    }
     return await ctx.db.get(statementId);
   },
 });
@@ -36,6 +54,19 @@ export const get = query({
 export const remove = mutation({
   args: { id: v.id("statements") },
   async handler(ctx, { id }) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated");
+    }
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier),
+      )
+      .unique();
+    if (!user) {
+      throw new Error("Unauthenticated call to mutation");
+    }
     await ctx.db.delete(id);
   },
 });
@@ -43,6 +74,19 @@ export const remove = mutation({
 export const byIntentionId = query({
   args: { intentionId: v.id("intentions") },
   async handler(ctx, { intentionId }) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated");
+    }
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier),
+      )
+      .unique();
+    if (!user) {
+      throw new Error("Unauthenticated call to mutation");
+    }
     return (
       (await ctx.db
         .query("statements")
@@ -60,6 +104,19 @@ export const update = mutation({
     isComplete: v.optional(v.boolean()),
   },
   async handler(ctx, { id, text, isComplete, date }) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated");
+    }
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier),
+      )
+      .unique();
+    if (!user) {
+      throw new Error("Unauthenticated call to mutation");
+    }
     await ctx.db.patch(id, {
       date: date || undefined,
       isComplete: isComplete || undefined,
@@ -71,6 +128,19 @@ export const update = mutation({
 export const complete = mutation({
   args: { id: v.id("statements") },
   async handler(ctx, { id }) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated");
+    }
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier),
+      )
+      .unique();
+    if (!user) {
+      throw new Error("Unauthenticated call to mutation");
+    }
     await ctx.db.patch(id, { isComplete: true });
   },
 });
@@ -78,6 +148,19 @@ export const complete = mutation({
 export const unComplete = mutation({
   args: { id: v.id("statements") },
   async handler(ctx, { id }) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated");
+    }
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier),
+      )
+      .unique();
+    if (!user) {
+      throw new Error("Unauthenticated call to mutation");
+    }
     await ctx.db.patch(id, { isComplete: false });
   },
 });
@@ -85,6 +168,19 @@ export const unComplete = mutation({
 export const todayMindDumpStatements = query({
   args: {},
   async handler(ctx) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated");
+    }
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier),
+      )
+      .unique();
+    if (!user) {
+      throw new Error("Unauthenticated call to mutation");
+    }
     const today = new Date();
     const startOfToday = new Date(
       today.getFullYear(),
