@@ -50,7 +50,7 @@ export default function TasksCard() {
 
   if (tasks.length === 0) {
     return (
-      <Card className="w-1/2 ml-2">
+      <Card className="w-full md:w-1/2">
         <CardHeader className="flex flex-row items-center border-b-2 p-3">
           <div className="grid gap-2">
             <CardTitle>Backlog Tasks</CardTitle>
@@ -81,7 +81,7 @@ export default function TasksCard() {
   }
 
   return (
-    <Card className="w-1/2 ml-2">
+    <Card className="w-full md:w-1/2">
       <CardHeader className="flex flex-row items-center border-b-2 p-4">
         <div className="grid gap-2">
           <CardTitle>Do Today Tasks</CardTitle>

@@ -1,10 +1,12 @@
 import Link from "next/link";
 
 import {
+  Box,
   Brain,
+  ListTodo,
   Shapes,
-  SquareCheckBig,
-  SquarePen,
+  Skull,
+  StickyNote,
   Sunrise,
   Timer,
 } from "lucide-react";
@@ -29,14 +31,24 @@ import { cn } from "@/lib/utils";
 const data = {
   navItems: [
     {
-      title: "Creativity",
-      url: "/creativity",
-      icon: Shapes,
-    },
-    {
       title: "Tasks",
       url: "/tasks",
-      icon: SquareCheckBig,
+      icon: ListTodo,
+    },
+    {
+      title: "Notes",
+      url: "/notes",
+      icon: StickyNote,
+    },
+    {
+      title: "Interstitial/Pomodoro",
+      url: "/interstitial",
+      icon: Timer,
+    },
+    {
+      title: "Mind Dump",
+      url: "/me5",
+      icon: Brain,
     },
     // {
     //   title: "Plan",
@@ -44,9 +56,9 @@ const data = {
     //   icon: TableProperties,
     // },
     {
-      title: "Interstitial",
-      url: "/interstitial",
-      icon: Timer,
+      title: "Intentions",
+      url: "/creativity",
+      icon: Shapes,
     },
     {
       title: "Beliefs",
@@ -54,9 +66,9 @@ const data = {
       icon: Sunrise,
     },
     {
-      title: "Notes",
-      url: "/notes",
-      icon: SquarePen,
+      title: "Memento Mori",
+      url: "/wellness",
+      icon: Skull,
     },
   ],
 };
@@ -77,7 +89,7 @@ export default function AppSidebar({
               tooltip="Dashboard"
             >
               <Link href="/">
-                <Brain />
+                <Box />
                 <span>Dashboard</span>
               </Link>
             </SidebarMenuButton>
