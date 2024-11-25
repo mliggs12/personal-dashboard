@@ -15,8 +15,8 @@ export default function MainClient({
       <Authenticated>
         <AppSidebar />
         {/* <main> */}
-        <SidebarInset className="h-dvh flex gap-24 container">
-          {/* <SidebarTrigger className="-ml-1" /> */}
+        <SidebarInset className="h-dvh flex container">
+          <SidebarTrigger className="-ml-1" />
           {children}
           <Toaster />
         </SidebarInset>
