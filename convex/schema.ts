@@ -19,9 +19,11 @@ export default defineSchema({
     date: v.optional(v.string()),
     isTemplate: v.boolean(),
     length: v.optional(v.number()),
+    updated: v.optional(v.number()),
     userId: v.optional(v.id("users")),
-  }).index("by_date", ["date"]),
+  }),
 
+  // Creativity
   beliefs: defineTable({
     title: v.string(),
     description: v.optional(v.string()),

@@ -14,6 +14,19 @@ export const create = mutation({
     ctx,
     { duration, pauseDuration, notes, what, why, intentionId },
   ) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated call to mutation");
+    }
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier),
+      )
+      .unique();
+    if (!user) {
+      throw new Error("Unauthenticated call to mutation");
+    }
     const session = {
       duration,
       pauseDuration,
@@ -21,7 +34,9 @@ export const create = mutation({
       what,
       why,
       intentionId,
+      userId: user._id,
     };
+
     return await ctx.db.insert("sessions", session);
   },
 });
@@ -31,6 +46,19 @@ export const remove = mutation({
     sessionId: v.id("sessions"),
   },
   async handler(ctx, { sessionId }) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated call to mutation");
+    }
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier),
+      )
+      .unique();
+    if (!user) {
+      throw new Error("Unauthenticated call to mutation");
+    }
     try {
       await ctx.db.delete(sessionId);
     } catch (error) {
@@ -43,6 +71,19 @@ export const remove = mutation({
 export const todaySessions = query({
   args: {},
   async handler(ctx) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated call to mutation");
+    }
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier),
+      )
+      .unique();
+    if (!user) {
+      throw new Error("Unauthenticated call to mutation");
+    }
     try {
       const now = new Date();
       const localNow = new Date(
@@ -69,6 +110,7 @@ export const todaySessions = query({
           q.and(
             q.gte(q.field("_creationTime"), startOfDay.getTime()),
             q.lt(q.field("_creationTime"), endOfDay.getTime()),
+            q.eq(q.field("userId"), user._id),
           ),
         )
         .order("desc")

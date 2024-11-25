@@ -3,10 +3,9 @@ import Link from "next/link";
 import {
   Brain,
   Shapes,
-  Sunrise,
-  SquarePen,
   SquareCheckBig,
-  TableProperties,
+  SquarePen,
+  Sunrise,
   Timer,
 } from "lucide-react";
 
@@ -22,8 +21,8 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 
-import NavMain from "./nav-main";
 import { UserButton } from "@clerk/nextjs";
+import NavMain from "./nav-main";
 
 import { cn } from "@/lib/utils";
 
@@ -39,11 +38,11 @@ const data = {
       url: "/tasks",
       icon: SquareCheckBig,
     },
-    {
-      title: "Plan",
-      url: "/plan",
-      icon: TableProperties,
-    },
+    // {
+    //   title: "Plan",
+    //   url: "/plan",
+    //   icon: TableProperties,
+    // },
     {
       title: "Interstitial",
       url: "/interstitial",

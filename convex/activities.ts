@@ -1,8 +1,24 @@
-import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { mutation, query } from "./_generated/server";
 
 export const list = query(async (ctx) => {
-  return await ctx.db.query("activities").collect();
+  const identity = await ctx.auth.getUserIdentity();
+  if (!identity) {
+    throw new Error("Unauthenticated call to mutation");
+  }
+  const user = await ctx.db
+    .query("users")
+    .withIndex("by_token", (q) =>
+      q.eq("tokenIdentifier", identity.tokenIdentifier),
+    )
+    .unique();
+  if (!user) {
+    throw new Error("Unauthenticated call to mutation");
+  }
+  return await ctx.db
+    .query("activities")
+    .filter((q) => q.eq(q.field("userId"), user._id))
+    .collect();
 });
 
 export const listBySchedule = query({
@@ -10,9 +26,27 @@ export const listBySchedule = query({
     scheduleId: v.id("schedules"),
   },
   async handler(ctx, { scheduleId }) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated call to mutation");
+    }
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier),
+      )
+      .unique();
+    if (!user) {
+      throw new Error("Unauthenticated call to mutation");
+    }
     const activities = await ctx.db
       .query("activities")
-      .filter((q) => q.eq(q.field("scheduleId"), scheduleId))
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("scheduleId"), scheduleId),
+          q.eq(q.field("userId"), user._id),
+        ),
+      )
       .collect();
     return activities.sort((a, b) => a.index - b.index);
   },
@@ -25,6 +59,19 @@ export const createActivity = mutation({
     length: v.number(),
   },
   async handler(ctx, { scheduleId, start, length }) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated call to mutation");
+    }
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier),
+      )
+      .unique();
+    if (!user) {
+      throw new Error("Unauthenticated call to mutation");
+    }
     return await ctx.db.insert("activities", {
       index: 0,
       name: "",
@@ -33,6 +80,7 @@ export const createActivity = mutation({
       scheduleId,
       start,
       length,
+      userId: user._id,
     });
   },
 });
@@ -43,6 +91,19 @@ export const updateLength = mutation({
     length: v.number(),
   },
   async handler(ctx, { activityId, length }) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated call to mutation");
+    }
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier),
+      )
+      .unique();
+    if (!user) {
+      throw new Error("Unauthenticated call to mutation");
+    }
     return await ctx.db.patch(activityId, { length });
   },
 });
@@ -63,6 +124,19 @@ export const updateActivities = mutation({
     ),
   },
   async handler(ctx, { activities }) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated call to mutation");
+    }
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier),
+      )
+      .unique();
+    if (!user) {
+      throw new Error("Unauthenticated call to mutation");
+    }
     for (const activity of activities) {
       await ctx.db.patch(activity._id, { ...activity });
     }
@@ -84,6 +158,19 @@ export const updateActivity = mutation({
     ctx,
     { activityId, index, start, length, name, isForced, isRigid, scheduleId },
   ) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated call to mutation");
+    }
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier),
+      )
+      .unique();
+    if (!user) {
+      throw new Error("Unauthenticated call to mutation");
+    }
     return await ctx.db.patch(activityId, {
       index,
       start,
