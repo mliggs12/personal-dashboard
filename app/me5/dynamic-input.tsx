@@ -1,15 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export default function DynamicInput() {
   const [inputValue, setInputValue] = useState("");
   const [answers, setAnswers] = useState<string[]>([]);
-  const createStatement = useMutation(api.statements.createMindDumpStatement);
+  const createStatement = useMutation(api.statements.create);
   const todayStatements = useQuery(api.statements.todayMindDumpStatements);
 
   useEffect(() => {
@@ -21,7 +21,7 @@ export default function DynamicInput() {
   const handleEnterKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && inputValue.trim()) {
       const value = inputValue.trim();
-      createStatement({ text: value });
+      createStatement({ text: value, type: "mind_dump" });
       setAnswers((prev) => [...prev, value]);
       setInputValue("");
     }

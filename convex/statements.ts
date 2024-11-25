@@ -195,7 +195,12 @@ export const todayMindDumpStatements = query({
 
     return await ctx.db
       .query("statements")
-      .withIndex("by_type", (q) => q.eq("type", "mind_dump"))
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("type"), "mind_dump"),
+          q.eq(q.field("userId"), user._id),
+        ),
+      )
       .collect();
   },
 });
