@@ -1,16 +1,16 @@
-import moment from "moment-timezone";
 import { TableCell } from "@/components/ui/table";
-import React from "react";
 import clsx from "clsx";
+import moment from "moment-timezone";
+import React from "react";
 
 interface UpdatedTableCellProps {
   selectedTab: string;
-  updatedAt: Date | null;
+  updated: Date | null;
 }
 
 const UpdatedTableCell: React.FC<UpdatedTableCellProps> = ({
   selectedTab,
-  updatedAt,
+  updated,
 }) => {
   return (
     <TableCell
@@ -21,9 +21,7 @@ const UpdatedTableCell: React.FC<UpdatedTableCellProps> = ({
           selectedTab !== "draft",
       })}
     >
-      {updatedAt
-        ? moment(updatedAt).tz("America/Denver").format("MMM D LT")
-        : ""}
+      {updated ? moment(updated).tz("America/Denver").format("MMM D LT") : ""}
     </TableCell>
   );
 };

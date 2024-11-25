@@ -1,10 +1,10 @@
 "use client";
 
+import clsx from "clsx";
+import { useMutation, useQuery } from "convex/react";
 import moment from "moment-timezone";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useMutation, useQuery } from "convex/react";
-import clsx from "clsx";
 
 import {
   Breadcrumb,
@@ -54,7 +54,7 @@ export default function IntentionsPage() {
       const today = moment().startOf("day");
 
       const titheIntentions = allowIntentions.filter((intention) => {
-        const updatedDate = moment(intention.updatedAt).startOf("day");
+        const updatedDate = moment(intention.updated).startOf("day");
         const daysDifference = today.diff(updatedDate, "days");
         return daysDifference > 3;
       });

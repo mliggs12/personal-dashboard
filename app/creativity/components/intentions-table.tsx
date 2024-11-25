@@ -2,7 +2,13 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Table,
   TableBody,
@@ -11,21 +17,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { MoreHorizontal } from "lucide-react";
-import { Doc } from "@/convex/_generated/dataModel";
-import { useRouter } from "next/navigation";
-import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import UpdatedTableCell from "./updated-table-cell";
-import moment from "moment-timezone";
+import { Doc } from "@/convex/_generated/dataModel";
 import clsx from "clsx";
+import { useMutation, useQuery } from "convex/react";
+import { MoreHorizontal } from "lucide-react";
+import moment from "moment-timezone";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import UpdatedTableCell from "./updated-table-cell";
 
 interface IntentionsTableProps {
   intentions: Doc<"intentions">[];
@@ -179,7 +179,7 @@ export default function IntentionsTable({
             {/* Updated */}
             <UpdatedTableCell
               selectedTab={selectedTab}
-              updatedAt={new Date(intention.updatedAt ?? "")}
+              updated={new Date(intention.updated ?? "")}
             />
             {/* Created */}
             <TableCell

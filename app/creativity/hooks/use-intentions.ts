@@ -1,5 +1,5 @@
-import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { useQuery } from "convex/react";
 
 type StatusType = "tithe" | "draft" | "allow" | "done" | "all";
 type TabType = { value: StatusType; label: string };
@@ -17,7 +17,7 @@ export function useIntentions(selectedTab: string) {
   );
 
   return {
-    intentions: result?.sort((a, b) => a.updatedAt! - b.updatedAt!),
+    intentions: result?.sort((a, b) => a.updated! - b.updated!),
     error: result instanceof Error ? result : null,
   };
 }

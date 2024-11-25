@@ -2,19 +2,18 @@
 
 import {
   Card,
-  CardHeader,
-  CardTitle,
   CardContent,
   CardDescription,
+  CardHeader,
 } from "@/components/ui/card";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
 import { useParams } from "next/navigation";
+import AddStatementInput from "../../components/add-statement-input";
+import { DeleteIntentionButton } from "../../components/delete-intention-button";
 import { EmotionSelectForm } from "../../components/emotion-select-form";
 import IntentionNotes from "../../components/intention-notes";
-import { DeleteIntentionButton } from "../../components/delete-intention-button";
-import AddStatementInput from "../../components/add-statement-input";
 
 import {
   Breadcrumb,
@@ -24,16 +23,14 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { Toaster } from "@/components/ui/toaster";
+import { cn } from "@/lib/utils";
 import Link from "next/link";
 import IntentionStatusSelect from "../../components/intention-status-select";
-import { AddTaskWrapper } from "../../components/tasks/add-task-button";
-import { Toaster } from "@/components/ui/toaster";
-import TaskList from "../../components/tasks/task-list";
-import StatementItem from "../../components/statement-item";
 import IntentionTitle from "../../components/intention-title";
-import { Button } from "@/components/ui/button";
-import { complete } from "@/convex/statements";
-import { cn } from "@/lib/utils";
+import StatementItem from "../../components/statement-item";
+import { AddTaskWrapper } from "../../components/tasks/add-task-button";
+import TaskList from "../../components/tasks/task-list";
 
 export default function IntentionPage() {
   const { intentionId } = useParams<{ intentionId: Id<"intentions"> }>();
@@ -87,9 +84,9 @@ export default function IntentionPage() {
           <CardHeader>
             <IntentionTitle intention={intention} />
             <CardDescription>
-              {intention.updatedAt ? (
+              {intention.updated ? (
                 <p>
-                  Updated at: {new Date(intention.updatedAt).toLocaleString()}
+                  Updated at: {new Date(intention.updated).toLocaleString()}
                 </p>
               ) : (
                 <p>
