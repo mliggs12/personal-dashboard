@@ -1,6 +1,3 @@
-import Link from "next/link";
-import { type LucideIcon } from "lucide-react";
-
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -8,29 +5,21 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-
+import Link from "next/link";
 import AddNoteButton from "./add-note-button";
+import { navItems } from "./data";
 
-export default function NavMain({
-  items,
-}: {
-  items: {
-    title: string;
-    url: string;
-    icon?: LucideIcon;
-    isActive?: boolean;
-  }[];
-}) {
+export default function MainNav() {
   return (
     <SidebarGroup>
       <SidebarGroupContent>
         <SidebarMenu>
-          {items.map((item) => (
+          {navItems.map((item) => (
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton
                 asChild
-                isActive={item.isActive}
                 tooltip={item.title}
+                size={"lg"}
               >
                 <Link href={item.url}>
                   {item.icon && <item.icon />}

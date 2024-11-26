@@ -28,7 +28,12 @@ export const list = query(async (ctx) => {
   }
   return await ctx.db
     .query("tasks")
-    .filter((q) => q.eq(q.field("userId"), user._id))
+    .filter((q) =>
+      q.and(
+        q.eq(q.field("userId"), user._id),
+        q.neq(q.field("recurringTaskId"), undefined),
+      ),
+    )
     .collect();
 });
 

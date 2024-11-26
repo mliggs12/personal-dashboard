@@ -1,16 +1,5 @@
 import Link from "next/link";
 
-import {
-  Box,
-  Brain,
-  ListTodo,
-  Shapes,
-  Skull,
-  StickyNote,
-  Sunrise,
-  Timer,
-} from "lucide-react";
-
 import { ModeToggle } from "@/components/ui/mode-toggle";
 import {
   Sidebar,
@@ -22,56 +11,10 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-
-import { UserButton } from "@clerk/nextjs";
-import NavMain from "./nav-main";
-
 import { cn } from "@/lib/utils";
-
-const data = {
-  navItems: [
-    {
-      title: "Tasks",
-      url: "/tasks",
-      icon: ListTodo,
-    },
-    {
-      title: "Notes",
-      url: "/notes",
-      icon: StickyNote,
-    },
-    {
-      title: "Interstitial/Pomodoro",
-      url: "/interstitial",
-      icon: Timer,
-    },
-    {
-      title: "Mind Dump",
-      url: "/me5",
-      icon: Brain,
-    },
-    // {
-    //   title: "Plan",
-    //   url: "/plan",
-    //   icon: TableProperties,
-    // },
-    {
-      title: "Intentions",
-      url: "/creativity",
-      icon: Shapes,
-    },
-    {
-      title: "Beliefs",
-      url: "/beliefs",
-      icon: Sunrise,
-    },
-    {
-      title: "Memento Mori",
-      url: "/wellness",
-      icon: Skull,
-    },
-  ],
-};
+import { UserButton } from "@clerk/nextjs";
+import { Box } from "lucide-react";
+import MainNav from "./main-nav";
 
 export default function AppSidebar({
   ...props
@@ -81,26 +24,31 @@ export default function AppSidebar({
       collapsible="icon"
       {...props}
     >
-      <SidebarHeader>
+      <SidebarHeader className="pb-0">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
               tooltip="Dashboard"
+              size={"lg"}
             >
               <Link href="/">
                 <Box />
-                <span>Dashboard</span>
+                <span>Enthousiazein</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navItems} />
+        <MainNav />
       </SidebarContent>
       <SidebarFooter>
-        <div className={cn("flex flex-col gap-2 items-center")}>
+        <div
+          className={cn(
+            "flex group-has-[[data-collapsible=icon]]/sidebar-wrapper:flex-col group-has-[[data-collapsible=icon]]/sidebar-wrapper:items-center gap-4 justify-end",
+          )}
+        >
           <ModeToggle />
           <UserButton />
         </div>

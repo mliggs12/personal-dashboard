@@ -1,41 +1,33 @@
 "use client";
 
-import { useQuery } from "convex/react";
-import { z } from "zod";
-
-import { Toaster } from "@/components/ui/toaster";
 import { api } from "@/convex/_generated/api";
-
+import { useQuery } from "convex/react";
 import AddTaskButton from "./components/add-task-button";
-import { columns } from "./components/columns";
-import { TasksDataTable } from "./components/tasks-data-table";
-import { taskSchema } from "./data/schema";
 
 export default function TasksPage() {
-  const tasksData = useQuery(api.tasks.list);
+  const tasks = useQuery(api.tasks.list) || [];
 
-  if (!tasksData) return null;
+  if (tasks === undefined) {
+    <div>Loading...</div>;
+  }
 
-  const tasks = z.array(taskSchema).parse(tasksData);
+  if (tasks.length === 0) {
+    return (
+      <div className="flex flex-col gap-4 h-full items-center justify-center">
+        <p>Add a new task to start</p>
+        <AddTaskButton />
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between gap-2">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Tasks</h2>
-          <p className="text-muted-foreground">
-            Here&apos;s a list of all your tasks!
-          </p>
-        </div>
-        <div className="flex items-center space-x-2">
-          <AddTaskButton />
-        </div>
+    <div className="flex flex-col gap-2 h-full items-center justify-center">
+      <AddTaskButton />
+      <div className="overflow-auto">
+        {tasks.map((task) => (
+          <div key={task._id}>{task.name}</div>
+        ))}
       </div>
-      <TasksDataTable
-        data={tasks}
-        columns={columns}
-      />
-      <Toaster />
     </div>
   );
 }

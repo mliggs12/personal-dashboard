@@ -1,6 +1,5 @@
 "use client";
 
-import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,9 +9,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { AddTaskForm } from "./add-task-form";
-import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { PlusCircle } from "lucide-react";
+import { useState } from "react";
+import { AddTaskForm } from "./add-task-form";
 
 export default function AddTaskButton() {
   const [open, setOpen] = useState(false);
@@ -34,8 +34,8 @@ export default function AddTaskButton() {
     >
       <DialogTrigger asChild>
         <Button
-          size="sm"
-          className="h-8 gap-1 "
+          size="default"
+          className="h-10 gap-1"
         >
           <PlusCircle className="h-3.5 w-3.5" />
           Add Task

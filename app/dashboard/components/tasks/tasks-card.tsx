@@ -16,6 +16,8 @@ import {
 import { api } from "@/convex/_generated/api";
 import { Task } from "@/types";
 
+import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 import { AddTaskWrapper } from "./add-task-button";
 import TaskList from "./task-list";
 
@@ -43,6 +45,7 @@ function orderTasks(tasks: Task[]): Task[] {
 
 // TODO: Set or remove Backlog task logic
 export default function TasksCard() {
+  const isMobile = useIsMobile();
   const tasks = useQuery(api.tasks.doTodayTasks) || [];
   const orderedTasks = orderTasks(tasks);
   const backlogTasks = useQuery(api.tasks.backlogTasks) || [];
@@ -50,7 +53,7 @@ export default function TasksCard() {
 
   if (tasks.length === 0) {
     return (
-      <Card className="w-full md:w-1/2">
+      <Card className={cn("h-full w-full md:w-1/2", isMobile && "border-none")}>
         <CardHeader className="flex flex-row items-center border-b-2 p-3">
           <div className="grid gap-2">
             <CardTitle>Backlog Tasks</CardTitle>
@@ -81,7 +84,7 @@ export default function TasksCard() {
   }
 
   return (
-    <Card className="w-full md:w-1/2">
+    <Card className={cn("h-full w-full md:w-1/2", isMobile && "border-none")}>
       <CardHeader className="flex flex-row items-center border-b-2 p-4">
         <div className="grid gap-2">
           <CardTitle>Do Today Tasks</CardTitle>
