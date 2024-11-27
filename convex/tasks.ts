@@ -105,7 +105,7 @@ export const create = mutation({
 
     const taskId = await ctx.db.insert("tasks", {
       name,
-      status: status && frequency ? "in_progress" : "todo",
+      status: status && frequency ? "in_progress" : status,
       priority,
       notes,
       due,
@@ -336,17 +336,19 @@ export const doTodayTasks = query({
       throw new Error("Unauthenticated call to mutation");
     }
 
-    const todayStart = dayjs().startOf("day");
-    const todayEnd = dayjs().endOf("day");
+    const todayStart = dayjs().tz(TIMEZONE).startOf("day").format("YYYY/MM/DD");
 
     return await ctx.db
       .query("tasks")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
       .filter((q) =>
         q.and(
-          q.lte(q.field("due"), dayjs().tz(TIMEZONE).format("YYYY/MM/DD")), // TODO: Figure out if timezone is needed and/or which dayjs
-          q.neq(q.field("status"), "done"),
+          q.lte(q.field("due"), todayStart), // TODO: Figure out if timezone is needed and/or which dayjs
+          q.or(
+            q.eq(q.field("status"), "todo"),
+            q.eq(q.field("status"), "in_progress"),
+          ),
           q.eq(q.field("frequency"), undefined),
-          q.eq(q.field("userId"), user._id),
         ),
       )
       .collect();
@@ -434,5 +436,30 @@ export const updatePriority = mutation({
       priority,
       updated: Date.now(),
     });
+  },
+});
+
+export const recurringTasks = query({
+  args: {},
+  async handler(ctx) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated call to mutation");
+    }
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier),
+      )
+      .unique();
+    if (!user) {
+      throw new Error("Unauthenticated call to mutation");
+    }
+
+    return await ctx.db
+      .query("tasks")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .filter((q) => q.neq(q.field("frequency"), undefined))
+      .collect();
   },
 });

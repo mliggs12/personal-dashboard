@@ -21,7 +21,7 @@ export default defineSchema({
     length: v.optional(v.number()),
     updated: v.optional(v.number()),
     userId: v.optional(v.id("users")),
-  }),
+  }).index("by_user", ["userId"]),
 
   // Creativity
   beliefs: defineTable({
@@ -40,7 +40,7 @@ export default defineSchema({
     notes: v.optional(v.string()),
     updated: v.optional(v.number()),
     userId: v.optional(v.id("users")),
-  }),
+  }).index("by_user", ["userId"]),
 
   emotions: defineTable({
     label: v.string(),
@@ -62,14 +62,14 @@ export default defineSchema({
     notes: v.optional(v.string()),
     updated: v.optional(v.number()),
     userId: v.optional(v.id("users")),
-  }),
+  }).index("by_user", ["userId"]),
 
   notes: defineTable({
     text: v.optional(v.string()),
     title: v.optional(v.string()),
     updated: v.optional(v.number()),
     userId: v.optional(v.id("users")),
-  }),
+  }).index("by_user", ["userId"]),
 
   // Tithe/Focus Sessions as defined in Interstitch
   // All parameters are optional to allow for future use cases
@@ -81,7 +81,7 @@ export default defineSchema({
     why: v.optional(v.string()),
     intentionId: v.optional(v.id("intentions")),
     userId: v.optional(v.id("users")),
-  }),
+  }).index("by_user", ["userId"]),
 
   statements: defineTable({
     date: v.optional(v.string()),
@@ -126,7 +126,7 @@ export default defineSchema({
     intentionId: v.optional(v.id("intentions")),
     parentTaskId: v.optional(v.id("tasks")),
     userId: v.optional(v.id("users")),
-  }),
+  }).index("by_user", ["userId"]),
 
   waterLog: defineTable({
     consumed: v.number(),

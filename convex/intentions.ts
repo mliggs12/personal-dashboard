@@ -20,7 +20,7 @@ export const list = query(async (ctx) => {
 
   return await ctx.db
     .query("intentions")
-    .filter((q) => q.eq(q.field("userId"), user._id))
+    .withIndex("by_user", (q) => q.eq("userId", user._id))
     .collect();
 });
 
@@ -70,11 +70,11 @@ export const getByStatus = query({
     if (!user) {
       throw new Error("Unauthenticated call to mutation");
     }
-    const intentions =
-      (await ctx.db
-        .query("intentions")
-        .filter((q) => q.eq(q.field("status"), status))
-        .collect()) || [];
+    const intentions = await ctx.db
+      .query("intentions")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .filter((q) => q.eq(q.field("status"), status))
+      .collect();
 
     return intentions;
   },

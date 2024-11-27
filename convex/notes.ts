@@ -1,4 +1,4 @@
-import { ConvexError, v } from "convex/values";
+import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
 export const recent = query({
@@ -18,12 +18,9 @@ export const recent = query({
     }
     const last5 = await ctx.db
       .query("notes")
-      .filter((q) => q.eq(q.field("userId"), user._id))
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
       .order("desc")
       .take(5);
-    if (!last5) {
-      throw new ConvexError("Unable to retrieve notes");
-    }
 
     return last5;
   },
@@ -72,16 +69,12 @@ export const list = query({
     if (!user) {
       throw new Error("Unauthenticated call to mutation");
     }
-    const notes = await ctx.db
+
+    return await ctx.db
       .query("notes")
-      .filter((q) => q.eq(q.field("userId"), user._id))
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
       .order("desc")
       .collect();
-    if (!notes) {
-      throw new ConvexError("Unable to retrieve notes");
-    }
-
-    return notes;
   },
 });
 
@@ -103,12 +96,8 @@ export const get = query({
     if (!user) {
       throw new Error("Unauthenticated call to mutation");
     }
-    const note = await ctx.db.get(id);
-    if (!note) {
-      throw new ConvexError("Unable to retrieve note");
-    }
 
-    return note;
+    return await ctx.db.get(id);
   },
 });
 
