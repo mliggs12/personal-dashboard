@@ -7,7 +7,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@/app/components/ui/table";
 import { api } from "@/convex/_generated/api";
 import { useQuery } from "convex/react";
 import dayjs from "dayjs";

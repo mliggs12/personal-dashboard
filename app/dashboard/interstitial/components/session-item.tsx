@@ -1,9 +1,12 @@
-import { useQuery } from "convex/react";
-import moment from "moment-timezone";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { api } from "@/convex/_generated/api";
-import { Doc, Id } from "@/convex/_generated/dataModel";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/app/components/ui/card";
+import { Doc } from "@/convex/_generated/dataModel";
 import { formatDurationVerbose } from "@/lib/utils";
+import moment from "moment-timezone";
 
 export default function SessionItem({ session }: { session: Doc<"sessions"> }) {
   // Calculate start and end times

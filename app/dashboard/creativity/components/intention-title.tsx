@@ -1,5 +1,5 @@
-import { CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { CardTitle } from "@/app/components/ui/card";
+import { Input } from "@/app/components/ui/input";
 import { api } from "@/convex/_generated/api";
 import { Doc } from "@/convex/_generated/dataModel";
 import { useMutation } from "convex/react";

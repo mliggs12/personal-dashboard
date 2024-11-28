@@ -1,14 +1,17 @@
 "use client";
 
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/app/components/ui/card";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
-import { useParams } from "next/navigation";
-import SpNegSheet from "./sp-neg-sheet";
+import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import AddWhyInput from "./add-why-input";
-import { useRouter } from "next/navigation";
 
 export default function StatementPage() {
   const [whyStatements, setWhyStatements] = useState<string[]>([]);

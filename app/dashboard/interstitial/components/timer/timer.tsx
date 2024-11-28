@@ -1,17 +1,17 @@
-import { Button } from "@/components/ui/button";
-import { useState } from "react";
-import { useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import Clock from "./clock";
+import { Button } from "@/app/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@/app/components/ui/card";
 import { useAudio } from "@/app/dashboard/interstitial/hooks/use-audio";
+import { api } from "@/convex/_generated/api";
+import { useMutation } from "convex/react";
+import { useState } from "react";
 import SetIntentionButton from "../set-intention-button";
+import Clock from "./clock";
 
 export default function Timer() {
   const [time, setTime] = useState<number>(1500); // Initialize with a default number

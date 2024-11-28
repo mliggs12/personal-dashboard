@@ -21,7 +21,7 @@ export const navItems = [
   },
   {
     title: "Interstitial/Pomodoro",
-    url: "/interstitial",
+    url: "/dashboard/interstitial",
     icon: Timer,
   },
   {
@@ -36,7 +36,7 @@ export const navItems = [
   // },
   {
     title: "Intentions",
-    url: "/dashboard/creativity",
+    url: "/dashboard/creativity/intentions",
     icon: Shapes,
   },
   {

@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { createNewSchedule } from "../actions";
+import { Button } from "@/app/components/ui/button";
+import { Checkbox } from "@/app/components/ui/checkbox";
+import { Input } from "@/app/components/ui/input";
+import { Label } from "@/app/components/ui/label";
 import { format } from "date-fns";
+import { useState } from "react";
+import { createNewSchedule } from "../actions";
 
 export default function CreateScheduleForm() {
   const [isTemplate, setIsTemplate] = useState(false);

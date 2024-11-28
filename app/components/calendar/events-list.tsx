@@ -3,11 +3,11 @@ import dayjs from "dayjs";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
+} from "@/app/components/ui/card";
+import { ScrollArea } from "@/app/components/ui/scroll-area";
 
 import { Event } from "./types";
 

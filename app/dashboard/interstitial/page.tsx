@@ -1,8 +1,8 @@
 "use client";
 
-import { useQuery } from "convex/react";
+import { Toaster } from "@/app/components/ui/toaster";
 import { api } from "@/convex/_generated/api";
-import { Toaster } from "@/components/ui/toaster";
+import { useQuery } from "convex/react";
 import SessionsList from "./components/sessions-list";
 import Timer from "./components/timer/timer";
 

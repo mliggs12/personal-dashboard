@@ -1,9 +1,9 @@
-import { Input } from "@/components/ui/input";
-import { TableCell } from "@/components/ui/table";
+import { Input } from "@/app/components/ui/input";
+import { TableCell } from "@/app/components/ui/table";
 import { api } from "@/convex/_generated/api";
 import { Doc } from "@/convex/_generated/dataModel";
 import { useMutation } from "convex/react";
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function ActivityLengthCell({
   activity,

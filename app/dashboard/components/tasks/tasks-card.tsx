@@ -5,14 +5,14 @@ import dayjs from "dayjs";
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/app/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@/app/components/ui/card";
 import { api } from "@/convex/_generated/api";
 import { Task } from "@/types";
 

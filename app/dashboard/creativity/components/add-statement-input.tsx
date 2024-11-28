@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { useMutation } from "convex/react";
-import { Input } from "@/components/ui/input";
+import { Input } from "@/app/components/ui/input";
 import { api } from "@/convex/_generated/api";
 import { Doc } from "@/convex/_generated/dataModel";
+import { useMutation } from "convex/react";
+import { useState } from "react";
 
 export default function AddStatementInput({
   intention,

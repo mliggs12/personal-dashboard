@@ -5,7 +5,7 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
-} from "@/components/ui/card";
+} from "@/app/components/ui/card";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
@@ -22,8 +22,8 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { Toaster } from "@/components/ui/toaster";
+} from "@/app/components/ui/breadcrumb";
+import { Toaster } from "@/app/components/ui/toaster";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import IntentionStatusSelect from "../../components/intention-status-select";

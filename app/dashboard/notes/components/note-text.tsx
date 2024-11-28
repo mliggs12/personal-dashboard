@@ -1,10 +1,10 @@
 "use client";
 
-import { Textarea } from "@/components/ui/textarea";
+import { Textarea } from "@/app/components/ui/textarea";
 import { api } from "@/convex/_generated/api";
 import { Doc, Id } from "@/convex/_generated/dataModel";
 import { useMutation } from "convex/react";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function NoteText({ note }: { note: Doc<"notes"> }) {
   const [text, setText] = useState(note.text);

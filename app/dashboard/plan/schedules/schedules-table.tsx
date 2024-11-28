@@ -1,15 +1,13 @@
 "use client";
 
-import { MoreHorizontal } from "lucide-react";
-import { Preloaded, usePreloadedQuery } from "convex/react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/app/components/ui/button";
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
-  DropdownMenuLabel,
   DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/app/components/ui/dropdown-menu";
 import {
   Table,
   TableBody,
@@ -17,12 +15,14 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@/app/components/ui/table";
+import { Preloaded, usePreloadedQuery } from "convex/react";
+import { MoreHorizontal } from "lucide-react";
 
-import { Id } from "@/convex/_generated/dataModel";
-import { deleteSchedule } from "./_actions";
 import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 import Link from "next/link";
+import { deleteSchedule } from "./_actions";
 
 interface SchedulesTableProps {
   preloadedSchedules: Preloaded<typeof api.schedules.list>;

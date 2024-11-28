@@ -1,8 +1,8 @@
+import { Input } from "@/app/components/ui/input";
 import { api } from "@/convex/_generated/api";
 import { Doc } from "@/convex/_generated/dataModel";
 import { useMutation } from "convex/react";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Input } from "@/components/ui/input";
+import { useEffect, useRef, useState } from "react";
 
 export default function BeliefTitle({ belief }: { belief: Doc<"beliefs"> }) {
   const [title, setTitle] = useState(belief.title);

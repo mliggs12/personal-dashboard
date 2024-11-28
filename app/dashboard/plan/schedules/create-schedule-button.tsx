@@ -1,14 +1,14 @@
 "use client";
 
-import { PlusCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/app/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "@/app/components/ui/dialog";
+import { PlusCircle } from "lucide-react";
 import CreateScheduleForm from "./create-schedule-form";
 
 export default function CreateScheduleButton() {

@@ -1,21 +1,21 @@
 "use client";
 
-import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "convex/react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import { LoadingButton } from "@/components/loading-button";
+import { LoadingButton } from "@/app/components/loading-button";
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+} from "@/app/components/ui/form";
+import { Input } from "@/app/components/ui/input";
+import { Textarea } from "@/app/components/ui/textarea";
 
 const formSchema = z.object({
   title: z.string().min(1).max(500),

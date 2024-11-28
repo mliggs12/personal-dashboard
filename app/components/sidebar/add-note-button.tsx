@@ -1,14 +1,14 @@
-import { useState } from "react";
 import { Plus } from "lucide-react";
+import { useState } from "react";
 
 import {
   Dialog,
-  DialogTrigger,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { SidebarMenuAction } from "@/components/ui/sidebar";
+  DialogTrigger,
+} from "@/app/components/ui/dialog";
+import { SidebarMenuAction } from "@/app/components/ui/sidebar";
 
 import AddNoteForm from "./add-note-form";
 

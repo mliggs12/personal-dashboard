@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/app/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -8,11 +8,11 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import CreateBeliefForm from "./create-belief-form";
-import { useState } from "react";
-import { PlusIcon } from "lucide-react";
+} from "@/app/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { PlusIcon } from "lucide-react";
+import { useState } from "react";
+import CreateBeliefForm from "./create-belief-form";
 
 export default function CreateBeliefButton() {
   const [isOpen, setIsOpen] = useState(false);

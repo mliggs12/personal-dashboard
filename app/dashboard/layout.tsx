@@ -1,16 +1,16 @@
 "use client";
 
-import AppSidebar from "@/components/sidebar/app-sidebar";
-import { navItems } from "@/components/sidebar/data";
+import AppSidebar from "@/app/components/sidebar/app-sidebar";
+import { navItems } from "@/app/components/sidebar/data";
 import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbList,
   BreadcrumbPage,
-} from "@/components/ui/breadcrumb";
-import { Separator } from "@/components/ui/separator";
-import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import { Toaster } from "@/components/ui/toaster";
+} from "@/app/components/ui/breadcrumb";
+import { Separator } from "@/app/components/ui/separator";
+import { SidebarInset, SidebarTrigger } from "@/app/components/ui/sidebar";
+import { Toaster } from "@/app/components/ui/toaster";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { Authenticated } from "convex/react";

@@ -1,7 +1,6 @@
 "use client";
 
-import { PlusCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/app/components/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -9,11 +8,11 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { AddActivityForm } from "./add-activity-form";
-import { useState } from "react";
+} from "@/app/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Id } from "@/convex/_generated/dataModel";
+import { PlusCircle } from "lucide-react";
+import { useState } from "react";
+import { AddActivityForm } from "./add-activity-form";
 
 export default function AddActivityButton({
   scheduleId,

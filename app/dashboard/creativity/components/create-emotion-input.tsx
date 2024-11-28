@@ -1,9 +1,9 @@
 "use client";
 
-import { Input } from "@/components/ui/input";
-import { useState } from "react";
-import { useMutation } from "convex/react";
+import { Input } from "@/app/components/ui/input";
 import { api } from "@/convex/_generated/api";
+import { useMutation } from "convex/react";
+import { useState } from "react";
 
 export default function CreateEmotionInput() {
   const [emotionName, setEmotionName] = useState("");
