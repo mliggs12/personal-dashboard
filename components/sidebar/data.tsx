@@ -11,12 +11,12 @@ import {
 export const navItems = [
   {
     title: "Tasks",
-    url: "/tasks",
+    url: "/dashboard/tasks",
     icon: ListTodo,
   },
   {
     title: "Notes",
-    url: "/notes",
+    url: "/dashboard/notes",
     icon: StickyNote,
   },
   {
@@ -26,7 +26,7 @@ export const navItems = [
   },
   {
     title: "Mind Dump",
-    url: "/me5",
+    url: "/dashboard/me5",
     icon: Brain,
   },
   // {
@@ -36,17 +36,17 @@ export const navItems = [
   // },
   {
     title: "Intentions",
-    url: "/creativity",
+    url: "/dashboard/creativity",
     icon: Shapes,
   },
   {
     title: "Beliefs",
-    url: "/beliefs",
+    url: "/dashboard/beliefs",
     icon: Sunrise,
   },
   {
     title: "Memento Mori",
-    url: "/wellness",
+    url: "/dashboard/wellness",
     icon: Skull,
   },
 ];

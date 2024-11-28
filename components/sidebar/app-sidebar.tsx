@@ -32,7 +32,7 @@ export default function AppSidebar({
               tooltip="Dashboard"
               size={"lg"}
             >
-              <Link href="/">
+              <Link href="/dashboard">
                 <Box />
                 <span>Enthousiazein</span>
               </Link>

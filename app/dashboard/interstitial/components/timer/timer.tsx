@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useAudio } from "@/app/interstitial/hooks/use-audio";
+import { useAudio } from "@/app/dashboard/interstitial/hooks/use-audio";
 import SetIntentionButton from "../set-intention-button";
 
 export default function Timer() {

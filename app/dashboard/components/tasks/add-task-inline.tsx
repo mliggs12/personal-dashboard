@@ -1,6 +1,10 @@
 "use client";
 
-import { frequencies, priorities, statuses } from "@/app/tasks/data/data";
+import {
+  frequencies,
+  priorities,
+  statuses,
+} from "@/app/dashboard/tasks/data/data";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { CardFooter } from "@/components/ui/card";
