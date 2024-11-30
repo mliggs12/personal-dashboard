@@ -1,12 +1,12 @@
-import { Button } from "@/app/components/ui/button";
+import { useAudio } from "@/app/dashboard/interstitial/hooks/use-audio";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/app/components/ui/card";
-import { useAudio } from "@/app/dashboard/interstitial/hooks/use-audio";
+} from "@/components/ui/card";
 import { api } from "@/convex/_generated/api";
 import { useMutation } from "convex/react";
 import { useState } from "react";

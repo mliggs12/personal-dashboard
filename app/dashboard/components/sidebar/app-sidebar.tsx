@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { ModeToggle } from "@/app/components/ui/mode-toggle";
+import { ModeToggle } from "@/components/ui/mode-toggle";
 import {
   Sidebar,
   SidebarContent,
@@ -10,7 +10,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-} from "@/app/components/ui/sidebar";
+} from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { UserButton } from "@clerk/nextjs";
 import { Box } from "lucide-react";

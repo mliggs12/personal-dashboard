@@ -107,7 +107,6 @@ export default defineSchema({
         v.literal("todo"),
         v.literal("in_progress"),
         v.literal("done"),
-        v.literal("cancelled"),
         v.literal("archived"),
       ),
     ),
@@ -118,14 +117,28 @@ export default defineSchema({
     due: v.optional(v.string()), // YYYY-MM-DD
     completed: v.optional(v.number()),
     updated: v.optional(v.number()),
-    frequency: v.optional(
-      v.union(v.literal("daily"), v.literal("3-day"), v.literal("weekly")), // omitted for single tasks or instances of recurring tasks
-    ),
-    recurCount: v.optional(v.number()),
-    recurringTaskId: v.optional(v.id("tasks")), // For an instance of a recurring task, this is the id of the parent recurring task
+    recurringTaskId: v.optional(v.id("recurringTasks")),
     intentionId: v.optional(v.id("intentions")),
     parentTaskId: v.optional(v.id("tasks")),
     userId: v.optional(v.id("users")),
+  }).index("by_user", ["userId"]),
+
+  recurringTasks: defineTable({
+    name: v.string(),
+    status: v.union(
+      v.literal("active"),
+      v.literal("paused"),
+      v.literal("archived"),
+    ),
+    priority: v.union(v.literal("low"), v.literal("normal"), v.literal("high")),
+    due: v.string(),
+    updated: v.number(),
+    frequency: v.union(
+      v.literal("daily"),
+      v.literal("3-day"),
+      v.literal("weekly"),
+    ),
+    userId: v.id("users"),
   }).index("by_user", ["userId"]),
 
   waterLog: defineTable({

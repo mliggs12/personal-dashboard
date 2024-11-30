@@ -1,4 +1,4 @@
-import { TableCell } from "@/app/components/ui/table";
+import { TableCell } from "@/components/ui/table";
 import clsx from "clsx";
 import moment from "moment-timezone";
 import React from "react";

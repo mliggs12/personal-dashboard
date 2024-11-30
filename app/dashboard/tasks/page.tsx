@@ -2,13 +2,15 @@
 
 import { api } from "@/convex/_generated/api";
 import { useQuery } from "convex/react";
+import TaskList from "../components/tasks/task-list";
 import AddTaskButton from "./components/add-task-button";
+import RecurringTasksTable from "./components/recurring-tasks-table";
 
 export default function TasksPage() {
-  const tasks = useQuery(api.tasks.list) || [];
+  const tasks = useQuery(api.tasks.incompleteTasks) || [];
   const recurringTasks = useQuery(api.tasks.recurringTasks) || [];
 
-  if (tasks === undefined) {
+  if (tasks === undefined || recurringTasks === undefined) {
     <div>Loading...</div>;
   }
 
@@ -22,32 +24,18 @@ export default function TasksPage() {
   }
 
   return (
-    <div className="flex flex-col gap-2 h-full">
+    <div className="flex flex-col h-screen">
       <div className="flex justify-end">
         <AddTaskButton />
       </div>
-      <div className="flex flex-col gap-16">
-        <div className="overflow-auto">
-          {tasks.map((task) => (
-            <div key={task._id}>
-              <div>{task.name}</div>
-              <div>{task.due}</div>
-            </div>
-          ))}
+      <div className="flex flex-col flex-1 h-full gap-2">
+        <div>
+          <h2>All tasks</h2>
+          <TaskList tasks={tasks} />
         </div>
-        <div className="flex flex-col gap-2">
+        <div>
           <h2>Recurring tasks</h2>
-          <div className="grid grid-cols-2 overflow-auto">
-            {recurringTasks.map((task) => (
-              <div
-                key={task._id}
-                className="flex gap-16"
-              >
-                <div>{task.name}</div>
-                <div>{task.frequency}</div>
-              </div>
-            ))}
-          </div>
+          <RecurringTasksTable recurringTasks={recurringTasks} />
         </div>
       </div>
     </div>

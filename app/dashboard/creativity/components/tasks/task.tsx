@@ -1,5 +1,5 @@
-import { Checkbox } from "@/app/components/ui/checkbox";
-import { Dialog, DialogTrigger } from "@/app/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Doc } from "@/convex/_generated/dataModel";
 import clsx from "clsx";
 import moment from "moment-timezone";

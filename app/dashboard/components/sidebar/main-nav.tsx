@@ -4,7 +4,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/app/components/ui/sidebar";
+} from "@/components/ui/sidebar";
 import Link from "next/link";
 import AddNoteButton from "./add-note-button";
 import { navItems } from "./data";

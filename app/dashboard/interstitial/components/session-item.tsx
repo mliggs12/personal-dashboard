@@ -1,9 +1,4 @@
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/app/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Doc } from "@/convex/_generated/dataModel";
 import { formatDurationVerbose } from "@/lib/utils";
 import moment from "moment-timezone";

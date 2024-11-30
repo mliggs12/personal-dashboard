@@ -1,35 +1,36 @@
 "use client";
 
-import { Button } from "@/app/components/ui/button";
-import { Calendar } from "@/app/components/ui/calendar";
-import { CardFooter } from "@/app/components/ui/card";
+import {
+  frequencies,
+  priorities,
+  statuses,
+} from "@/app/dashboard/tasks/data/data";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { CardFooter } from "@/components/ui/card";
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormMessage,
-} from "@/app/components/ui/form";
-import { Input } from "@/app/components/ui/input";
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/app/components/ui/popover";
+} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/app/components/ui/select";
-import { Textarea } from "@/app/components/ui/textarea";
-import {
-  frequencies,
-  priorities,
-  statuses,
-} from "@/app/dashboard/tasks/data/data";
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/convex/_generated/api";
+import { Doc } from "@/convex/_generated/dataModel";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -69,8 +70,10 @@ const formSchema = z
 
 export default function AddTaskInline({
   setShowAddTask,
+  parentTask,
 }: {
   setShowAddTask: Dispatch<SetStateAction<boolean>>;
+  parentTask?: Doc<"tasks">;
 }) {
   const { toast } = useToast();
   const createTask = useMutation(api.tasks.create);

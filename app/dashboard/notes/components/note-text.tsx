@@ -1,6 +1,6 @@
 "use client";
 
-import { Textarea } from "@/app/components/ui/textarea";
+import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/convex/_generated/api";
 import { Doc, Id } from "@/convex/_generated/dataModel";
 import { useMutation } from "convex/react";

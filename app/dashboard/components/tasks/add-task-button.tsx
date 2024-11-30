@@ -1,15 +1,23 @@
 import { Plus } from "lucide-react";
 import { Dispatch, SetStateAction, useState } from "react";
 
-import { Button } from "@/app/components/ui/button";
+import { Button } from "@/components/ui/button";
 
+import { Doc } from "@/convex/_generated/dataModel";
 import AddTaskInline from "./add-task-inline";
 
-export const AddTaskWrapper = () => {
+export const AddTaskWrapper = ({
+  parentTask,
+}: {
+  parentTask?: Doc<"tasks">;
+}) => {
   const [showAddTask, setShowAddTask] = useState(false);
 
   return showAddTask ? (
-    <AddTaskInline setShowAddTask={setShowAddTask} />
+    <AddTaskInline
+      setShowAddTask={setShowAddTask}
+      parentTask={parentTask}
+    />
   ) : (
     <AddTaskButton
       onClick={() => setShowAddTask(true)}
@@ -27,7 +35,7 @@ export default function AddTaskButton({
 }) {
   return (
     <Button
-      className="pl-2 flex flex-1 bg-background hover:bg-background"
+      className="pl-2 flex flex-1 bg-background hover:bg-secondary"
       onClick={onClick}
     >
       <div className="flex flex-col items-center justify-center gap-1 text-center">

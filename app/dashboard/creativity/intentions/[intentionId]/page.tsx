@@ -5,7 +5,7 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
-} from "@/app/components/ui/card";
+} from "@/components/ui/card";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
@@ -15,17 +15,8 @@ import { DeleteIntentionButton } from "../../components/delete-intention-button"
 import { EmotionSelectForm } from "../../components/emotion-select-form";
 import IntentionNotes from "../../components/intention-notes";
 
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/app/components/ui/breadcrumb";
-import { Toaster } from "@/app/components/ui/toaster";
+import { Toaster } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
-import Link from "next/link";
 import IntentionStatusSelect from "../../components/intention-status-select";
 import IntentionTitle from "../../components/intention-title";
 import StatementItem from "../../components/statement-item";
@@ -59,25 +50,6 @@ export default function IntentionPage() {
 
   return (
     <main className="w-full space-y-8">
-      <Breadcrumb className="hidden md:flex">
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink asChild>
-              <Link href="/creativity">Creativity</Link>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbLink asChild>
-              <Link href="/creativity/intentions">Intentions</Link>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>Intention Details</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
       <div className="flex gap-8">
         <Card className="relative min-w-[750px] min-h-[1100px]">
           <DeleteIntentionButton intentionId={intention._id} />

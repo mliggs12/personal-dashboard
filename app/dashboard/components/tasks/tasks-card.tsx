@@ -1,23 +1,20 @@
 "use client";
 
-import { useQuery } from "convex/react";
-import dayjs from "dayjs";
-import { ArrowUpRight } from "lucide-react";
-import Link from "next/link";
-
-import { Button } from "@/app/components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/app/components/ui/card";
+} from "@/components/ui/card";
 import { api } from "@/convex/_generated/api";
-import { Task } from "@/types";
-
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import { useQuery } from "convex/react";
+import dayjs from "dayjs";
+import { ArrowUpRight } from "lucide-react";
+import Link from "next/link";
 import { AddTaskWrapper } from "./add-task-button";
 import TaskList from "./task-list";
 
@@ -53,8 +50,8 @@ export default function TasksCard() {
 
   if (tasks.length === 0) {
     return (
-      <Card className={cn("h-full w-full md:w-1/2", isMobile && "border-none")}>
-        <CardHeader className="flex flex-row items-center border-b-2 p-3">
+      <Card className={cn("h-1/2 w-full md:w-1/2", isMobile && "border-none")}>
+        <CardHeader className="flex flex-row items-center border-b-2 p-4">
           <div className="grid gap-2">
             <CardTitle>Backlog Tasks</CardTitle>
             <CardDescription>
@@ -73,8 +70,8 @@ export default function TasksCard() {
             </Link>
           </Button>
         </CardHeader>
-        <CardContent className="p-3 pt-0">
-          <div className="flex flex-col gap-2">
+        <CardContent className="p-0">
+          <div className="flex flex-col gap-2 justify-between">
             <TaskList tasks={orderedBacklogTasks} />
             <AddTaskWrapper />
           </div>
@@ -84,7 +81,7 @@ export default function TasksCard() {
   }
 
   return (
-    <Card className={cn("h-full w-full md:w-1/2", isMobile && "border-none")}>
+    <Card className={cn("h-1/2 w-full md:w-1/2", isMobile && "border-none")}>
       <CardHeader className="flex flex-row items-center border-b-2 p-4">
         <div className="grid gap-2">
           <CardTitle>Do Today Tasks</CardTitle>
@@ -102,7 +99,7 @@ export default function TasksCard() {
         </Button>
       </CardHeader>
       <CardContent className="p-0">
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 justify-between">
           <TaskList tasks={orderedTasks} />
           <AddTaskWrapper />
         </div>

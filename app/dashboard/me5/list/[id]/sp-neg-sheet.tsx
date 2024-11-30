@@ -1,4 +1,4 @@
-import { Button } from "@/app/components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   Sheet,
   SheetContent,
@@ -6,8 +6,8 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@/app/components/ui/sheet";
-import { Textarea } from "@/app/components/ui/textarea";
+} from "@/components/ui/sheet";
+import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 
 export default function SpNegSheet() {

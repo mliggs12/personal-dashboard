@@ -1,4 +1,4 @@
-import { mutation, query, QueryCtx } from "./_generated/server";
+import { mutation } from "./_generated/server";
 
 export const store = mutation({
   args: {},
@@ -29,25 +29,3 @@ export const store = mutation({
     });
   },
 });
-
-export const current = query({
-  args: {},
-  handler: async (ctx) => {
-    return await getCurrentUser(ctx);
-  },
-});
-
-export async function getCurrentUser(ctx: QueryCtx) {
-  const identity = await ctx.auth.getUserIdentity();
-  if (identity === null) {
-    return null;
-  }
-  return await userByTokenId(ctx, identity.tokenIdentifier);
-}
-
-async function userByTokenId(ctx: QueryCtx, tokenId: string) {
-  return await ctx.db
-    .query("users")
-    .withIndex("by_token", (q) => q.eq("tokenIdentifier", tokenId))
-    .unique();
-}

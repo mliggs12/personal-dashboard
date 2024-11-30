@@ -6,8 +6,8 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/app/components/ui/card";
-import { ScrollArea } from "@/app/components/ui/scroll-area";
+} from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 import { Event } from "./types";
 

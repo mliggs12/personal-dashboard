@@ -7,8 +7,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/app/components/ui/dialog";
-import { SidebarMenuAction } from "@/app/components/ui/sidebar";
+} from "@/components/ui/dialog";
+import { SidebarMenuAction } from "@/components/ui/sidebar";
 
 import AddNoteForm from "./add-note-form";
 

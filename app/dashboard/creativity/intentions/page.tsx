@@ -3,30 +3,16 @@
 import clsx from "clsx";
 import { useMutation, useQuery } from "convex/react";
 import moment from "moment-timezone";
-import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/app/components/ui/breadcrumb";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/app/components/ui/card";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/app/components/ui/tabs";
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { api } from "@/convex/_generated/api";
 import CreateIntentionDialog from "../components/create-intention-dialog";
@@ -75,38 +61,6 @@ export default function IntentionsPage() {
 
   return (
     <main className="w-full space-y-0 sm:space-y-8">
-      <Breadcrumb className="hidden sm:flex">
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink asChild>
-              <Link
-                className="text-base"
-                href="/creativity"
-              >
-                Creativity
-              </Link>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbLink asChild>
-              <Link
-                className="text-base"
-                href="/creativity/intentions"
-              >
-                Intentions
-              </Link>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage className="text-base">
-              {TABS.find((tab) => tab.value === selectedTab)?.label}
-            </BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-
       <Tabs
         value={selectedTab}
         onValueChange={(value) => setSelectedTab(value)}

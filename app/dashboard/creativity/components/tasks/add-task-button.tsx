@@ -1,7 +1,7 @@
 import { Plus } from "lucide-react";
 import { Dispatch, SetStateAction, useState } from "react";
 
-import { Button } from "@/app/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Id } from "@/convex/_generated/dataModel";
 
 import AddTaskInline from "./add-task-inline";
