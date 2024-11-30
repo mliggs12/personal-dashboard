@@ -67,7 +67,7 @@ export default function Task({
               <div className="flex justify-between items-center w-full">
                 <button
                   className={cn(
-                    "",
+                    "text-sm font-normal text-left",
                     isCompleted && "line-through text-foreground/30",
                   )}
                 >

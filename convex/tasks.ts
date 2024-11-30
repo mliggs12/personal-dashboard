@@ -188,23 +188,49 @@ export const backlogTasks = query({
   },
 });
 
-export const incompleteTasks = query({
+export const completedTasks = query({
   async handler(ctx) {
     const user = await getCurrentUser(ctx);
     if (!user) {
-      throw new Error("Unauthenticated call to mutation");
+      throw new Error("Unauthenticated call to query");
     }
 
     return await ctx.db
       .query("tasks")
       .withIndex("by_user", (q) => q.eq("userId", user._id))
-      .filter((q) =>
-        q.or(
-          q.neq(q.field("status"), "done"),
-          q.neq(q.field("status"), "archived"),
-        ),
-      )
+      .filter((q) => q.neq(q.field("completed"), undefined))
       .collect();
+  },
+});
+
+export const incompleteTasks = query({
+  async handler(ctx) {
+    const user = await getCurrentUser(ctx);
+    if (!user) {
+      throw new Error("Unauthenticated call to query");
+    }
+
+    return await ctx.db
+      .query("tasks")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .filter((q) => q.eq(q.field("completed"), undefined))
+      .collect();
+  },
+});
+
+export const totalTasks = query({
+  args: {},
+  handler: async (ctx) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) {
+      throw new Error("Unauthenticated call to query");
+    }
+    const tasks = await ctx.db
+      .query("tasks")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .filter((q) => q.neq(q.field("completed"), undefined))
+      .collect();
+    return tasks.length || 0;
   },
 });
 

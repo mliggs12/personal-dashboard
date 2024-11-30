@@ -1,42 +1,54 @@
 "use client";
 
 import { api } from "@/convex/_generated/api";
+import { cn } from "@/lib/utils";
 import { useQuery } from "convex/react";
+import { AddTaskWrapper } from "../components/tasks/add-task-button";
+import CompletedTasks from "../components/tasks/completed-tasks";
+import RecurringTasksTable from "../components/tasks/recurring-tasks-table";
 import TaskList from "../components/tasks/task-list";
-import AddTaskButton from "./components/add-task-button";
-import RecurringTasksTable from "./components/recurring-tasks-table";
 
 export default function TasksPage() {
-  const tasks = useQuery(api.tasks.incompleteTasks) || [];
-  const recurringTasks = useQuery(api.tasks.recurringTasks) || [];
+  const tasks = useQuery(api.tasks.list) ?? [];
+  const incompleteTasks = useQuery(api.tasks.incompleteTasks) ?? [];
+  const completedTasks = useQuery(api.tasks.completedTasks) ?? [];
+  const recurringTasks = useQuery(api.tasks.recurringTasks) ?? [];
+  const totalTasks = useQuery(api.tasks.totalTasks) ?? 0;
 
-  if (tasks === undefined || recurringTasks === undefined) {
-    <div>Loading...</div>;
-  }
-
-  if (tasks.length === 0) {
-    return (
-      <div className="flex flex-col gap-4 h-full items-center justify-center">
-        <p>Add a new task to start</p>
-        <AddTaskButton />
-      </div>
-    );
+  if (
+    tasks === undefined ||
+    incompleteTasks === undefined ||
+    completedTasks === undefined
+  ) {
+    <p>Loading...</p>;
   }
 
   return (
-    <div className="flex flex-col h-screen">
-      <div className="flex justify-end">
-        <AddTaskButton />
+    <div className="container">
+      <div className="flex items-center justify-between">
+        <h1 className="text-lg font-semibold md:text-2xl">Inbox</h1>
       </div>
-      <div className="flex flex-col flex-1 h-full gap-2">
-        <div>
-          <h2>All tasks</h2>
-          <TaskList tasks={tasks} />
-        </div>
-        <div>
-          <h2>Recurring tasks</h2>
-          <RecurringTasksTable recurringTasks={recurringTasks} />
-        </div>
+      <div
+        className={cn(
+          "flex flex-col gap-1 py-4",
+          incompleteTasks.length === 0 ? "py-0" : null,
+        )}
+      >
+        <TaskList tasks={incompleteTasks} />
+      </div>
+      <AddTaskWrapper />
+      <div
+        className={cn(
+          "flex flex-col gap-1 py-4",
+          totalTasks === 0 ? "py-0" : null,
+        )}
+      >
+        <TaskList tasks={completedTasks} />
+      </div>
+      <CompletedTasks totalTasks={totalTasks} />
+      <div className="flex flex-col gap-1 py-4">
+        <h2>Recurring tasks</h2>
+        <RecurringTasksTable recurringTasks={recurringTasks} />
       </div>
     </div>
   );

@@ -16,7 +16,7 @@ export default function TaskList({ tasks }: { tasks: Doc<"tasks">[] }) {
     } else {
       completeTask({ taskId: task._id });
       toast({
-        title: "Task completed!",
+        title: "Task completed",
         description: "Appreciate yourself for completing the task!",
         duration: 3000,
       });

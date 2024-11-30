@@ -1,8 +1,6 @@
 import { Plus } from "lucide-react";
 import { Dispatch, SetStateAction, useState } from "react";
 
-import { Button } from "@/components/ui/button";
-
 import { Doc } from "@/convex/_generated/dataModel";
 import AddTaskInline from "./add-task-inline";
 
@@ -34,16 +32,18 @@ export default function AddTaskButton({
   name: string;
 }) {
   return (
-    <Button
-      className="pl-2 flex flex-1 bg-background hover:bg-secondary"
+    <button
+      className="pl-2 mt-2 flex flex-1 bg-background hover:bg-background"
       onClick={onClick}
     >
       <div className="flex flex-col items-center justify-center gap-1 text-center">
         <div className="flex items-center gap-2 justify-center">
-          <Plus className="h-4 w-4 text-primary bg-background hover:bg-accent hover:rounded-xl hover:text-black" />
-          <h3 className="tracking-tight text-primary">{name}</h3>
+          <Plus className="h-4 w-4 text-primary hover:bg-primary hover:text-background hover:rounded-xl" />
+          <h3 className="text-base font-light tracking-tight text-foreground/70">
+            {name}
+          </h3>
         </div>
       </div>
-    </Button>
+    </button>
   );
 }
