@@ -18,6 +18,7 @@ import type * as beliefs from "../beliefs.js";
 import type * as emotions from "../emotions.js";
 import type * as intentions from "../intentions.js";
 import type * as notes from "../notes.js";
+import type * as recurringTasks from "../recurringTasks.js";
 import type * as schedules from "../schedules.js";
 import type * as sessions from "../sessions.js";
 import type * as statements from "../statements.js";
@@ -40,6 +41,7 @@ declare const fullApi: ApiFromModules<{
   emotions: typeof emotions;
   intentions: typeof intentions;
   notes: typeof notes;
+  recurringTasks: typeof recurringTasks;
   schedules: typeof schedules;
   sessions: typeof sessions;
   statements: typeof statements;

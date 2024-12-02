@@ -135,9 +135,11 @@ export default defineSchema({
     updated: v.number(),
     frequency: v.union(
       v.literal("daily"),
-      v.literal("3-day"),
       v.literal("weekly"),
+      v.literal("monthly"),
+      v.literal("daysAfter"),
     ),
+    type: v.union(v.literal("onSchedule"), v.literal("whenDone")),
     userId: v.id("users"),
   }).index("by_user", ["userId"]),
 
@@ -149,6 +151,9 @@ export default defineSchema({
 
   users: defineTable({
     name: v.string(),
-    tokenIdentifier: v.string(),
-  }).index("by_token", ["tokenIdentifier"]),
+    externalId: v.optional(v.string()),
+    tokenIdentifier: v.optional(v.string()),
+  })
+    .index("by_token", ["tokenIdentifier"])
+    .index("byExternalId", ["externalId"]),
 });

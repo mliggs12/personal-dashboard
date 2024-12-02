@@ -96,7 +96,6 @@ export default function AddTaskDialog({ data }: { data: Doc<"tasks"> }) {
         | "todo"
         | "in_progress"
         | "done"
-        | "cancelled"
         | "archived",
     });
     setTaskStatus(statuses.find((statusInfo) => statusInfo.value === status));

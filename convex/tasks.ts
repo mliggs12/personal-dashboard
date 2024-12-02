@@ -3,7 +3,11 @@ import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
 import { mutation, query } from "./_generated/server";
-import { getCurrentUser } from "./userHelpers";
+import {
+  getCurrentUser,
+  getCurrentUserOrThrow,
+  userByExternalId,
+} from "./userHelpers";
 
 dayjs.extend(timezone);
 dayjs.extend(utc);
@@ -25,11 +29,6 @@ export const list = query(async (ctx) => {
 export const get = query({
   args: { taskId: v.id("tasks") },
   async handler(ctx, { taskId }) {
-    const user = await getCurrentUser(ctx);
-    if (!user) {
-      throw new Error("Unauthenticated call to mutation");
-    }
-
     return await ctx.db.get(taskId);
   },
 });
@@ -50,10 +49,11 @@ export const create = mutation({
       v.union(v.literal("low"), v.literal("normal"), v.literal("high")),
     ),
     notes: v.optional(v.string()),
-    due: v.optional(v.string()), // YYYY-MM-DD
+    due: v.optional(v.string()),
     recurringTaskId: v.optional(v.id("recurringTasks")),
     intentionId: v.optional(v.id("intentions")),
     parentTaskId: v.optional(v.id("tasks")),
+    userId: v.optional(v.string()),
   },
   async handler(
     ctx,
@@ -66,24 +66,27 @@ export const create = mutation({
       recurringTaskId,
       intentionId,
       parentTaskId,
+      userId,
     },
   ) {
-    const user = await getCurrentUser(ctx);
-    if (!user) {
-      throw new Error("Unauthenticated call to mutation");
+    let user;
+    if (userId) {
+      user = await userByExternalId(ctx, userId);
+    } else {
+      user = await getCurrentUserOrThrow(ctx);
     }
 
     return await ctx.db.insert("tasks", {
       name,
-      status,
+      status: status || "todo",
       priority: priority || "normal",
       notes: notes || "",
-      due,
+      due: due,
       updated: Date.now(),
       recurringTaskId,
       intentionId,
       parentTaskId,
-      userId: user._id,
+      userId: user!._id,
     });
   },
 });
@@ -103,13 +106,6 @@ export const remove = mutation({
 export const completeTask = mutation({
   args: { taskId: v.id("tasks") },
   async handler(ctx, { taskId }) {
-    const user = await getCurrentUser(ctx);
-    if (!user) {
-      throw new Error("Unauthenticated call to mutation");
-    }
-    const task = await ctx.db.get(taskId);
-    if (!task) throw Error("Task not found");
-    //TODO: handle recurring task instance un/completion
     return await ctx.db.patch(taskId, {
       status: "done",
       completed: Date.now(),
@@ -301,5 +297,41 @@ export const recurringTasks = query({
       .query("recurringTasks")
       .withIndex("by_user", (q) => q.eq("userId", user._id))
       .collect();
+  },
+});
+
+export const createRecurringTask = mutation({
+  args: {
+    name: v.string(),
+    priority: v.union(v.literal("low"), v.literal("normal"), v.literal("high")),
+    due: v.string(),
+    frequency: v.union(
+      v.literal("daily"),
+      v.literal("weekly"),
+      v.literal("monthly"),
+      v.literal("daysAfter"),
+    ),
+    type: v.union(v.literal("onSchedule"), v.literal("whenDone")),
+    userId: v.optional(v.string()),
+  },
+  async handler(ctx, { name, priority, due, frequency, type, userId }) {
+    let user;
+    if (userId) {
+      user = await userByExternalId(ctx, userId);
+    } else {
+      user = await getCurrentUserOrThrow(ctx);
+    }
+    const taskId = await ctx.db.insert("recurringTasks", {
+      name,
+      status: "active",
+      priority,
+      due,
+      updated: Date.now(),
+      frequency,
+      type,
+      userId: user!._id,
+    });
+
+    return taskId;
   },
 });

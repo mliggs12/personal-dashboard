@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  frequencies,
-  priorities,
-  statuses,
-} from "@/app/dashboard/tasks/data/data";
+import { priorities, statuses } from "@/app/dashboard/tasks/data/data";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { CardFooter } from "@/components/ui/card";
@@ -38,9 +34,10 @@ import { useMutation } from "convex/react";
 import { format } from "date-fns";
 import dayjs from "dayjs";
 import { CalendarIcon, Text } from "lucide-react";
-import { Dispatch, SetStateAction, useEffect } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { createRecurringTask } from "../../tasks/actions";
 
 const formSchema = z
   .object({
@@ -53,7 +50,8 @@ const formSchema = z
     ),
     notes: z.string().optional(),
     due: z.date().optional(),
-    frequency: z.enum(["daily", "3-day", "weekly"]).optional(),
+    frequency: z.enum(["daily", "weekly", "monthly", "daysAfter"]).optional(),
+    type: z.enum(["onSchedule", "whenDone"]).optional(),
   })
   .refine(
     (data) => {
@@ -63,7 +61,7 @@ const formSchema = z
       return true;
     },
     {
-      message: "Due date is required when recurring frequency is set",
+      message: "Due date is required when recurring is set",
       path: ["due"],
     },
   );
@@ -75,8 +73,9 @@ export default function AddTaskInline({
   setShowAddTask: Dispatch<SetStateAction<boolean>>;
   parentTask?: Doc<"tasks">;
 }) {
-  const { toast } = useToast();
+  const [showRecurring, setShowRecurring] = useState(false);
   const createTask = useMutation(api.tasks.create);
+  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -86,36 +85,64 @@ export default function AddTaskInline({
       priority: "normal",
       notes: "",
       due: undefined,
-      frequency: undefined,
     },
   });
 
-  useEffect(() => {
-    const subscription = form.watch((value, { name }) => {
-      if (name === "frequency" && value.frequency && !value.due) {
+  const handleSetRecurring = () => {
+    if (!showRecurring) {
+      form.setValue("frequency", "daily");
+      form.setValue("type", "whenDone");
+      if (!form.getValues("due")) {
         form.setValue("due", new Date());
       }
-    });
-    return () => subscription.unsubscribe();
-  }, [form]);
+    } else {
+      form.setValue("frequency", undefined);
+      form.setValue("type", undefined);
+    }
+    setShowRecurring(!showRecurring);
+  };
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
-    const { name, status, priority, notes, due, frequency } = data;
+    const { name, status, priority, notes, due, frequency, type } = data;
 
-    await createTask({
-      name,
-      status: status as
-        | "backlog"
-        | "todo"
-        | "in_progress"
-        | "done"
-        | "cancelled"
-        | "archived",
-      priority: priority as "low" | "normal" | "high",
-      notes,
-      due: due ? dayjs(due).format("YYYY/MM/DD") : undefined,
-      frequency: frequency as "daily" | "3-day" | "weekly",
-    });
+    const dueDate = dayjs(due).format("YYYY/MM/DD");
+
+    if (frequency && due && type) {
+      const recurringTaskId = await createRecurringTask(
+        name,
+        priority,
+        dueDate,
+        frequency,
+        type,
+      );
+
+      await createTask({
+        name,
+        status: status as
+          | "done"
+          | "backlog"
+          | "todo"
+          | "in_progress"
+          | "archived",
+        priority: priority as "low" | "normal" | "high",
+        notes,
+        due: dueDate,
+        recurringTaskId,
+      });
+    } else {
+      await createTask({
+        name,
+        status: status as
+          | "done"
+          | "backlog"
+          | "todo"
+          | "in_progress"
+          | "archived",
+        priority: priority as "low" | "normal" | "high",
+        notes,
+        due: due ? dueDate : undefined,
+      });
+    }
 
     toast({
       title: "Task added",
@@ -126,7 +153,7 @@ export default function AddTaskInline({
   }
 
   return (
-    <div className="w-full">
+    <div className="">
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
@@ -170,137 +197,174 @@ export default function AddTaskInline({
               </FormItem>
             )}
           />
-          <div className="flex flex-wrap gap-2">
-            <FormField
-              control={form.control}
-              name="due"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant={"outline"}
-                          className={cn(
-                            "flex gap-2 w-[240px] pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground",
-                          )}
-                        >
-                          {field.value ? (
-                            format(field.value, "PPP")
-                          ) : (
-                            <span>Pick a due date</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent
-                      className="w-auto p-0"
-                      align="start"
+          <div className="flex flex-col gap-2">
+            <div className="flex gap-2">
+              <FormField
+                control={form.control}
+                name="due"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "flex gap-2 w-[240px] pl-3 text-left font-normal",
+                              !field.value && "text-muted-foreground",
+                            )}
+                          >
+                            {field.value ? (
+                              format(field.value, "PPP")
+                            ) : (
+                              <span>Pick a due date</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        className="w-auto p-0"
+                        align="start"
+                      >
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
                     >
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="status"
-              render={({ field }) => (
-                <FormItem>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger className="gap-2">
-                        <SelectValue placeholder="Select a status" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {statuses.map((item, idx) => (
-                        <SelectItem
-                          key={idx}
-                          value={item.value}
-                        >
-                          {item.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                      <FormControl>
+                        <SelectTrigger className="gap-2">
+                          <SelectValue placeholder="Select a status" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {statuses.map((item, idx) => (
+                          <SelectItem
+                            key={idx}
+                            value={item.value}
+                          >
+                            {item.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
 
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="priority"
-              render={({ field }) => (
-                <FormItem>
-                  <Select
-                    defaultValue={field.value}
-                    onValueChange={field.onChange}
-                  >
-                    <FormControl>
-                      <SelectTrigger className="gap-2">
-                        <SelectValue placeholder="Select a priority" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {priorities.map((item, idx) => (
-                        <SelectItem
-                          key={idx}
-                          value={item.value}
-                        >
-                          {item.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="priority"
+                render={({ field }) => (
+                  <FormItem>
+                    <Select
+                      defaultValue={field.value}
+                      onValueChange={field.onChange}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="gap-2">
+                          <SelectValue placeholder="Select a priority" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {priorities.map((item, idx) => (
+                          <SelectItem
+                            key={idx}
+                            value={item.value}
+                          >
+                            {item.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
 
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="frequency"
-              render={({ field }) => (
-                <FormItem>
-                  <Select
-                    defaultValue={field.value}
-                    onValueChange={field.onChange}
-                  >
-                    <FormControl>
-                      <SelectTrigger className="flex gap-2">
-                        <SelectValue placeholder="Set recurring" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {frequencies.map((item, idx) => (
-                        <SelectItem
-                          key={idx}
-                          value={item.value}
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button
+                size="lg"
+                variant="outline"
+                type="button"
+                className="h-10"
+                onClick={handleSetRecurring}
+              >
+                {showRecurring ? "Cancel" : "Set Recurring"}
+              </Button>
+              {showRecurring && (
+                <>
+                  <FormField
+                    control={form.control}
+                    name="frequency"
+                    render={({ field }) => (
+                      <FormItem>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
                         >
-                          {item.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-
-                  <FormMessage />
-                </FormItem>
+                          <FormControl>
+                            <SelectTrigger className="gap-2">
+                              <SelectValue placeholder="Select frequency" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="daily">Daily</SelectItem>
+                            <SelectItem value="weekly">Weekly</SelectItem>
+                            <SelectItem value="monthly">Monthly</SelectItem>
+                            <SelectItem value="daysAfter">
+                              Days after...
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="type"
+                    render={({ field }) => (
+                      <FormItem>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="gap-2">
+                              <SelectValue placeholder="Select type" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="whenDone">When done</SelectItem>
+                            <SelectItem value="onSchedule">
+                              On schedule
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormItem>
+                    )}
+                  />
+                </>
               )}
-            />
+            </div>
           </div>
           <CardFooter className="flex flex-col lg:flex-row lg:justify-between gap-2 border-t-2 pt-3">
             <div className="w-full" />
