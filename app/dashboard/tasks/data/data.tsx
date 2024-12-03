@@ -97,4 +97,9 @@ export const frequencies = [
     value: "weekly",
     icon: <ArrowUpIcon className="w-4 h-4 text-primary capitalize" />,
   },
+  {
+    label: "Monthly",
+    value: "monthly",
+    icon: <ArrowUpIcon className="w-4 h-4 text-primary capitalize" />,
+  },
 ];

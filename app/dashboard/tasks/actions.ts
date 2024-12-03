@@ -54,7 +54,12 @@ export async function createRecurringTask(
     name,
     priority: priority as "low" | "normal" | "high",
     due,
-    frequency: frequency as "daily" | "weekly" | "monthly" | "daysAfter",
+    frequency: frequency as
+      | "daily"
+      | "3-day"
+      | "weekly"
+      | "monthly"
+      | "daysAfter",
     type: type as "onSchedule" | "whenDone",
     userId: userId,
   });
@@ -82,17 +87,18 @@ export async function completeTask(taskId: Id<"tasks">) {
       taskId: task.recurringTaskId,
     });
 
-    if (recurringTask?.type === "whenDone") {
-      await fetchMutation(api.tasks.create, {
-        name: task.name,
-        status: "todo",
-        priority: "normal",
-        notes: task.notes,
-        due: await nextDueDate(recurringTask.frequency),
-        recurringTaskId: task.recurringTaskId,
-        userId,
-      });
-    }
+    await fetchMutation(api.tasks.create, {
+      name: task.name,
+      status: "todo",
+      priority: "normal",
+      notes: task.notes,
+      due:
+        recurringTask?.type === "whenDone"
+          ? await nextDueDate(recurringTask.frequency)
+          : await nextDueDate(recurringTask!.frequency, task?.due),
+      recurringTaskId: task.recurringTaskId,
+      userId,
+    });
   }
   return await fetchMutation(api.tasks.completeTask, { taskId });
 }

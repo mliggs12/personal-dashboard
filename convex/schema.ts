@@ -135,6 +135,7 @@ export default defineSchema({
     updated: v.number(),
     frequency: v.union(
       v.literal("daily"),
+      v.literal("3-day"),
       v.literal("weekly"),
       v.literal("monthly"),
       v.literal("daysAfter"),

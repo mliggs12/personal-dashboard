@@ -307,6 +307,7 @@ export const createRecurringTask = mutation({
     due: v.string(),
     frequency: v.union(
       v.literal("daily"),
+      v.literal("3-day"),
       v.literal("weekly"),
       v.literal("monthly"),
       v.literal("daysAfter"),

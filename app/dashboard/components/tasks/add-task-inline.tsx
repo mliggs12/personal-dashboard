@@ -50,7 +50,9 @@ const formSchema = z
     ),
     notes: z.string().optional(),
     due: z.date().optional(),
-    frequency: z.enum(["daily", "weekly", "monthly", "daysAfter"]).optional(),
+    frequency: z
+      .enum(["daily", "3-day", "weekly", "monthly", "daysAfter"])
+      .optional(),
     type: z.enum(["onSchedule", "whenDone"]).optional(),
   })
   .refine(
@@ -328,6 +330,7 @@ export default function AddTaskInline({
                           </FormControl>
                           <SelectContent>
                             <SelectItem value="daily">Daily</SelectItem>
+                            <SelectItem value="3-day">3-Day</SelectItem>
                             <SelectItem value="weekly">Weekly</SelectItem>
                             <SelectItem value="monthly">Monthly</SelectItem>
                             <SelectItem value="daysAfter">
