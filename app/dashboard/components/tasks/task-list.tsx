@@ -17,7 +17,7 @@ export default function TaskList({ tasks }: { tasks: Doc<"tasks">[] }) {
   // Attempt to set local timezone
   const localTimezone = dayjs.tz.guess();
 
-  const todayStart = dayjs().tz(localTimezone).startOf("day");
+  const todayStart = dayjs().tz(localTimezone).startOf("day").valueOf();
 
   const unCompleteTask = useMutation(api.tasks.unCompleteTask);
 

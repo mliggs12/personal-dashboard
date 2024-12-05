@@ -74,7 +74,7 @@ export async function deleteTask(taskId: string) {
 
 export async function completeTask(
   taskId: Id<"tasks">,
-  todayDate: dayjs.Dayjs,
+  todayTimestamp: number,
 ) {
   const { userId } = await auth();
   if (!userId) {
@@ -98,10 +98,10 @@ export async function completeTask(
       notes: task.notes,
       due:
         recurringTask?.type === "whenDone"
-          ? await nextDueDate(recurringTask!.frequency, todayDate)
+          ? await nextDueDate(recurringTask!.frequency, todayTimestamp)
           : await nextDueDate(
               recurringTask!.frequency,
-              dayjs(task?.due, "YYYY/MM/DD"),
+              dayjs(task?.due, "YYYY/MM/DD").valueOf(),
             ),
       recurringTaskId: task.recurringTaskId,
       userId,

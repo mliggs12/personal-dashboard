@@ -5,7 +5,9 @@ import utc from "dayjs/plugin/utc";
 dayjs.extend(timezone);
 dayjs.extend(utc);
 
-export async function nextDueDate(frequency: string, startDate: dayjs.Dayjs) {
+export async function nextDueDate(frequency: string, startTimestamp: number) {
+  const startDate = dayjs(startTimestamp);
+
   switch (frequency) {
     case "daily":
       return startDate.add(1, "day").format("YYYY/MM/DD");
