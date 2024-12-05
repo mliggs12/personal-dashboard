@@ -22,56 +22,43 @@ export default function RecurringTasksTable({
         <TableRow>
           <TableHead className="px-2 text-secondary-foreground">Name</TableHead>
           <TableHead className="px-2 text-secondary-foreground">
+            Status
+          </TableHead>
+          <TableHead className="px-2 text-secondary-foreground">
             Created
           </TableHead>
           <TableHead className="px-2 text-secondary-foreground">
             Updated
           </TableHead>
           <TableHead className="px-2 text-secondary-foreground">
-            Status
-          </TableHead>
-          <TableHead className="px-2 text-secondary-foreground">
             Frequency
           </TableHead>
-          <TableHead className="px-2 text-secondary-foreground">
-            Last recur
-          </TableHead>
-          <TableHead className="px-2 text-secondary-foreground">
-            Next due
-          </TableHead>
-          <TableHead className="px-2 text-secondary-foreground">
-            Recur count
-          </TableHead>
+          <TableHead className="px-2 text-secondary-foreground">Type</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
-        {recurringTasks.map((r: RecurringTask) => {
+        {recurringTasks.map((r: RecurringTask, index) => {
           const created = dayjs(r.created).format("L");
           const updated = dayjs(r.updated).format("l LT");
 
           return (
-            <TableRow key={r.id}>
+            <TableRow key={index}>
               <TableCell className="max-w-[250px] pl-2 pr-10">
                 <div className="flex items-center gap-3">
                   <h1 className="text-base truncate font-semibold">{r.name}</h1>
                 </div>
               </TableCell>
+              <TableCell className="pl-2 pr-10 capitalize">
+                {r.status}
+              </TableCell>
               <TableCell className="pl-2 pr-10">{created}</TableCell>
               <TableCell className="pl-2 pr-10 text-nowrap">
                 {updated}
               </TableCell>
-              <TableCell className="pl-2 pr-10">{r.status}</TableCell>
               <TableCell className="pl-2 pr-10 capitalize">
                 {r.frequency}
               </TableCell>
-              <TableCell className="pl-2 pr-10">{updated}</TableCell>
-              <TableCell className="pl-2 pr-10">
-                {/* {NextDueDate(r.frequency)} */}
-                {r.frequency}
-              </TableCell>
-              <TableCell className="pl-2 pr-10 text-center">
-                {r.recurCount}
-              </TableCell>
+              <TableCell className="pl-2 pr-10 capitalize">{r.type}</TableCell>
             </TableRow>
           );
         })}

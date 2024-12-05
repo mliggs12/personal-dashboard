@@ -1,25 +1,19 @@
 import { v } from "convex/values";
 import dayjs from "dayjs";
+import isToday from "dayjs/plugin/isToday";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
 import { mutation, query } from "./_generated/server";
-import {
-  getCurrentUser,
-  getCurrentUserOrThrow,
-  userByExternalId,
-} from "./userHelpers";
+import { getCurrentUserOrThrow, userByExternalId } from "./userHelpers";
 
+dayjs.extend(isToday);
 dayjs.extend(timezone);
 dayjs.extend(utc);
 const TIMEZONE = "America/Denver";
 
-// TODO: Abstract away user function
-
 export const list = query(async (ctx) => {
-  const user = await getCurrentUser(ctx);
-  if (!user) {
-    throw new Error("Unauthenticated call to mutation");
-  }
+  const user = await getCurrentUserOrThrow(ctx);
+
   return await ctx.db
     .query("tasks")
     .withIndex("by_user", (q) => q.eq("userId", user._id))
@@ -81,8 +75,7 @@ export const create = mutation({
       status: status || "todo",
       priority: priority || "normal",
       notes: notes || "",
-      due: due,
-      updated: Date.now(),
+      due,
       recurringTaskId,
       intentionId,
       parentTaskId,
@@ -94,12 +87,7 @@ export const create = mutation({
 export const remove = mutation({
   args: { taskId: v.id("tasks") },
   async handler(ctx, { taskId }) {
-    const user = await getCurrentUser(ctx);
-    if (!user) {
-      throw new Error("Unauthenticated call to mutation");
-    }
-
-    return await ctx.db.delete(taskId);
+    await ctx.db.delete(taskId);
   },
 });
 
@@ -116,11 +104,6 @@ export const completeTask = mutation({
 export const unCompleteTask = mutation({
   args: { taskId: v.id("tasks") },
   async handler(ctx, { taskId }) {
-    const user = await getCurrentUser(ctx);
-    if (!user) {
-      throw new Error("Unauthenticated call to mutation");
-    }
-
     return await ctx.db.patch(taskId, {
       status: "todo",
       completed: undefined,
@@ -131,13 +114,11 @@ export const unCompleteTask = mutation({
 export const getByIntention = query({
   args: { intentionId: v.id("intentions") },
   async handler(ctx, { intentionId }) {
-    const user = await getCurrentUser(ctx);
-    if (!user) {
-      throw new Error("Unauthenticated call to mutation");
-    }
+    const user = await getCurrentUserOrThrow(ctx);
 
     return await ctx.db
       .query("tasks")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
       .filter((q) => q.eq(q.field("intentionId"), intentionId))
       .collect();
   },
@@ -146,10 +127,7 @@ export const getByIntention = query({
 // Get tasks due today or overdue
 export const doTodayTasks = query({
   async handler(ctx) {
-    const user = await getCurrentUser(ctx);
-    if (!user) {
-      throw new Error("Unauthenticated call to mutation");
-    }
+    const user = await getCurrentUserOrThrow(ctx);
 
     const todayStart = dayjs().tz(TIMEZONE).startOf("day").format("YYYY/MM/DD");
 
@@ -171,10 +149,7 @@ export const doTodayTasks = query({
 
 export const backlogTasks = query({
   async handler(ctx) {
-    const user = await getCurrentUser(ctx);
-    if (!user) {
-      throw new Error("Unauthenticated call to mutation");
-    }
+    const user = await getCurrentUserOrThrow(ctx);
 
     return await ctx.db
       .query("tasks")
@@ -186,10 +161,7 @@ export const backlogTasks = query({
 
 export const completedTasks = query({
   async handler(ctx) {
-    const user = await getCurrentUser(ctx);
-    if (!user) {
-      throw new Error("Unauthenticated call to query");
-    }
+    const user = await getCurrentUserOrThrow(ctx);
 
     return await ctx.db
       .query("tasks")
@@ -199,12 +171,51 @@ export const completedTasks = query({
   },
 });
 
+export const completedTodayTasks = query({
+  async handler(ctx) {
+    const user = await getCurrentUserOrThrow(ctx);
+
+    const todayStart = dayjs().tz(TIMEZONE).startOf("day");
+    const todayEnd = dayjs().tz(TIMEZONE).endOf("day");
+
+    return await ctx.db
+      .query("tasks")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .filter((q) =>
+        q.and(
+          q.gte(q.field("completed"), todayStart.valueOf()),
+          q.lte(q.field("completed"), todayEnd.valueOf()),
+        ),
+      )
+      .collect();
+  },
+});
+
+export const totalCompletedTodayTasks = query({
+  args: {},
+  handler: async (ctx) => {
+    const user = await getCurrentUserOrThrow(ctx);
+
+    const todayStart = dayjs().tz(TIMEZONE).startOf("day");
+    const todayEnd = dayjs().tz(TIMEZONE).endOf("day");
+
+    const tasks = await ctx.db
+      .query("tasks")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .filter((q) =>
+        q.and(
+          q.gte(q.field("completed"), todayStart.valueOf()),
+          q.lte(q.field("completed"), todayEnd.valueOf()),
+        ),
+      )
+      .collect();
+    return tasks.length || 0;
+  },
+});
+
 export const incompleteTasks = query({
   async handler(ctx) {
-    const user = await getCurrentUser(ctx);
-    if (!user) {
-      throw new Error("Unauthenticated call to query");
-    }
+    const user = await getCurrentUserOrThrow(ctx);
 
     return await ctx.db
       .query("tasks")
@@ -214,72 +225,60 @@ export const incompleteTasks = query({
   },
 });
 
-export const totalTasks = query({
-  args: {},
-  handler: async (ctx) => {
-    const user = await getCurrentUser(ctx);
-    if (!user) {
-      throw new Error("Unauthenticated call to query");
-    }
-    const tasks = await ctx.db
-      .query("tasks")
-      .withIndex("by_user", (q) => q.eq("userId", user._id))
-      .filter((q) => q.neq(q.field("completed"), undefined))
-      .collect();
-    return tasks.length || 0;
-  },
-});
-
-export const updateNotes = mutation({
-  args: { taskId: v.id("tasks"), notes: v.optional(v.string()) },
-  async handler(ctx, { taskId, notes }) {
-    return await ctx.db.patch(taskId, {
-      notes: notes || "",
-      updated: Date.now(),
-    });
-  },
-});
-
-export const updateDue = mutation({
+export const update = mutation({
   args: {
     taskId: v.id("tasks"),
-    due: v.optional(v.string()),
-  },
-  async handler(ctx, { taskId, due }) {
-    return await ctx.db.patch(taskId, {
-      due,
-      updated: Date.now(),
-    });
-  },
-});
-
-export const updateStatus = mutation({
-  args: {
-    taskId: v.id("tasks"),
-    status: v.union(
-      v.literal("backlog"),
-      v.literal("todo"),
-      v.literal("in_progress"),
-      v.literal("done"),
-      v.literal("archived"),
+    name: v.optional(v.string()),
+    status: v.optional(
+      v.union(
+        v.literal("backlog"),
+        v.literal("todo"),
+        v.literal("in_progress"),
+        v.literal("done"),
+        v.literal("archived"),
+      ),
     ),
+    priority: v.optional(
+      v.union(v.literal("low"), v.literal("normal"), v.literal("high")),
+    ),
+    notes: v.optional(v.string()),
+    due: v.optional(v.string()),
+    completed: v.optional(v.number()),
+    recurringTaskId: v.optional(v.id("recurringTasks")),
+    intentionId: v.optional(v.id("intentions")),
+    parentTaskId: v.optional(v.id("tasks")),
+    userId: v.optional(v.id("users")),
   },
-  async handler(ctx, { taskId, status }) {
-    return await ctx.db.patch(taskId, {
+  async handler(
+    ctx,
+    {
+      taskId,
+      name,
       status,
-      updated: Date.now(),
-    });
-  },
-});
-
-export const updatePriority = mutation({
-  args: {
-    taskId: v.id("tasks"),
-    priority: v.union(v.literal("low"), v.literal("normal"), v.literal("high")),
-  },
-  async handler(ctx, { taskId, priority }) {
-    return await ctx.db.patch(taskId, {
       priority,
+      notes,
+      due,
+      completed,
+      recurringTaskId,
+      intentionId,
+      parentTaskId,
+      userId,
+    },
+  ) {
+    const task = await ctx.db.get(taskId);
+    if (task === null) throw new Error("Could not find task");
+
+    await ctx.db.patch(taskId, {
+      name: name || task.name,
+      status: status || task.status,
+      priority: priority || task.priority,
+      notes: notes || task.notes,
+      due: due || task.due,
+      completed: completed || task.completed,
+      recurringTaskId: recurringTaskId || task.recurringTaskId,
+      intentionId: intentionId || task.intentionId,
+      parentTaskId: parentTaskId || task.parentTaskId,
+      userId: userId || task.userId,
       updated: Date.now(),
     });
   },
@@ -288,10 +287,7 @@ export const updatePriority = mutation({
 export const recurringTasks = query({
   args: {},
   async handler(ctx) {
-    const user = await getCurrentUser(ctx);
-    if (!user) {
-      throw new Error("Unauthenticated call to query");
-    }
+    const user = await getCurrentUserOrThrow(ctx);
 
     return await ctx.db
       .query("recurringTasks")

@@ -5,6 +5,7 @@ import { Id } from "@/convex/_generated/dataModel";
 import { nextDueDate } from "@/lib/tasks.utils";
 import { auth } from "@clerk/nextjs/server";
 import { fetchMutation, fetchQuery } from "convex/nextjs";
+import dayjs from "dayjs";
 
 export async function createTask(
   name: string,
@@ -71,7 +72,10 @@ export async function deleteTask(taskId: string) {
   await fetchMutation(api.tasks.remove, { taskId: taskId as Id<"tasks"> });
 }
 
-export async function completeTask(taskId: Id<"tasks">) {
+export async function completeTask(
+  taskId: Id<"tasks">,
+  todayDate: dayjs.Dayjs,
+) {
   const { userId } = await auth();
   if (!userId) {
     throw new Error(
@@ -94,8 +98,11 @@ export async function completeTask(taskId: Id<"tasks">) {
       notes: task.notes,
       due:
         recurringTask?.type === "whenDone"
-          ? await nextDueDate(recurringTask.frequency)
-          : await nextDueDate(recurringTask!.frequency, task?.due),
+          ? await nextDueDate(recurringTask!.frequency, todayDate)
+          : await nextDueDate(
+              recurringTask!.frequency,
+              dayjs(task?.due, "YYYY/MM/DD"),
+            ),
       recurringTaskId: task.recurringTaskId,
       userId,
     });

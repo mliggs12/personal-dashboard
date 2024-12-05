@@ -11,14 +11,14 @@ import TaskList from "../components/tasks/task-list";
 export default function TasksPage() {
   const tasks = useQuery(api.tasks.list) ?? [];
   const incompleteTasks = useQuery(api.tasks.incompleteTasks) ?? [];
-  const completedTasks = useQuery(api.tasks.completedTasks) ?? [];
+  const completedTodayTasks = useQuery(api.tasks.completedTodayTasks) ?? [];
   const recurringTasks = useQuery(api.tasks.recurringTasks) ?? [];
-  const totalTasks = useQuery(api.tasks.totalTasks) ?? 0;
+  const totalTasks = useQuery(api.tasks.totalCompletedTodayTasks) ?? 0;
 
   if (
     tasks === undefined ||
     incompleteTasks === undefined ||
-    completedTasks === undefined
+    completedTodayTasks === undefined
   ) {
     <p>Loading...</p>;
   }
@@ -43,7 +43,7 @@ export default function TasksPage() {
           totalTasks === 0 ? "py-0" : null,
         )}
       >
-        <TaskList tasks={completedTasks} />
+        <TaskList tasks={completedTodayTasks} />
       </div>
       <CompletedTasks totalTasks={totalTasks} />
       <div className="flex flex-col gap-1 py-4">
