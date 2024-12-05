@@ -6,17 +6,17 @@ import { useEffect, useState } from "react";
 
 export default function TaskNotes({ task }: { task: Doc<"tasks"> }) {
   const [notes, setNotes] = useState(task.notes);
-  const updateNotes = useMutation(api.tasks.updateNotes);
+  const updateTask = useMutation(api.tasks.update);
 
   useEffect(() => {
     const saveInterval = setInterval(() => {
       if (notes !== task.notes) {
-        updateNotes({ taskId: task._id, notes: notes! });
+        updateTask({ taskId: task._id, notes: notes! });
       }
     }, 1500);
 
     return () => clearInterval(saveInterval);
-  }, [notes, task.notes, task._id, updateNotes]);
+  }, [notes, task.notes, task._id, updateTask]);
 
   return (
     <Textarea
