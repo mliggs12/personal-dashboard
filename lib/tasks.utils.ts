@@ -1,14 +1,17 @@
 import dayjs from "dayjs";
+import isToday from "dayjs/plugin/isToday";
 import timezone from "dayjs/plugin/timezone";
+import utc from "dayjs/plugin/utc";
 
+dayjs.extend(isToday);
 dayjs.extend(timezone);
-const TIMEZONE = "America/Denver";
+dayjs.extend(utc);
 
 export async function nextDueDate(frequency: string, startDue?: string) {
-  let startDate = dayjs().startOf("day");
-  if (startDue !== null) {
-    startDate = dayjs(startDue);
-  }
+  const startDate = startDue
+    ? dayjs(startDue, "YYYY/MM/DD")
+    : dayjs().startOf("day");
+  console.log(startDate);
 
   switch (frequency) {
     case "daily":
