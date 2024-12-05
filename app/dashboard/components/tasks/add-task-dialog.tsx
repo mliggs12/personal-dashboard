@@ -33,9 +33,7 @@ export default function AddTaskDialog({ data }: { data: Doc<"tasks"> }) {
   const { name, updated, notes, status, priority, due, _id } = data;
 
   const remove = useMutation(api.tasks.remove);
-  const updateDue = useMutation(api.tasks.updateDue);
-  const updateStatus = useMutation(api.tasks.updateStatus);
-  const updatePriority = useMutation(api.tasks.updatePriority);
+  const updateTask = useMutation(api.tasks.update);
 
   const { toast } = useToast();
 
@@ -64,8 +62,9 @@ export default function AddTaskDialog({ data }: { data: Doc<"tasks"> }) {
 
   const handleDueChange = () => {
     if (calendarDate === undefined && due !== undefined) {
-      updateDue({
+      updateTask({
         taskId: _id,
+        due: calendarDate,
       });
       setTaskDue(calendarDate);
       toast({
@@ -76,7 +75,7 @@ export default function AddTaskDialog({ data }: { data: Doc<"tasks"> }) {
       calendarDate &&
       dayjs(calendarDate).format("YYYY/MM/DD") !== due
     ) {
-      updateDue({
+      updateTask({
         taskId: _id,
         due: dayjs(calendarDate).format("YYYY/MM/DD"),
       });
@@ -89,7 +88,7 @@ export default function AddTaskDialog({ data }: { data: Doc<"tasks"> }) {
   };
 
   const handleStatusChange = (status: string) => {
-    updateStatus({
+    updateTask({
       taskId: _id,
       status: status as
         | "backlog"
@@ -102,7 +101,7 @@ export default function AddTaskDialog({ data }: { data: Doc<"tasks"> }) {
   };
 
   const handlePriorityChange = (priority: string) => {
-    updatePriority({
+    updateTask({
       taskId: _id,
       priority: priority as "low" | "normal" | "high",
     });
