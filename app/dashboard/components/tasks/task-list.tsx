@@ -34,7 +34,7 @@ export default function TaskList({ tasks }: { tasks: Doc<"tasks">[] }) {
     }
   };
   return (
-    <div>
+    <div className="overflow-auto">
       {tasks.map((task) => (
         <Task
           key={task._id}

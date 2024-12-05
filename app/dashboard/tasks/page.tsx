@@ -46,13 +46,13 @@ export default function TasksPage() {
   }
 
   return (
-    <div className="container h-full">
+    <div className="container h-full w-svh md:w-full p-1 md:p-0">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-semibold md:text-2xl">Inbox</h1>
       </div>
       <div
         className={cn(
-          "flex flex-col gap-1 py-4 h-1/2 overflow-auto",
+          "flex flex-col gap-1 py-4 h-1/2",
           incompleteTasks.length === 0 ? "py-0" : null,
         )}
       >
@@ -68,7 +68,7 @@ export default function TasksPage() {
         <TaskList tasks={completedTodayTasks} />
       </div>
       <CompletedTasks totalTasks={totalTasks} /> */}
-      <div className="flex flex-col gap-1 py-4 h-1/2 overflow-auto">
+      <div className="flex flex-col gap-1 py-4 h-1/2">
         <h2>Recurring tasks</h2>
         <RecurringTasksTable recurringTasks={recurringTasks} />
       </div>
