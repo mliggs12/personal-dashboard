@@ -1,43 +1,65 @@
 "use client";
 
 import { api } from "@/convex/_generated/api";
+import { Doc } from "@/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
 import { useQuery } from "convex/react";
+import dayjs from "dayjs";
 import { AddTaskWrapper } from "../components/tasks/add-task-button";
-import CompletedTasks from "../components/tasks/completed-tasks";
 import RecurringTasksTable from "../components/tasks/recurring-tasks-table";
 import TaskList from "../components/tasks/task-list";
 
+function orderTasks(tasks: Doc<"tasks">[]) {
+  // Order tasks first by deadline, then by created timestamp
+  const orderedTasks = tasks.sort((a, b) => {
+    if (!a.due && !b.due) {
+      return (
+        dayjs(b._creationTime).valueOf() - dayjs(a._creationTime).valueOf()
+      );
+    }
+    if (!a.due) return 1;
+    if (!b.due) return -1;
+
+    const dateComparison = dayjs(a.due).valueOf() - dayjs(b.due).valueOf();
+
+    return dateComparison === 0
+      ? dayjs(b._creationTime).valueOf() - dayjs(a._creationTime).valueOf()
+      : dateComparison;
+  });
+
+  return orderedTasks;
+}
+
 export default function TasksPage() {
-  const tasks = useQuery(api.tasks.list) ?? [];
   const incompleteTasks = useQuery(api.tasks.incompleteTasks) ?? [];
-  const completedTodayTasks = useQuery(api.tasks.completedTodayTasks) ?? [];
+  const orderedIncompleteTasks = orderTasks(incompleteTasks) ?? [];
   const recurringTasks = useQuery(api.tasks.recurringTasks) ?? [];
-  const totalTasks = useQuery(api.tasks.totalCompletedTodayTasks) ?? 0;
+  // const completedTodayTasks = useQuery(api.tasks.completedTodayTasks) ?? [];
+  // const totalTasks = useQuery(api.tasks.totalCompletedTodayTasks) ?? 0;
 
   if (
-    tasks === undefined ||
     incompleteTasks === undefined ||
-    completedTodayTasks === undefined
+    recurringTasks === undefined
+    // || completedTodayTasks === undefined
   ) {
     <p>Loading...</p>;
   }
 
   return (
-    <div className="container">
+    <div className="container h-full">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-semibold md:text-2xl">Inbox</h1>
       </div>
       <div
         className={cn(
-          "flex flex-col gap-1 py-4",
+          "flex flex-col gap-1 py-4 h-1/2 overflow-auto",
           incompleteTasks.length === 0 ? "py-0" : null,
         )}
       >
-        <TaskList tasks={incompleteTasks} />
+        <TaskList tasks={orderedIncompleteTasks} />
+        <AddTaskWrapper />
       </div>
-      <AddTaskWrapper />
-      <div
+      {/* <div
         className={cn(
           "flex flex-col gap-1 py-4",
           totalTasks === 0 ? "py-0" : null,
@@ -45,8 +67,8 @@ export default function TasksPage() {
       >
         <TaskList tasks={completedTodayTasks} />
       </div>
-      <CompletedTasks totalTasks={totalTasks} />
-      <div className="flex flex-col gap-1 py-4">
+      <CompletedTasks totalTasks={totalTasks} /> */}
+      <div className="flex flex-col gap-1 py-4 h-1/2 overflow-auto">
         <h2>Recurring tasks</h2>
         <RecurringTasksTable recurringTasks={recurringTasks} />
       </div>

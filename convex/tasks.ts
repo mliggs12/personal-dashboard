@@ -175,24 +175,19 @@ export const completedTodayTasks = query({
   async handler(ctx) {
     const user = await getCurrentUserOrThrow(ctx);
 
-    const todayStart = dayjs().tz(TIMEZONE).startOf("day");
-    const todayEnd = dayjs().tz(TIMEZONE).endOf("day");
+    // Attempt to set local timezone
+    const localTimezone = dayjs.tz.guess();
+    const todayStart = dayjs().tz(localTimezone).startOf("day");
 
     return await ctx.db
       .query("tasks")
       .withIndex("by_user", (q) => q.eq("userId", user._id))
-      .filter((q) =>
-        q.and(
-          q.gte(q.field("completed"), todayStart.valueOf()),
-          q.lte(q.field("completed"), todayEnd.valueOf()),
-        ),
-      )
+      .filter((q) => q.gte(q.field("completed"), todayStart.valueOf()))
       .collect();
   },
 });
 
 export const totalCompletedTodayTasks = query({
-  args: {},
   handler: async (ctx) => {
     const user = await getCurrentUserOrThrow(ctx);
 
