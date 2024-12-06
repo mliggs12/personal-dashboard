@@ -9,7 +9,7 @@ Built with the Next.js 14 App Router, Convex, React, Clerk, Google Sign in, Shad
 - Responsive design with Tailwind CSS
 - Deployment with Vercel
 
-### [Try the live app](www.enthousiazein.me)
+### [Try the live app](https://www.enthousiazein.me)
 
 ## Features
 
