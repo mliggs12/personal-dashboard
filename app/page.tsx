@@ -1,20 +1,25 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 import omLogo from "@/public/logo/hinduism-om-icon.svg";
-import { GoogleOneTap, SignedIn, SignedOut, SignUpButton } from "@clerk/nextjs";
+import { GoogleOneTap, SignUpButton } from "@clerk/nextjs";
+import { Authenticated, Unauthenticated } from "convex/react";
 import { StepForward } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 export default function LandingPage() {
-  // const { isLoading, isAuthenticated } = useStoreUserEffect();
+  const { isLoading, isAuthenticated } = useCurrentUser();
 
-  // if (isLoading) {
-  //   <div>Loading...</div>;
-  // }
+  if (isLoading) {
+    <div>Loading...</div>;
+  }
 
-  // if (isAuthenticated) {
-  //   redirect("/dashboard");
-  // }
+  if (isAuthenticated) {
+    redirect("/dashboard");
+  }
 
   return (
     <main className="h-full min-h-screen">
@@ -45,17 +50,22 @@ export default function LandingPage() {
               Personal Dashboard
             </h1>
             <div className="mt-12 flex flex-col gap-4">
-              <SignedIn>
+              {/* <SignedIn> */}
+              <Authenticated>
                 <Link
                   className="flex items-center gap-1"
                   href="/dashboard"
                 >
                   Go to dashboard
                 </Link>
-              </SignedIn>
-              <SignedOut>
+              </Authenticated>
+
+              {/* </SignedIn> */}
+              {/* <SignedOut> */}
+              <Unauthenticated>
                 <GetStartedButton />
-              </SignedOut>
+              </Unauthenticated>
+              {/* </SignedOut> */}
             </div>
           </div>
         </div>
@@ -66,7 +76,7 @@ export default function LandingPage() {
 
 function GetStartedButton() {
   return (
-    <SignUpButton forceRedirectUrl={"/dashboard"}>
+    <SignUpButton>
       <Button>
         <span className="flex items-center gap-1">
           <>

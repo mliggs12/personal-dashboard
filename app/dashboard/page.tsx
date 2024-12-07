@@ -1,10 +1,10 @@
 "use client";
 
-import { useStoreUserEffect } from "@/hooks/useStoreUserEffect";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 import TasksCard from "./components/tasks/tasks-card";
 
 export default function DashboardPage() {
-  const { isLoading, isAuthenticated } = useStoreUserEffect();
+  const { isLoading, isAuthenticated } = useCurrentUser();
 
   if (isLoading) {
     return <div>Loading...</div>;
