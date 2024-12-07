@@ -12,10 +12,10 @@ export default function DashboardPage() {
 
   if (isAuthenticated) {
     return (
-      <>
+      <div className="h-full flex justify-center">
         <TasksCard />
         {/* <CalendarScheduleView /> */}
-      </>
+      </div>
     );
   }
 }

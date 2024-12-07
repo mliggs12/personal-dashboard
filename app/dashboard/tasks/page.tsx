@@ -44,7 +44,7 @@ export default function TasksPage() {
 
   return (
     <div
-      className={cn("flex flex-col h-full w-svh md:w-full gap-1 p-1 md:p-0")}
+      className={cn("flex flex-col h-full w-svh md:w-full gap-2 p-1 md:p-0")}
     >
       <h1 className="text-lg font-semibold md:text-2xl">Inbox</h1>
       <TaskList tasks={orderedIncompleteTasks} />

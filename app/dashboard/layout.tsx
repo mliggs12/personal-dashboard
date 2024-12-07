@@ -72,7 +72,7 @@ export default function DashboardLayout({
           </header>
           <div
             className={cn(
-              "flex flex-col flex-1 container overflow-hidden p-4 pt-2",
+              "flex flex-col flex-1 container h-full overflow-hidden p-4 pt-2",
               isMobile && "p-0",
             )}
           >

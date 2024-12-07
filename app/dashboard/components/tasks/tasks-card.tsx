@@ -42,17 +42,24 @@ function orderTasks(tasks: Task[]): Task[] {
 
 // TODO: Set or remove Backlog task logic
 export default function TasksCard() {
-  const isMobile = useIsMobile();
-  const tasks = useQuery(api.tasks.doTodayTasks) || [];
+  const clientTimezone = dayjs.tz.guess();
+  const tasks = useQuery(api.tasks.doTodayTasks, { clientTimezone }) || [];
   const orderedTasks = orderTasks(tasks);
   const backlogTasks = useQuery(api.tasks.backlogTasks) || [];
   const orderedBacklogTasks = orderTasks(backlogTasks);
 
+  const isMobile = useIsMobile();
+
   if (tasks.length === 0) {
     return (
-      <Card className={cn("h-1/2 w-full md:w-1/2", isMobile && "border-none")}>
-        <CardHeader className="flex flex-row items-center border-b-2 p-4">
-          <div className="grid gap-2">
+      <Card
+        className={cn(
+          "flex flex-col h-full md:h-3/4 w-full md:w-1/2",
+          isMobile && "border-none",
+        )}
+      >
+        <CardHeader className="flex flex-row items-start justify-between border-b-2 p-3">
+          <div className="flex flex-col gap-2 p-0">
             <CardTitle>Backlog Tasks</CardTitle>
             <CardDescription>
               There are no urgent tasks. Add a new task to switch back to Do
@@ -62,7 +69,7 @@ export default function TasksCard() {
           <Button
             asChild
             size="sm"
-            className="ml-auto gap-1"
+            className="gap-1"
           >
             <Link href="/tasks">
               View All
@@ -71,7 +78,7 @@ export default function TasksCard() {
           </Button>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="flex flex-col gap-2 justify-between">
+          <div className="flex flex-col gap-2 p-0 pb-4 overflow-auto">
             <TaskList tasks={orderedBacklogTasks} />
             <AddTaskWrapper />
           </div>
@@ -81,16 +88,21 @@ export default function TasksCard() {
   }
 
   return (
-    <Card className={cn("h-1/2 w-full md:w-1/2", isMobile && "border-none")}>
-      <CardHeader className="flex flex-row items-center border-b-2 p-4">
-        <div className="grid gap-2">
+    <Card
+      className={cn(
+        "flex flex-col h-full md:h-3/4 w-full md:w-1/2",
+        isMobile && "border-none",
+      )}
+    >
+      <CardHeader className="flex flex-row items-start justify-between border-b-2 p-3">
+        <div className="flex flex-col gap-2 p-0">
           <CardTitle>Do Today Tasks</CardTitle>
           <CardDescription>Tasks due today or overdue</CardDescription>
         </div>
         <Button
           asChild
           size="sm"
-          className="ml-auto gap-1"
+          className="gap-1"
         >
           <Link href="/tasks">
             View All
@@ -98,11 +110,9 @@ export default function TasksCard() {
           </Link>
         </Button>
       </CardHeader>
-      <CardContent className="p-0">
-        <div className="flex flex-col gap-2 justify-between">
-          <TaskList tasks={orderedTasks} />
-          <AddTaskWrapper />
-        </div>
+      <CardContent className="flex flex-col gap-2 p-0 pb-4 overflow-auto">
+        <TaskList tasks={orderedTasks} />
+        <AddTaskWrapper />
       </CardContent>
     </Card>
   );

@@ -126,21 +126,23 @@ export const getByIntention = query({
 
 // Get tasks due today or overdue
 export const doTodayTasks = query({
-  async handler(ctx) {
+  args: { clientTimezone: v.string() },
+  async handler(ctx, { clientTimezone }) {
+    console.log(clientTimezone);
     const user = await getCurrentUserOrThrow(ctx);
 
-    const todayStart = dayjs().tz(TIMEZONE).startOf("day").format("YYYY/MM/DD");
+    const todayEnd = dayjs()
+      .tz(clientTimezone)
+      .endOf("day")
+      .format("YYYY/MM/DD");
 
     return await ctx.db
       .query("tasks")
       .withIndex("by_user", (q) => q.eq("userId", user._id))
       .filter((q) =>
         q.and(
-          q.lte(q.field("due"), todayStart), // TODO: Figure out if timezone is needed and/or which dayjs
-          q.or(
-            q.eq(q.field("status"), "todo"),
-            q.eq(q.field("status"), "in_progress"),
-          ),
+          q.lte(q.field("due"), todayEnd),
+          q.neq(q.field("status"), "done"),
         ),
       )
       .collect();
