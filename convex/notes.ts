@@ -1,21 +1,11 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { getCurrentUserOrThrow } from "./userHelpers";
 
 export const recent = query({
   async handler(ctx) {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Unauthenticated call to mutation");
-    }
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_token", (q) =>
-        q.eq("tokenIdentifier", identity.tokenIdentifier),
-      )
-      .unique();
-    if (!user) {
-      throw new Error("Unauthenticated call to mutation");
-    }
+    const user = await getCurrentUserOrThrow(ctx);
+
     const last5 = await ctx.db
       .query("notes")
       .withIndex("by_user", (q) => q.eq("userId", user._id))
@@ -32,23 +22,11 @@ export const create = mutation({
     text: v.optional(v.string()),
   },
   async handler(ctx, { title, text }) {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Unauthenticated call to mutation");
-    }
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_token", (q) =>
-        q.eq("tokenIdentifier", identity.tokenIdentifier),
-      )
-      .unique();
-    if (!user) {
-      throw new Error("Unauthenticated call to mutation");
-    }
+    const user = await getCurrentUserOrThrow(ctx);
+
     await ctx.db.insert("notes", {
       title,
-      text,
-      updated: Date.now(),
+      text: text || "",
       userId: user._id,
     });
   },
@@ -56,19 +34,7 @@ export const create = mutation({
 
 export const list = query({
   async handler(ctx) {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Unauthenticated call to mutation");
-    }
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_token", (q) =>
-        q.eq("tokenIdentifier", identity.tokenIdentifier),
-      )
-      .unique();
-    if (!user) {
-      throw new Error("Unauthenticated call to mutation");
-    }
+    const user = await getCurrentUserOrThrow(ctx);
 
     return await ctx.db
       .query("notes")
@@ -79,62 +45,26 @@ export const list = query({
 });
 
 export const get = query({
-  args: {
-    id: v.id("notes"),
-  },
-  async handler(ctx, { id }) {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Unauthenticated call to mutation");
-    }
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_token", (q) =>
-        q.eq("tokenIdentifier", identity.tokenIdentifier),
-      )
-      .unique();
-    if (!user) {
-      throw new Error("Unauthenticated call to mutation");
-    }
-
-    return await ctx.db.get(id);
+  args: { noteId: v.id("notes") },
+  async handler(ctx, { noteId }) {
+    return await ctx.db.get(noteId);
   },
 });
 
 export const update = mutation({
   args: {
-    id: v.id("notes"),
+    noteId: v.id("notes"),
     title: v.optional(v.string()),
     text: v.optional(v.string()),
   },
-  async handler(ctx, { id, title, text }) {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Unauthenticated call to mutation");
-    }
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_token", (q) =>
-        q.eq("tokenIdentifier", identity.tokenIdentifier),
-      )
-      .unique();
-    if (!user) {
-      throw new Error("Unauthenticated call to mutation");
-    }
-    try {
-      const existingNote = await ctx.db.get(id);
+  async handler(ctx, { noteId, title, text }) {
+    const note = await ctx.db.get(noteId);
+    if (note === null) throw new Error("Could not find note");
 
-      const updatedNote = {
-        ...existingNote,
-        title: title ?? existingNote?.title ?? "",
-        text: text ?? existingNote?.text ?? "",
-        updated: Date.now(),
-      };
-
-      await ctx.db.patch(id, updatedNote);
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
+    await ctx.db.patch(noteId, {
+      title: title || note.title,
+      text: text || note.text,
+      updated: Date.now(),
+    });
   },
 });

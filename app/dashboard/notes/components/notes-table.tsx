@@ -36,7 +36,7 @@ export default function NotesTable() {
         {notes.map((note) => (
           <TableRow key={note._id}>
             <Link
-              href={`/notes/${note._id}`}
+              href={`/dashboard/notes/${note._id}`}
               className="contents hover:bg-secondary"
             >
               <TableCell>{note.title}</TableCell>

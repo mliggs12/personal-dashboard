@@ -8,17 +8,17 @@ import { useEffect, useState } from "react";
 
 export default function NoteText({ note }: { note: Doc<"notes"> }) {
   const [text, setText] = useState(note.text);
-  const updateNotes = useMutation(api.notes.update);
+  const updateNote = useMutation(api.notes.update);
 
   useEffect(() => {
     const saveInterval = setInterval(() => {
       if (text !== note.text) {
-        updateNotes({ id: note._id as Id<"notes">, text: text! });
+        updateNote({ noteId: note._id as Id<"notes">, text: text! });
       }
     }, 1000);
 
     return () => clearInterval(saveInterval);
-  }, [text, note.text, note._id, updateNotes]);
+  }, [text, note.text, note._id, updateNote]);
 
   return (
     <Textarea
