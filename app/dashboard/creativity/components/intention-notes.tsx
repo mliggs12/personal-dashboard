@@ -10,17 +10,17 @@ export default function IntentionNotes({
   intention: Doc<"intentions">;
 }) {
   const [notes, setNotes] = useState(intention.notes);
-  const updateNotes = useMutation(api.intentions.update);
+  const updateIntention = useMutation(api.intentions.update);
 
   useEffect(() => {
     const saveInterval = setInterval(() => {
       if (notes !== intention.notes) {
-        updateNotes({ id: intention._id, notes: notes! });
+        updateIntention({ id: intention._id, notes: notes! });
       }
     }, 2500);
 
     return () => clearInterval(saveInterval);
-  }, [notes, intention.notes, intention._id, updateNotes]);
+  }, [notes, intention.notes, intention._id, updateIntention]);
 
   return (
     <Textarea
