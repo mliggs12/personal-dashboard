@@ -38,9 +38,6 @@ export default function RecurringTasksTable({
       </TableHeader>
       <TableBody>
         {recurringTasks.map((r: RecurringTask, index) => {
-          const created = dayjs(r.created).format("L");
-          const updated = dayjs(r.updated).format("l LT");
-
           return (
             <TableRow key={index}>
               <TableCell className="max-w-[250px] pl-2 pr-10">
@@ -51,9 +48,11 @@ export default function RecurringTasksTable({
               <TableCell className="pl-2 pr-10 capitalize">
                 {r.status}
               </TableCell>
-              <TableCell className="pl-2 pr-10">{created}</TableCell>
+              <TableCell className="pl-2 pr-10">
+                {dayjs(r._creationTime).format("L")}
+              </TableCell>
               <TableCell className="pl-2 pr-10 text-nowrap">
-                {updated}
+                {dayjs(r.updated).format("l LT")}
               </TableCell>
               <TableCell className="pl-2 pr-10 capitalize">
                 {r.frequency}
