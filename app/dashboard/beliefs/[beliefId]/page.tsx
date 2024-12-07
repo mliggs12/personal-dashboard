@@ -1,12 +1,12 @@
 "use client";
 
-import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
+import { useQuery } from "convex/react";
 import { useParams } from "next/navigation";
-import { DeleteBeliefButton } from "./delete-belief-button";
-import BeliefDescription from "./belief-description";
-import BeliefTitle from "./belief-title";
+import BeliefDescription from "../belief-description";
+import BeliefTitle from "../belief-title";
+import { DeleteBeliefButton } from "../delete-belief-button";
 
 export default function BeliefPage() {
   const { beliefId } = useParams<{ beliefId: Id<"beliefs"> }>();

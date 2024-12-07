@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 
 export default function BeliefDescription(props: { belief: Doc<"beliefs"> }) {
   const [description, setDescription] = useState(props.belief.description!);
-  const updateDescription = useMutation(api.beliefs.updateDescription);
+  const update = useMutation(api.beliefs.update);
 
   const handleDescriptionChange = (
     e: React.ChangeEvent<HTMLTextAreaElement>,
@@ -18,17 +18,12 @@ export default function BeliefDescription(props: { belief: Doc<"beliefs"> }) {
   useEffect(() => {
     const saveInterval = setInterval(() => {
       if (description !== props.belief.description) {
-        updateDescription({ beliefId: props.belief._id, description });
+        update({ beliefId: props.belief._id, description });
       }
     }, 2500);
 
     return () => clearInterval(saveInterval);
-  }, [
-    description,
-    props.belief._id,
-    props.belief.description,
-    updateDescription,
-  ]);
+  }, [description, props.belief._id, props.belief.description, update]);
 
   return (
     <Textarea

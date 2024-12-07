@@ -86,40 +86,32 @@ export const activeBeliefsToday = query({
   },
 });
 
-// TODO: Update function
-export const updateDescription = mutation({
+export const update = mutation({
   args: {
     beliefId: v.id("beliefs"),
-    description: v.string(),
-  },
-  async handler(ctx, { beliefId, description }) {
-    await ctx.db.patch(beliefId, { description });
-  },
-});
-
-export const updateTitle = mutation({
-  args: {
-    beliefId: v.id("beliefs"),
-    title: v.string(),
-  },
-  async handler(ctx, { beliefId, title }) {
-    await ctx.db.patch(beliefId, { title });
-  },
-});
-
-export const updateStatus = mutation({
-  args: {
-    beliefId: v.id("beliefs"),
-    status: v.union(
-      v.literal("backlog"),
-      v.literal("todo"),
-      v.literal("in_progress"),
-      v.literal("done"),
-      v.literal("archived"),
-      v.literal("active"),
+    title: v.optional(v.string()),
+    description: v.optional(v.string()),
+    status: v.optional(
+      v.union(
+        v.literal("backlog"),
+        v.literal("todo"),
+        v.literal("in_progress"),
+        v.literal("done"),
+        v.literal("archived"),
+        v.literal("active"),
+      ),
     ),
+    notes: v.optional(v.string()),
   },
-  async handler(ctx, { beliefId, status }) {
-    await ctx.db.patch(beliefId, { status });
+  async handler(ctx, { beliefId, title, description, status, notes }) {
+    const belief = await ctx.db.get(beliefId);
+    if (belief === null) throw new Error("Could not find belief");
+
+    await ctx.db.patch(beliefId, {
+      title: title ?? belief.title,
+      description: description ?? belief.description,
+      status: status ?? belief.status,
+      notes: notes ?? belief.notes,
+    });
   },
 });

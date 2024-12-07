@@ -22,7 +22,7 @@ import { useState } from "react";
 export function DeleteBeliefButton({ beliefId }: { beliefId: Id<"beliefs"> }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const deleteBelief = useMutation(api.beliefs.deleteBelief);
+  const deleteBelief = useMutation(api.beliefs.remove);
   const router = useRouter();
 
   return (
