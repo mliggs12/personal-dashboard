@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { getCurrentUserOrThrow } from "./userHelpers";
 
 export const create = mutation({
   args: {
@@ -14,23 +15,12 @@ export const create = mutation({
     ctx,
     { duration, pauseDuration, notes, what, why, intentionId },
   ) {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Unauthenticated call to mutation");
-    }
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_token", (q) =>
-        q.eq("tokenIdentifier", identity.tokenIdentifier),
-      )
-      .unique();
-    if (!user) {
-      throw new Error("Unauthenticated call to mutation");
-    }
+    const user = await getCurrentUserOrThrow(ctx);
+
     const session = {
       duration,
       pauseDuration,
-      notes,
+      notes: notes || "",
       what,
       why,
       intentionId,
@@ -42,84 +32,40 @@ export const create = mutation({
 });
 
 export const remove = mutation({
-  args: {
-    sessionId: v.id("sessions"),
-  },
+  args: { sessionId: v.id("sessions") },
   async handler(ctx, { sessionId }) {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Unauthenticated call to mutation");
-    }
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_token", (q) =>
-        q.eq("tokenIdentifier", identity.tokenIdentifier),
-      )
-      .unique();
-    if (!user) {
-      throw new Error("Unauthenticated call to mutation");
-    }
-    try {
-      await ctx.db.delete(sessionId);
-    } catch (error) {
-      console.error(`Error deleting session: ${error}`);
-      throw error;
-    }
+    return await ctx.db.delete(sessionId);
   },
 });
 
 export const todaySessions = query({
   args: {},
   async handler(ctx) {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Unauthenticated call to mutation");
-    }
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_token", (q) =>
-        q.eq("tokenIdentifier", identity.tokenIdentifier),
+    const user = await getCurrentUserOrThrow(ctx);
+
+    const now = new Date();
+    const localNow = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+    const startOfDay = new Date(
+      Date.UTC(localNow.getFullYear(), localNow.getMonth(), localNow.getDate()),
+    );
+    const endOfDay = new Date(
+      Date.UTC(
+        localNow.getFullYear(),
+        localNow.getMonth(),
+        localNow.getDate() + 1,
+      ),
+    );
+
+    return await ctx.db
+      .query("sessions")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .filter((q) =>
+        q.and(
+          q.gte(q.field("_creationTime"), startOfDay.getTime()),
+          q.lt(q.field("_creationTime"), endOfDay.getTime()),
+        ),
       )
-      .unique();
-    if (!user) {
-      throw new Error("Unauthenticated call to mutation");
-    }
-    try {
-      const now = new Date();
-      const localNow = new Date(
-        now.getTime() - now.getTimezoneOffset() * 60000,
-      );
-      const startOfDay = new Date(
-        Date.UTC(
-          localNow.getFullYear(),
-          localNow.getMonth(),
-          localNow.getDate(),
-        ),
-      );
-      const endOfDay = new Date(
-        Date.UTC(
-          localNow.getFullYear(),
-          localNow.getMonth(),
-          localNow.getDate() + 1,
-        ),
-      );
-
-      const sessions = await ctx.db
-        .query("sessions")
-        .filter((q) =>
-          q.and(
-            q.gte(q.field("_creationTime"), startOfDay.getTime()),
-            q.lt(q.field("_creationTime"), endOfDay.getTime()),
-            q.eq(q.field("userId"), user._id),
-          ),
-        )
-        .order("desc")
-        .collect();
-
-      return sessions;
-    } catch (error) {
-      console.error(`Error fetching today sessions: ${error}`);
-      throw error;
-    }
+      .order("desc")
+      .collect();
   },
 });

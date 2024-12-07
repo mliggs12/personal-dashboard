@@ -65,10 +65,10 @@ export default defineSchema({
   }).index("by_user", ["userId"]),
 
   notes: defineTable({
-    text: v.optional(v.string()),
-    title: v.optional(v.string()),
+    title: v.string(),
+    text: v.string(),
     updated: v.optional(v.number()),
-    userId: v.optional(v.id("users")),
+    userId: v.id("users"),
   }).index("by_user", ["userId"]),
 
   // Tithe/Focus Sessions as defined in Interstitch
@@ -97,7 +97,8 @@ export default defineSchema({
     userId: v.optional(v.id("users")),
   })
     .index("by_intentionId", ["intentionId"])
-    .index("by_type", ["type"]),
+    .index("by_type", ["type"])
+    .index("by_user", ["userId"]),
 
   tasks: defineTable({
     name: v.string(),
@@ -152,9 +153,6 @@ export default defineSchema({
 
   users: defineTable({
     name: v.string(),
-    externalId: v.optional(v.string()),
-    tokenIdentifier: v.optional(v.string()),
-  })
-    .index("by_token", ["tokenIdentifier"])
-    .index("byExternalId", ["externalId"]),
+    externalId: v.string(),
+  }).index("byExternalId", ["externalId"]),
 });

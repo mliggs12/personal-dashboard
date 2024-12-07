@@ -1,22 +1,10 @@
-import moment from "moment-timezone";
+import { getCurrentUserOrThrow } from "./userHelpers";
 
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
 export const list = query(async (ctx) => {
-  const identity = await ctx.auth.getUserIdentity();
-  if (!identity) {
-    throw new Error("Unauthenticated call to mutation");
-  }
-  const user = await ctx.db
-    .query("users")
-    .withIndex("by_token", (q) =>
-      q.eq("tokenIdentifier", identity.tokenIdentifier),
-    )
-    .unique();
-  if (!user) {
-    throw new Error("Unauthenticated call to mutation");
-  }
+  const user = await getCurrentUserOrThrow(ctx);
 
   return await ctx.db
     .query("intentions")
@@ -29,20 +17,6 @@ export const get = query({
     intentionId: v.id("intentions"),
   },
   async handler(ctx, { intentionId }) {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Unauthenticated call to mutation");
-    }
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_token", (q) =>
-        q.eq("tokenIdentifier", identity.tokenIdentifier),
-      )
-      .unique();
-    if (!user) {
-      throw new Error("Unauthenticated call to mutation");
-    }
-
     return await ctx.db.get(intentionId);
   },
 });
@@ -57,26 +31,13 @@ export const getByStatus = query({
     ),
   },
   async handler(ctx, { status }) {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Unauthenticated call to mutation");
-    }
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_token", (q) =>
-        q.eq("tokenIdentifier", identity.tokenIdentifier),
-      )
-      .unique();
-    if (!user) {
-      throw new Error("Unauthenticated call to mutation");
-    }
-    const intentions = await ctx.db
+    const user = await getCurrentUserOrThrow(ctx);
+
+    return await ctx.db
       .query("intentions")
       .withIndex("by_user", (q) => q.eq("userId", user._id))
       .filter((q) => q.eq(q.field("status"), status))
       .collect();
-
-    return intentions;
   },
 });
 
@@ -87,26 +48,10 @@ export const create = mutation({
     notes: v.optional(v.string()),
   },
   async handler(ctx, { title, emotionId, notes }) {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Unauthenticated");
-    }
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_token", (q) =>
-        q.eq("tokenIdentifier", identity.tokenIdentifier),
-      )
-      .unique();
-    if (!user) {
-      throw new Error("Unauthenticated call to mutation");
-    }
-
-    if (title === undefined) {
-      title = "";
-    }
+    const user = await getCurrentUserOrThrow(ctx);
 
     return await ctx.db.insert("intentions", {
-      title,
+      title: title || "",
       status: "draft",
       emotionId,
       notes,
@@ -121,19 +66,6 @@ export const remove = mutation({
     id: v.id("intentions"),
   },
   async handler(ctx, { id }) {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Unauthenticated");
-    }
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_token", (q) =>
-        q.eq("tokenIdentifier", identity.tokenIdentifier),
-      )
-      .unique();
-    if (!user) {
-      throw new Error("Unauthenticated call to mutation");
-    }
     await ctx.db.delete(id);
   },
 });
@@ -154,38 +86,17 @@ export const update = mutation({
     notes: v.optional(v.string()),
   },
   async handler(ctx, { id, title, status, emotionId, notes }) {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Unauthenticated");
-    }
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_token", (q) =>
-        q.eq("tokenIdentifier", identity.tokenIdentifier),
-      )
-      .unique();
-    if (!user) {
-      throw new Error("Unauthenticated call to mutation");
-    }
-    try {
-      const existingIntention = await ctx.db.get(id);
+    const existingIntention = await ctx.db.get(id);
 
-      const updatedIntention = {
-        ...existingIntention,
-        title: title ?? existingIntention?.title ?? "",
-        status: status ?? existingIntention?.status ?? "draft",
-        emotionId: emotionId ?? existingIntention?.emotionId,
-        notes: notes ?? existingIntention?.notes,
-        updated:
-          status && status !== existingIntention?.status
-            ? moment().tz("America/Denver").valueOf()
-            : existingIntention?.updated ?? undefined,
-      };
+    const updatedIntention = {
+      ...existingIntention,
+      title: title ?? existingIntention?.title ?? "",
+      status: status ?? existingIntention?.status ?? "draft",
+      emotionId: emotionId ?? existingIntention?.emotionId,
+      notes: notes ?? existingIntention?.notes,
+      updated: Date.now(),
+    };
 
-      await ctx.db.patch(id, updatedIntention);
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
+    await ctx.db.patch(id, updatedIntention);
   },
 });
