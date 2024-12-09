@@ -40,7 +40,7 @@ export default function CreateIntentionForm({
   async function onSubmit(values: z.infer<typeof formSchema>) {
     const intentionId = await createIntention({ title: values.title });
     onIntentionCreated();
-    router.push(`/creativity/intentions/${intentionId}`);
+    router.push(`/dashboard/creativity/intentions/${intentionId}`);
   }
 
   return (

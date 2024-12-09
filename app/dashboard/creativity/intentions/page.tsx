@@ -13,7 +13,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
 import { api } from "@/convex/_generated/api";
 import CreateIntentionDialog from "../components/create-intention-dialog";
 import IntentionsTable from "../components/intentions-table";
@@ -38,7 +37,7 @@ export default function IntentionsPage() {
   const allowIntentions = useQuery(api.intentions.getByStatus, {
     status: "allow",
   });
-  const updateStatus = useMutation(api.intentions.update);
+  const update = useMutation(api.intentions.update);
 
   useEffect(() => {
     if (allowIntentions && allowIntentions.length > 0) {
@@ -51,13 +50,13 @@ export default function IntentionsPage() {
       });
 
       titheIntentions.forEach((intention) =>
-        updateStatus({
+        update({
           id: intention._id,
           status: "tithe",
         }),
       );
     }
-  }, [allowIntentions, updateStatus]);
+  }, [allowIntentions, update]);
 
   return (
     <main className="w-full space-y-0 sm:space-y-8">
