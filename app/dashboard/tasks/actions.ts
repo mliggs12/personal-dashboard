@@ -88,7 +88,7 @@ export async function completeTask(
 
   if (task.recurringTaskId !== undefined) {
     const recurringTask = await fetchQuery(api.recurringTasks.get, {
-      taskId: task.recurringTaskId,
+      recurringTaskId: task.recurringTaskId,
     });
 
     await fetchMutation(api.tasks.create, {

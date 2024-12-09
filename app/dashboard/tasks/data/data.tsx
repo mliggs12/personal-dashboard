@@ -5,10 +5,15 @@ import {
   ArrowUpIcon,
   CheckCircledIcon,
   CircleIcon,
-  CrossCircledIcon,
   QuestionMarkCircledIcon,
   StopwatchIcon,
 } from "@radix-ui/react-icons";
+import {
+  Calendar,
+  CalendarCheck,
+  CalendarClock,
+  CalendarDays,
+} from "lucide-react";
 
 export const labels = [
   {
@@ -52,11 +57,6 @@ export const statuses = [
     icon: <CheckCircledIcon className="w-4 h-4 text-primary capitalize" />,
   },
   {
-    value: "cancelled",
-    label: "Cancelled",
-    icon: <CrossCircledIcon className="w-4 h-4 text-primary capitalize" />,
-  },
-  {
     value: "archived", // Added archived status
     label: "Archived",
     icon: <ArchiveIcon className="w-4 h-4 text-primary capitalize" />,
@@ -85,21 +85,21 @@ export const frequencies = [
   {
     label: "Daily",
     value: "daily",
-    icon: <ArrowDownIcon className="w-4 h-4 text-primary capitalize" />,
+    icon: <CalendarCheck className="w-4 h-4 text-primary capitalize" />,
   },
   {
     label: "3-Day",
     value: "3-day",
-    icon: <ArrowRightIcon className="w-4 h-4 text-primary capitalize" />,
+    icon: <CalendarClock className="w-4 h-4 text-primary capitalize" />,
   },
   {
     label: "Weekly",
     value: "weekly",
-    icon: <ArrowUpIcon className="w-4 h-4 text-primary capitalize" />,
+    icon: <CalendarDays className="w-4 h-4 text-primary capitalize" />,
   },
   {
     label: "Monthly",
     value: "monthly",
-    icon: <ArrowUpIcon className="w-4 h-4 text-primary capitalize" />,
+    icon: <Calendar className="w-4 h-4 text-primary capitalize" />,
   },
 ];
