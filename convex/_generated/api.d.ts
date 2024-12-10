@@ -22,6 +22,7 @@ import type * as notes from "../notes.js";
 import type * as recurringTasks from "../recurringTasks.js";
 import type * as schedules from "../schedules.js";
 import type * as sessions from "../sessions.js";
+import type * as sleepRecords from "../sleepRecords.js";
 import type * as statements from "../statements.js";
 import type * as tasks from "../tasks.js";
 import type * as userHelpers from "../userHelpers.js";
@@ -46,6 +47,7 @@ declare const fullApi: ApiFromModules<{
   recurringTasks: typeof recurringTasks;
   schedules: typeof schedules;
   sessions: typeof sessions;
+  sleepRecords: typeof sleepRecords;
   statements: typeof statements;
   tasks: typeof tasks;
   userHelpers: typeof userHelpers;

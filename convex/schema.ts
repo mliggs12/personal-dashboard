@@ -145,6 +145,17 @@ export default defineSchema({
     userId: v.id("users"),
   }).index("by_user", ["userId"]),
 
+  sleepRecords: defineTable({
+    sleepStart: v.number(),
+    sleepEnd: v.optional(v.number()),
+    notes: v.optional(v.string()),
+    isActive: v.boolean(),
+    updated: v.number(),
+    userId: v.id("users"),
+  })
+    .index("by_user", ["userId"])
+    .index("by_active_user", ["isActive", "userId"]),
+
   waterLog: defineTable({
     consumed: v.number(),
     date: v.string(), // YYYY-MM-DD

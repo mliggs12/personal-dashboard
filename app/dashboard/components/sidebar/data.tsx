@@ -1,4 +1,5 @@
 import {
+  Bed,
   Brain,
   ListTodo,
   Shapes,
@@ -48,5 +49,10 @@ export const navItems = [
     title: "Memento Mori",
     url: "/dashboard/wellness",
     icon: Skull,
+  },
+  {
+    title: "Sleep Tracker",
+    url: "/dashboard/sleep",
+    icon: Bed,
   },
 ];
