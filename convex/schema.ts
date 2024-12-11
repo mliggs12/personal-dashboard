@@ -156,11 +156,14 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_active_user", ["isActive", "userId"]),
 
-  waterLog: defineTable({
-    consumed: v.number(),
-    date: v.string(), // YYYY-MM-DD
-    userId: v.optional(v.id("users")),
-  }).index("by_date", ["date"]),
+  waterLogEntries: defineTable({
+    amount: v.number(),
+    timestamp: v.number(),
+    type: v.optional(v.string()), // eg. "coffee", "energy drink", "sports drink", "juice"
+    userId: v.id("users"),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_timestamp", ["userId", "timestamp"]),
 
   users: defineTable({
     name: v.string(),

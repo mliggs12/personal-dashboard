@@ -1,6 +1,7 @@
 import {
   Bed,
   Brain,
+  HeartPulse,
   ListTodo,
   Shapes,
   Skull,
@@ -46,13 +47,18 @@ export const navItems = [
     icon: Sunrise,
   },
   {
-    title: "Memento Mori",
+    title: "Wellness",
     url: "/dashboard/wellness",
-    icon: Skull,
+    icon: HeartPulse,
   },
   {
     title: "Sleep Tracker",
     url: "/dashboard/sleep",
     icon: Bed,
+  },
+  {
+    title: "Memento Mori",
+    url: "/dashboard/stoicism",
+    icon: Skull,
   },
 ];
