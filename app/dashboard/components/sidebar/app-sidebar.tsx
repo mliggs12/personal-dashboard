@@ -32,7 +32,6 @@ export default function AppSidebar({
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
-              isActive={pathname === "/dashboard"}
               size="lg"
               tooltip="Dashboard"
             >
