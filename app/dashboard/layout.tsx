@@ -1,15 +1,7 @@
 "use client";
 
 import AppSidebar from "@/app/dashboard/components/sidebar/app-sidebar";
-import { navItems } from "@/app/dashboard/components/sidebar/data";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+
 import { Separator } from "@/components/ui/separator";
 import {
   SidebarInset,
@@ -22,6 +14,7 @@ import { cn } from "@/lib/utils";
 import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import { usePathname } from "next/navigation";
+import DashboardBreadcrumbs from "./components/dashboard-breadcrumbs";
 
 dayjs.extend(localizedFormat);
 
@@ -46,20 +39,7 @@ export default function DashboardLayout({
                 orientation="vertical"
                 className="mr-2 h-4"
               />
-              <Breadcrumb>
-                <BreadcrumbList>
-                  <BreadcrumbItem className="hidden md:block">
-                    <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
-                  </BreadcrumbItem>
-                  <BreadcrumbSeparator className="hidden md:block" />
-                  <BreadcrumbItem className="hidden md:block">
-                    <BreadcrumbPage className="text-foreground">
-                      {navItems.find((item) => item.url === pathname)?.title ||
-                        "Dashboard"}
-                    </BreadcrumbPage>
-                  </BreadcrumbItem>
-                </BreadcrumbList>
-              </Breadcrumb>
+              <DashboardBreadcrumbs />
             </div>
             <div
               className={cn(
