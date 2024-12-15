@@ -8,8 +8,11 @@ import {
 import Link from "next/link";
 import AddNoteButton from "./add-note-button";
 import { navItems } from "./data";
+import { usePathname } from "next/navigation";
 
 export default function MainNav() {
+  const pathname = usePathname();
+
   return (
     <SidebarGroup>
       <SidebarGroupContent>
@@ -18,8 +21,9 @@ export default function MainNav() {
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton
                 asChild
+                isActive={pathname.startsWith(item.url)}
+                size="lg"
                 tooltip={item.title}
-                size={"lg"}
               >
                 <Link href={item.url}>
                   {item.icon && <item.icon />}
