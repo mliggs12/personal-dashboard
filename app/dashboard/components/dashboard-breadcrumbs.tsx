@@ -57,8 +57,8 @@ const getBreadcrumbDetails = (path: string): BreadcrumbDetails => {
   }
 };
 
-const truncateText = (text: string, maxLength: number = 20): string =>
-  text.length > maxLength ? `${text.slice(0, 8)}...` : text;
+const truncateText = (text: string, maxLength: number = 24): string =>
+  text.length > maxLength ? `${text.slice(0, 20)}...` : text;
 
 export default function DashboardBreadcrumbs() {
   const pathname = usePathname();

@@ -1,5 +1,4 @@
 import Link from "next/link";
-
 import { ModeToggle } from "@/components/ui/mode-toggle";
 import {
   Sidebar,
@@ -15,13 +14,10 @@ import { cn } from "@/lib/utils";
 import { UserButton } from "@clerk/nextjs";
 import { Box } from "lucide-react";
 import MainNav from "./main-nav";
-import { usePathname } from "next/navigation";
 
 export default function AppSidebar({
   ...props
 }: React.ComponentProps<typeof Sidebar>) {
-  const pathname = usePathname();
-
   return (
     <Sidebar
       collapsible="icon"
