@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { format } from "date-fns";
 import { useState } from "react";
 import { createNewSchedule } from "../actions";
+import dayjs from "dayjs";
 
 export default function CreateScheduleForm() {
   const [isTemplate, setIsTemplate] = useState(false);
@@ -56,7 +56,7 @@ export default function CreateScheduleForm() {
             name="scheduleDate"
             type="text"
             className="col-span-3"
-            defaultValue={format(new Date(), "yyyy-MM-dd")}
+            defaultValue={dayjs().format("YYYY/MM/DD")}
             autoComplete="off"
           />
         </div>

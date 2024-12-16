@@ -2,8 +2,8 @@
 
 import clsx from "clsx";
 import { useMutation, useQuery } from "convex/react";
-import moment from "moment-timezone";
 import { useEffect, useState } from "react";
+import dayjs from "dayjs";
 
 import {
   Card,
@@ -41,10 +41,10 @@ export default function IntentionsPage() {
 
   useEffect(() => {
     if (allowIntentions && allowIntentions.length > 0) {
-      const today = moment().startOf("day");
+      const today = dayjs().startOf("day");
 
       const titheIntentions = allowIntentions.filter((intention) => {
-        const updatedDate = moment(intention.updated).startOf("day");
+        const updatedDate = dayjs(intention.updated).startOf("day");
         const daysDifference = today.diff(updatedDate, "days");
         return daysDifference > 3;
       });

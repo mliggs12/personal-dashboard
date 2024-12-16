@@ -1,24 +1,23 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import moment from "moment-timezone";
-import { format } from "date-fns";
+
+import dayjs from "dayjs";
+import duration from "dayjs/plugin/duration";
+
+dayjs.extend(duration);
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatDurationVerbose(durationInSeconds: number): string {
-  const duration = moment.duration(durationInSeconds, "seconds");
-  const hours = duration.hours();
-  const minutes = duration.minutes();
-  const seconds = duration.seconds();
-
-  const parts = [];
-  if (hours > 0) parts.push(`${hours} hour${hours !== 1 ? "s" : ""}`);
-  if (minutes > 0) parts.push(`${minutes} minute${minutes !== 1 ? "s" : ""}`);
-  if (seconds > 0) parts.push(`${seconds} second${seconds !== 1 ? "s" : ""}`);
-
-  return parts.join(", ");
+export function formatDurationVerbose(duration: number) {
+  const d = dayjs.duration(duration, "seconds");
+  if (d.hours() === 0 && d.minutes() === 0) {
+    return `${d.seconds()} seconds`;
+  } else if (d.hours() === 0) {
+    return `${d.minutes()} minutes, ${d.seconds()} seconds`;
+  }
+  return `${d.hours()} hours, ${d.minutes()} minutes, ${d.seconds()} seconds`;
 }
 
 export function convertMinutesToHours(minutes: number) {
@@ -101,20 +100,6 @@ export function formatDuration(duration: number): string {
   const seconds = duration % 60;
 
   return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
-}
-
-function calculateStartTime(creationTime: number, duration: number): number {
-  return creationTime - duration;
-}
-
-export function formatTimePeriod(
-  creationTime: number,
-  duration: number,
-): string {
-  const startTime = calculateStartTime(creationTime, duration);
-  const endTime = creationTime;
-
-  return `${format(startTime, "h:mm:ss a")} - ${format(endTime, "h:mm:ss a")}`;
 }
 
 // Plan

@@ -1,8 +1,12 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Doc } from "@/convex/_generated/dataModel";
+import { cn } from "@/lib/utils";
 import clsx from "clsx";
-import moment from "moment-timezone";
+import dayjs from "dayjs";
+import calendar from "dayjs/plugin/calendar";
+
+dayjs.extend(calendar);
 
 export default function Task({
   data,
@@ -53,15 +57,13 @@ export default function Task({
                 {due && (
                   <div className="flex items-center justify-center gap-1">
                     <p
-                      className={clsx(
+                      className={cn(
                         "text-sm",
-                        moment(due)
-                          .tz("America/Denver")
-                          .isBefore(moment().tz("America/Denver"), "day") &&
+                        dayjs(due).isBefore(dayjs(), "day") &&
                           "text-destructive",
                       )}
                     >
-                      {moment(due).tz("America/Denver").calendar(null, {
+                      {dayjs(due).calendar(null, {
                         sameDay: "[Today]",
                         nextDay: "[Tomorrow]",
                         nextWeek: "ddd, MMM DD",

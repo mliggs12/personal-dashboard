@@ -1,9 +1,7 @@
 "use client";
 
 import { useMutation } from "convex/react";
-import { format } from "date-fns";
 import { CalendarIcon, Text } from "lucide-react";
-import moment from "moment-timezone";
 import { Dispatch, SetStateAction } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -39,6 +37,10 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import dayjs from "dayjs";
+import localizedFormat from "dayjs/plugin/localizedFormat";
+
+dayjs.extend(localizedFormat);
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
@@ -77,9 +79,7 @@ export default function AddTaskInline({
     await createTask({
       name,
       priority: priority as "low" | "normal" | "high",
-      due: due
-        ? moment(due).tz("America/Denver").format("yyyy-MM-DD")
-        : undefined,
+      due: due ? dayjs(due).format("YYYY/MM/DD") : undefined,
       notes,
       status: "todo",
       intentionId: intentionId as Id<"intentions">,
@@ -155,7 +155,7 @@ export default function AddTaskInline({
                           )}
                         >
                           {field.value ? (
-                            format(field.value, "PPP")
+                            dayjs(field.value).format("LL")
                           ) : (
                             <span>Pick a date</span>
                           )}

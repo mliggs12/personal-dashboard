@@ -1,7 +1,10 @@
 import { TableCell } from "@/components/ui/table";
 import clsx from "clsx";
-import moment from "moment-timezone";
 import React from "react";
+import dayjs from "dayjs";
+import localizedFormat from "dayjs/plugin/localizedFormat";
+
+dayjs.extend(localizedFormat);
 
 interface UpdatedTableCellProps {
   selectedTab: string;
@@ -21,7 +24,7 @@ const UpdatedTableCell: React.FC<UpdatedTableCellProps> = ({
           selectedTab !== "draft",
       })}
     >
-      {updated ? moment(updated).tz("America/Denver").format("MMM D LT") : ""}
+      {dayjs(updated).format("LLL")}
     </TableCell>
   );
 };

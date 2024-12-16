@@ -22,10 +22,13 @@ import { Doc } from "@/convex/_generated/dataModel";
 import clsx from "clsx";
 import { useMutation, useQuery } from "convex/react";
 import { MoreHorizontal } from "lucide-react";
-import moment from "moment-timezone";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import UpdatedTableCell from "./updated-table-cell";
+import dayjs from "dayjs";
+import localizedFormat from "dayjs/plugin/localizedFormat";
+
+dayjs.extend(localizedFormat);
 
 interface IntentionsTableProps {
   intentions: Doc<"intentions">[];
@@ -188,11 +191,7 @@ export default function IntentionsTable({
                   selectedTab === "draft" || selectedTab === "all",
               })}
             >
-              {intention._creationTime
-                ? moment(intention._creationTime)
-                    .tz("America/Denver")
-                    .format("MMM DD, h:mm A")
-                : ""}
+              {dayjs(intention._creationTime).format("MMM DD, LT")}
             </TableCell>
             {/* Actions */}
             <TableCell className="w-[150px]">
