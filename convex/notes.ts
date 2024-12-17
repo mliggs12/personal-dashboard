@@ -27,6 +27,7 @@ export const create = mutation({
     await ctx.db.insert("notes", {
       title,
       text: text || "",
+      updated: Date.now(),
       userId: user._id,
     });
   },
