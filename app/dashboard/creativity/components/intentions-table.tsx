@@ -213,7 +213,9 @@ export default function IntentionsTable({
                   <DropdownMenuItem
                     className="text-lg"
                     onSelect={() =>
-                      router.push(`/creativity/intentions/${intention._id}`)
+                      router.push(
+                        `/dashboard/creativity/intentions/${intention._id}`,
+                      )
                     }
                   >
                     Edit
