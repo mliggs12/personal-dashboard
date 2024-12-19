@@ -1,11 +1,16 @@
 import { secondsToMinutesAndSeconds } from "./time";
 
-export default function Clock(props: any) {
-  const time = props.time ? props.time : 0;
+interface ClockProps {
+  seconds: number;
+}
+
+export default function Clock(props: ClockProps) {
+  const time = props.seconds ? props.seconds : 0;
   const [minuteFirstChar, minuteSecondChar, secondFirstChar, secondSecondChar] =
     secondsToMinutesAndSeconds(time);
+
   return (
-    <div>
+    <div className="text-9xl">
       <span className="h-14 xl:h-44 w-12 xl:w-36 py-2 px-1 bg-background">
         {minuteFirstChar}
       </span>

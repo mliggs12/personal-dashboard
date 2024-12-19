@@ -13,10 +13,10 @@ export default function SessionList({
     sessions?.reduce((acc, session) => acc + (session?.duration ?? 0), 0) ?? 0;
 
   return (
-    <div className="w-full space-y-2">
-      <p className="text-xl flex flex-col gap-2 border-2 p-4">
+    <div className="space-y-2 w-full">
+      <p className="text-lg flex flex-col gap-2 border-2 p-4">
         Today&apos;s Focus Time:
-        <span className="font-bold text-center text-3xl">
+        <span className="text-center text-2xl">
           {formatDurationVerbose(totalDuration)}
         </span>
       </p>

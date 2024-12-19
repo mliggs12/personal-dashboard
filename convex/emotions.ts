@@ -50,18 +50,14 @@ export const update = mutation({
   },
 });
 
-export const getLabelById = query({
+export const labelById = query({
   args: {
     emotionId: v.id("emotions"),
   },
   async handler(ctx, { emotionId }) {
     const emotion = await ctx.db.get(emotionId);
 
-    if (!emotion) {
-      throw new Error(`Emotion "${emotionId}" not found.`);
-    }
-
-    return emotion.label;
+    return emotion?.label;
   },
 });
 

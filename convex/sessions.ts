@@ -9,11 +9,12 @@ export const create = mutation({
     notes: v.optional(v.string()),
     what: v.optional(v.string()),
     why: v.optional(v.string()),
+    emotionId: v.optional(v.id("emotions")),
     intentionId: v.optional(v.id("intentions")),
   },
   async handler(
     ctx,
-    { duration, pauseDuration, notes, what, why, intentionId },
+    { duration, pauseDuration, notes, what, why, emotionId, intentionId },
   ) {
     const user = await getCurrentUserOrThrow(ctx);
 
@@ -23,6 +24,7 @@ export const create = mutation({
       notes: notes || "",
       what,
       why,
+      emotionId,
       intentionId,
       userId: user._id,
     };
@@ -66,6 +68,30 @@ export const todaySessions = query({
         ),
       )
       .order("desc")
+      .collect();
+  },
+});
+
+export const titheSessions = query({
+  args: {},
+  async handler(ctx) {
+    const user = await getCurrentUserOrThrow(ctx);
+
+    return await ctx.db
+      .query("sessions")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .filter((q) => q.neq("emotionId", undefined))
+      .order("desc")
+      .collect();
+  },
+});
+
+export const titheSessionsByEmotion = query({
+  args: { emotionId: v.id("emotions") },
+  async handler(ctx, { emotionId }) {
+    return await ctx.db
+      .query("sessions")
+      .filter((q) => q.eq(q.field("emotionId"), emotionId))
       .collect();
   },
 });

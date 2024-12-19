@@ -66,7 +66,7 @@ export default function Timer() {
           </div>
         )}
         <div className="flex flex-col items-center text-9xl space-y-10 mt-8">
-          <Clock time={time} />
+          <Clock seconds={time} />
           <Button onClick={() => regressive(time)}>
             {isRunning ? "Pause" : "Start"}
           </Button>

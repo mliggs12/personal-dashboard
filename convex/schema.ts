@@ -79,6 +79,7 @@ export default defineSchema({
     notes: v.optional(v.string()),
     what: v.optional(v.string()),
     why: v.optional(v.string()),
+    emotionId: v.optional(v.id("emotions")),
     intentionId: v.optional(v.id("intentions")),
     userId: v.optional(v.id("users")),
   }).index("by_user", ["userId"]),
@@ -169,4 +170,25 @@ export default defineSchema({
     name: v.string(),
     externalId: v.string(),
   }).index("byExternalId", ["externalId"]),
+
+  // Messenger/Chat
+  chats: defineTable({
+    chatterOneId: v.id("users"),
+    chatterTwoId: v.id("users"),
+    updated: v.number(),
+  })
+    .index("by_chatterOneId", ["chatterOneId", "chatterTwoId"])
+    .index("by_chatterTwoId", ["chatterTwoId", "chatterOneId"]),
+
+  messages: defineTable({
+    chatId: v.id("chats"),
+    content: v.string(),
+    authorId: v.id("users"),
+  }).index("by_chatId", ["chatId"]),
+
+  userChats: defineTable({
+    chatId: v.id("chats"),
+    userId: v.id("users"),
+    updated: v.number(),
+  }),
 });
