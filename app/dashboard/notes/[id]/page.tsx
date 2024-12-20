@@ -1,18 +1,13 @@
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
 import { useQuery } from "convex/react";
 import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import { useParams } from "next/navigation";
+
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+
 import NoteText from "../components/note-text";
 
 dayjs.extend(localizedFormat);
@@ -26,20 +21,20 @@ export default function NotePage() {
   }
 
   return (
-    <div className="flex flex-col items-center h-full">
-      <Card className="m-3 mr-7 p-4 h-full w-full shadow-none">
-        <CardHeader className="pb-0">
-          <CardTitle className="text-4xl font-semibold hover:text-primary cursor-pointer">
-            {note!.title}
-          </CardTitle>
-          <CardDescription>
-            Updated: {dayjs(note!.updated).format("lll")}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex h-full mt-0 border-2">
-          <NoteText note={note!} />
-        </CardContent>
-      </Card>
+    <div className="px-4">
+      <div className="flex flex-col mb-4 gap-2">
+        <div className="text-lg w-full">{note!.title}</div>
+        <div className="text-xs text-muted-foreground">
+          Updated: {dayjs(note!.updated).format("lll")}
+        </div>
+      </div>
+      <div className="flex flex-col flex-1 h-full">
+        {/* <NoteText note={note!} /> */}
+        <textarea
+          aria-label="Note content"
+          placeholder="Note"
+        />
+      </div>
     </div>
   );
 }

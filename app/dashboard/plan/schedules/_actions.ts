@@ -1,8 +1,9 @@
 "use server";
 
+import { fetchMutation } from "convex/nextjs";
+
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { fetchMutation } from "convex/nextjs";
 
 export async function deleteSchedule(scheduleId: Id<"schedules">) {
   try {

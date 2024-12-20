@@ -1,5 +1,8 @@
 "use client";
 
+import { PlusIcon } from "lucide-react";
+import { useState } from "react";
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,8 +13,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { PlusIcon } from "lucide-react";
-import { useState } from "react";
+
 import CreateBeliefForm from "./create-belief-form";
 
 export default function CreateBeliefButton() {

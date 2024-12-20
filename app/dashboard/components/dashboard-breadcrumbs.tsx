@@ -1,3 +1,7 @@
+import { useQuery } from "convex/react";
+import { usePathname } from "next/navigation";
+
+import { navItems } from "@/app/dashboard/components/sidebar/data";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -6,9 +10,6 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { usePathname } from "next/navigation";
-import { navItems } from "@/app/dashboard/components/sidebar/data";
-import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 

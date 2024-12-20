@@ -1,10 +1,11 @@
 "use client";
 
+import { useMutation } from "convex/react";
+import { useEffect, useState } from "react";
+
 import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/convex/_generated/api";
 import { Doc, Id } from "@/convex/_generated/dataModel";
-import { useMutation } from "convex/react";
-import { useEffect, useState } from "react";
 
 export default function NoteText({ note }: { note: Doc<"notes"> }) {
   const [text, setText] = useState(note.text);
@@ -21,10 +22,11 @@ export default function NoteText({ note }: { note: Doc<"notes"> }) {
   }, [text, note.text, note._id, updateNote]);
 
   return (
-    <Textarea
-      value={text}
+    <textarea
       onChange={(e) => setText(e.target.value)}
-      className="flex flex-1 p-0 text-xl h-full border-none focus-visible:ring-0 focus-visible:ring-offset-0"
+      placeholder="Note"
+      value={text}
+      className="flex flex-col flex-1 h-full p-0 border-none focus-visible:ring-0 focus-visible:ring-offset-0"
     />
   );
 }

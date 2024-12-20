@@ -1,22 +1,23 @@
 "use client";
 
+import { useMutation, useQuery } from "convex/react";
+import { useParams } from "next/navigation";
+
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
 } from "@/components/ui/card";
+import { Toaster } from "@/components/ui/toaster";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { useMutation, useQuery } from "convex/react";
-import { useParams } from "next/navigation";
+import { cn } from "@/lib/utils";
+
 import AddStatementInput from "../../components/add-statement-input";
 import { DeleteIntentionButton } from "../../components/delete-intention-button";
 import { EmotionSelectForm } from "../../components/emotion-select-form";
 import IntentionNotes from "../../components/intention-notes";
-
-import { Toaster } from "@/components/ui/toaster";
-import { cn } from "@/lib/utils";
 import IntentionStatusSelect from "../../components/intention-status-select";
 import IntentionTitle from "../../components/intention-title";
 import StatementItem from "../../components/statement-item";

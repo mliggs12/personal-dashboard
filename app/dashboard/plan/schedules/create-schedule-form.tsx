@@ -1,12 +1,15 @@
 "use client";
 
+import dayjs from "dayjs";
+import { useState } from "react";
+
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+
 import { createNewSchedule } from "../actions";
-import dayjs from "dayjs";
+
 
 export default function CreateScheduleForm() {
   const [isTemplate, setIsTemplate] = useState(false);

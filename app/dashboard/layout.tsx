@@ -1,7 +1,11 @@
 "use client";
 
-import AppSidebar from "@/app/dashboard/components/sidebar/app-sidebar";
+import dayjs from "dayjs";
+import localizedFormat from "dayjs/plugin/localizedFormat";
+import { usePathname } from "next/navigation";
 
+import SidebarLeft from "@/app/dashboard/components/sidebar/sidebar-left";
+import SidebarRight from "@/app/dashboard/components/sidebar/sidebar-right";
 import { Separator } from "@/components/ui/separator";
 import {
   SidebarInset,
@@ -11,9 +15,7 @@ import {
 import { Toaster } from "@/components/ui/toaster";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import dayjs from "dayjs";
-import localizedFormat from "dayjs/plugin/localizedFormat";
-import { usePathname } from "next/navigation";
+
 import DashboardBreadcrumbs from "./components/dashboard-breadcrumbs";
 
 dayjs.extend(localizedFormat);
@@ -29,9 +31,8 @@ export default function DashboardLayout({
   return (
     <>
       <SidebarProvider defaultOpen={false}>
-        <AppSidebar />
-        {/* <main> */}
-        <SidebarInset className="h-screen">
+        <SidebarLeft />
+        <SidebarInset>
           <header className="sticky top-0 z-2 flex h-16 shrink-0 items-center justify-between gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
             <div className="flex items-center gap-2 px-4">
               <SidebarTrigger className="-ml-2" />
@@ -50,16 +51,12 @@ export default function DashboardLayout({
               <p>{dayjs().format("dddd, LL")}</p>
             </div>
           </header>
-          <div
-            className={cn(
-              "flex flex-col flex-1 container h-full overflow-hidden p-4 pt-2",
-              isMobile && "p-0",
-            )}
-          >
+          <div className={cn("flex flex-col flex-1 container overflow-hidden")}>
             {children}
           </div>
           <Toaster />
         </SidebarInset>
+        {/* <SidebarRight /> */}
       </SidebarProvider>
     </>
   );

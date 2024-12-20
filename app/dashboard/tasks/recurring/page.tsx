@@ -1,7 +1,9 @@
 "use client";
 
-import { api } from "@/convex/_generated/api";
 import { useQuery } from "convex/react";
+
+import { api } from "@/convex/_generated/api";
+
 import RecurringTasksTable from "../../components/tasks/recurring-tasks-table";
 
 export default function RecurringPage() {

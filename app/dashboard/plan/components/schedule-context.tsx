@@ -1,5 +1,6 @@
-import { Doc, Id } from "@/convex/_generated/dataModel";
 import React, { createContext, Dispatch, useContext, useReducer } from "react";
+
+import { Doc, Id } from "@/convex/_generated/dataModel";
 
 interface ScheduleState {
   activities: Doc<"activities">[];

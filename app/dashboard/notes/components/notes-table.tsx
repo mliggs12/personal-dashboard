@@ -1,5 +1,10 @@
 "use client";
 
+import { useQuery } from "convex/react";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+import Link from "next/link";
+
 import {
   Table,
   TableBody,
@@ -9,10 +14,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { api } from "@/convex/_generated/api";
-import { useQuery } from "convex/react";
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-import Link from "next/link";
 
 dayjs.extend(relativeTime);
 
@@ -27,9 +28,9 @@ export default function NotesTable() {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Title</TableHead>
-          <TableHead>Updated</TableHead>
-          <TableHead>Created</TableHead>
+          <TableHead className="hidden md:block md:w-[350px]">Title</TableHead>
+          <TableHead className="hidden md:block">Updated</TableHead>
+          <TableHead className="hidden md:block">Created</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -37,11 +38,17 @@ export default function NotesTable() {
           <TableRow key={note._id}>
             <Link
               href={`/dashboard/notes/${note._id}`}
-              className="contents hover:bg-secondary"
+              className="hover:bg-secondary"
             >
-              <TableCell>{note.title}</TableCell>
-              <TableCell>{dayjs(note.updated).fromNow()}</TableCell>
-              <TableCell>
+              <TableCell className="md:block md:w-[350px]">
+                {note.title}
+              </TableCell>
+              <TableCell className="hidden md:block md:w-[350px]">
+                {note.updated !== undefined
+                  ? dayjs(note.updated).fromNow()
+                  : "-"}
+              </TableCell>
+              <TableCell className="hidden md:block md:w-[350px]">
                 {dayjs(note._creationTime).format("MM/DD/YYYY")}
               </TableCell>
             </Link>

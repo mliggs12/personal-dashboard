@@ -1,3 +1,9 @@
+import dayjs from "dayjs";
+import isToday from "dayjs/plugin/isToday";
+import isYesterday from "dayjs/plugin/isYesterday";
+import relativeTime from "dayjs/plugin/relativeTime";
+import { Calendar, GitBranch, Repeat } from "lucide-react";
+
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import {
@@ -8,12 +14,8 @@ import {
 } from "@/components/ui/tooltip";
 import { Doc } from "@/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
-import dayjs from "dayjs";
-import isToday from "dayjs/plugin/isToday";
-import isYesterday from "dayjs/plugin/isYesterday";
-import relativeTime from "dayjs/plugin/relativeTime";
-import { Calendar, GitBranch, Repeat } from "lucide-react";
-import AddTaskDialog from "./add-task-dialog";
+
+import EditTaskDialog from "./edit-task-dialog";
 
 dayjs.extend(isToday);
 dayjs.extend(isYesterday);
@@ -118,7 +120,7 @@ export default function Task({
               </div>
             </DialogTrigger>
           </div>
-          <AddTaskDialog data={data} />
+          <EditTaskDialog data={data} />
         </div>
       </Dialog>
     </div>

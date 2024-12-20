@@ -1,8 +1,9 @@
 "use server";
 
+import { fetchMutation, fetchQuery } from "convex/nextjs";
+
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { fetchMutation, fetchQuery } from "convex/nextjs";
 
 export async function getEmotionById(emotionId: Id<"emotions">) {
   return await fetchQuery(api.emotions.labelById, { emotionId });

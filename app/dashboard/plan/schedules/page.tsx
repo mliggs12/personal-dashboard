@@ -1,3 +1,5 @@
+import { preloadQuery } from "convex/nextjs";
+
 import {
   Card,
   CardContent,
@@ -7,7 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "@/convex/_generated/api";
-import { preloadQuery } from "convex/nextjs";
+
 import CreateScheduleButton from "./create-schedule-button";
 import SchedulesTable from "./schedules-table";
 

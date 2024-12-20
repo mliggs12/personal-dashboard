@@ -1,8 +1,9 @@
 "use client";
 
-import { api } from "@/convex/_generated/api";
 import { useQuery } from "convex/react";
 import Link from "next/link";
+
+import { api } from "@/convex/_generated/api";
 
 export default function Statements() {
   const statements = useQuery(api.statements.todayMindDumpStatements);

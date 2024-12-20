@@ -1,8 +1,9 @@
+import { useMutation } from "convex/react";
+import { useRef, useState } from "react";
+
 import { Input } from "@/components/ui/input";
 import { api } from "@/convex/_generated/api";
 import { toast } from "@/hooks/use-toast";
-import { useMutation } from "convex/react";
-import { useRef, useState } from "react";
 
 export default function CreateNoteInput() {
   const [title, setTitle] = useState("");

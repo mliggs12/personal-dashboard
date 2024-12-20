@@ -1,5 +1,10 @@
 "use client";
 
+import { useMutation } from "convex/react";
+import { Trash } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+
 import { LoadingButton } from "@/components/loading-button";
 import {
   AlertDialog,
@@ -14,10 +19,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { useMutation } from "convex/react";
-import { Trash } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
 
 export function DeleteBeliefButton({ beliefId }: { beliefId: Id<"beliefs"> }) {
   const [isLoading, setIsLoading] = useState(false);

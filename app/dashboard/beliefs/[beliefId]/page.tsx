@@ -1,9 +1,11 @@
 "use client";
 
-import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
 import { useQuery } from "convex/react";
 import { useParams } from "next/navigation";
+
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+
 import BeliefDescription from "../belief-description";
 import BeliefTitle from "../belief-title";
 import { DeleteBeliefButton } from "../delete-belief-button";

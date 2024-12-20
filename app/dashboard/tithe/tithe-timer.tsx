@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useMutation, useQuery } from "convex/react";
 import { Check, ChevronsUpDown } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -17,13 +19,15 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-import { useAudio } from "../interstitial/hooks/use-audio";
 import { api } from "@/convex/_generated/api";
-import { useMutation, useQuery } from "convex/react";
-import Clock from "../interstitial/components/timer/clock";
-import CreateEmotionInput from "./create-emotion-input";
 import { Id } from "@/convex/_generated/dataModel";
+import { cn } from "@/lib/utils";
+
+import CreateEmotionInput from "./create-emotion-input";
+import Clock from "../interstitial/components/timer/clock";
+import { useAudio } from "../interstitial/hooks/use-audio";
+
+
 
 export default function TitheTimer() {
   const [open, setOpen] = useState(false);

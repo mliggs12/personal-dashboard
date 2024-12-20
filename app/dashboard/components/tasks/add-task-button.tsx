@@ -2,7 +2,8 @@ import { Plus } from "lucide-react";
 import { Dispatch, SetStateAction, useState } from "react";
 
 import { Doc } from "@/convex/_generated/dataModel";
-import AddTaskInline from "./add-task-inline";
+
+import AddTaskDialog from "./add-task-dialog";
 
 export const AddTaskWrapper = ({
   parentTask,
@@ -12,7 +13,7 @@ export const AddTaskWrapper = ({
   const [showAddTask, setShowAddTask] = useState(false);
 
   return showAddTask ? (
-    <AddTaskInline
+    <AddTaskDialog
       setShowAddTask={setShowAddTask}
       parentTask={parentTask}
     />

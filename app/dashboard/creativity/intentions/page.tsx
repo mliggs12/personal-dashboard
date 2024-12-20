@@ -2,8 +2,8 @@
 
 import clsx from "clsx";
 import { useMutation, useQuery } from "convex/react";
-import { useEffect, useState } from "react";
 import dayjs from "dayjs";
+import { useEffect, useState } from "react";
 
 import {
   Card,
@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "@/convex/_generated/api";
+
 import CreateIntentionDialog from "../components/create-intention-dialog";
 import IntentionsTable from "../components/intentions-table";
 import { useIntentions } from "../hooks/use-intentions";

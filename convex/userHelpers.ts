@@ -1,5 +1,6 @@
 import { UserJSON } from "@clerk/backend";
 import { v, Validator } from "convex/values";
+
 import { internalMutation, QueryCtx } from "./_generated/server";
 
 export const upsertFromClerk = internalMutation({

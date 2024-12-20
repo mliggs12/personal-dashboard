@@ -1,5 +1,10 @@
 "use client";
 
+import { useQuery } from "convex/react";
+import dayjs from "dayjs";
+import { ArrowUpRight } from "lucide-react";
+import Link from "next/link";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,10 +16,7 @@ import {
 import { api } from "@/convex/_generated/api";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import { useQuery } from "convex/react";
-import dayjs from "dayjs";
-import { ArrowUpRight } from "lucide-react";
-import Link from "next/link";
+
 import { AddTaskWrapper } from "./add-task-button";
 import TaskList from "./task-list";
 
@@ -104,7 +106,7 @@ export default function TasksCard() {
           size="sm"
           className="gap-1"
         >
-          <Link href="/tasks">
+          <Link href="/dashboard/tasks">
             View All
             <ArrowUpRight className="h-4 w-4" />
           </Link>

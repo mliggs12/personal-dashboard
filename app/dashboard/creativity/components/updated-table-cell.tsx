@@ -1,8 +1,9 @@
-import { TableCell } from "@/components/ui/table";
 import clsx from "clsx";
-import React from "react";
 import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat";
+import React from "react";
+
+import { TableCell } from "@/components/ui/table";
 
 dayjs.extend(localizedFormat);
 

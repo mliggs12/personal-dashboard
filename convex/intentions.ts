@@ -1,7 +1,8 @@
-import { getCurrentUserOrThrow } from "./userHelpers";
 
 import { v } from "convex/values";
+
 import { mutation, query } from "./_generated/server";
+import { getCurrentUserOrThrow } from "./userHelpers";
 
 export const list = query(async (ctx) => {
   const user = await getCurrentUserOrThrow(ctx);

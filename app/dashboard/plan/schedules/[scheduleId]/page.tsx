@@ -1,10 +1,12 @@
 "use client";
 
+import { useQuery } from "convex/react";
+import { useParams } from "next/navigation";
+
 import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { useQuery } from "convex/react";
-import { useParams } from "next/navigation";
+
 import { addActivity } from "../../actions";
 
 export default function SchedulePage() {

@@ -1,12 +1,14 @@
 "use client";
 
-import { api } from "@/convex/_generated/api";
 import { useQuery } from "convex/react";
-import CreateScheduleButton from "./schedules/create-schedule-button";
-import { TemplateSelect } from "./components/template-select";
+
+import { api } from "@/convex/_generated/api";
 import { getLocalDateString } from "@/lib/utils";
-import ScheduleActivitiesTable from "./components/schedule-activities-table/schedule-activities-table";
+
 import AddActivityButton from "./components/schedule-activities-table/add-activity-button";
+import ScheduleActivitiesTable from "./components/schedule-activities-table/schedule-activities-table";
+import { TemplateSelect } from "./components/template-select";
+import CreateScheduleButton from "./schedules/create-schedule-button";
 
 export default function PlanDashboard() {
   const todaySchedule = useQuery(api.schedules.getByDate, {

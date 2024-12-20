@@ -1,4 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
+
 import EventsList from "./events-list";
 import { Event } from "./types";
 

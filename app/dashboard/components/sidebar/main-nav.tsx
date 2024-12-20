@@ -1,3 +1,6 @@
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -5,10 +8,10 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import Link from "next/link";
+
 import AddNoteButton from "./add-note-button";
 import { navItems } from "./data";
-import { usePathname } from "next/navigation";
+
 
 export default function MainNav() {
   const pathname = usePathname();

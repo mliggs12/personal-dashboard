@@ -1,4 +1,7 @@
+import { UserButton } from "@clerk/nextjs";
+import { Box } from "lucide-react";
 import Link from "next/link";
+
 import { ModeToggle } from "@/components/ui/mode-toggle";
 import {
   Sidebar,
@@ -11,11 +14,10 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
-import { UserButton } from "@clerk/nextjs";
-import { Box } from "lucide-react";
+
 import MainNav from "./main-nav";
 
-export default function AppSidebar({
+export default function SidebarLeft({
   ...props
 }: React.ComponentProps<typeof Sidebar>) {
   return (
