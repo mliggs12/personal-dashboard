@@ -3,7 +3,7 @@
 import { api } from "@/convex/_generated/api";
 import { useQuery } from "convex/react";
 import TitheTimer from "./tithe-timer";
-import TotalsBarChart from "./totals-bar-chart";
+// import TotalsBarChart from "./totals-bar-chart";
 import SessionList from "../interstitial/components/sessions-list";
 
 export default function TitheTrackerPage() {
