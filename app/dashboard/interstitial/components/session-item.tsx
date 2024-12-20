@@ -22,7 +22,11 @@ export default function SessionItem({ session }: { session: Doc<"sessions"> }) {
           <div>
             <h2>{session.what}</h2>
             <h2>{session.why}</h2>
-            <h2>{emotionLabel}</h2>
+            {emotionLabel === undefined ? (
+              <p>Loading...</p>
+            ) : (
+              <h2>{emotionLabel}</h2>
+            )}
           </div>
         </CardTitle>
       </CardHeader>
