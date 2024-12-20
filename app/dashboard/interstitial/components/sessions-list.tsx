@@ -22,14 +22,16 @@ export default function SessionList({
           {formatDurationVerbose(totalDuration)}
         </span>
       </p>
-      {sessions?.map((session, index) => {
-        return (
+      {sessions?.length ? (
+        sessions.map((session, index) => (
           <SessionItem
             key={index}
             session={session}
           />
-        );
-      })}
+        ))
+      ) : (
+        <p className="text-center text-gray-500">No sessions recorded today</p>
+      )}
     </div>
   );
 }
