@@ -32,8 +32,8 @@ export default function MessageBox({ message }: MessageBoxProps) {
       <div className={cn(isOwn && "order-2")}>
         <Avatar>
           <AvatarImage
-            src={message.user.imageUrl}
-            alt={message.user.fullName}
+            src={""}
+            alt={message.user.name}
           />
           <AvatarFallback>{message.user.name.charAt(0)}</AvatarFallback>
         </Avatar>
