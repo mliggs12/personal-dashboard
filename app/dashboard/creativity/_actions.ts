@@ -5,7 +5,7 @@ import { Id } from "@/convex/_generated/dataModel";
 import { fetchMutation, fetchQuery } from "convex/nextjs";
 
 export async function getEmotionById(emotionId: Id<"emotions">) {
-  return await fetchQuery(api.emotions.getLabelById, { emotionId });
+  return await fetchQuery(api.emotions.labelById, { emotionId });
 }
 
 export async function updateIntentionEmotionByValue(
