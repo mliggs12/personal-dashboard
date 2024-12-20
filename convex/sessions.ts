@@ -1,4 +1,6 @@
 import { v } from "convex/values";
+import dayjs from "dayjs";
+
 import { mutation, query } from "./_generated/server";
 import { getCurrentUser, getCurrentUserOrThrow } from "./userHelpers";
 
@@ -81,6 +83,28 @@ export const titheSessions = query({
       .query("sessions")
       .withIndex("by_user", (q) => q.eq("userId", user?._id))
       .filter((q) => q.neq("emotionId", undefined))
+      .order("desc")
+      .collect();
+  },
+});
+
+export const todayTitheSessions = query({
+  async handler(ctx) {
+    const user = await getCurrentUser(ctx);
+
+    const todayStart = dayjs().startOf("day").valueOf();
+    const todayEnd = dayjs().endOf("day").valueOf();
+
+    return await ctx.db
+      .query("sessions")
+      .withIndex("by_user", (q) => q.eq("userId", user?._id))
+      .filter((q) =>
+        q.and(
+          q.neq(q.field("emotionId"), undefined),
+          q.gte(q.field("_creationTime"), todayStart),
+          q.lt(q.field("_creationTime"), todayEnd),
+        ),
+      )
       .order("desc")
       .collect();
   },
