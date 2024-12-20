@@ -3,6 +3,7 @@ import dayjs from "dayjs";
 import isToday from "dayjs/plugin/isToday";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
+
 import { mutation, query } from "./_generated/server";
 import { getCurrentUserOrThrow, userByExternalId } from "./userHelpers";
 
@@ -128,7 +129,6 @@ export const getByIntention = query({
 export const doTodayTasks = query({
   args: { clientTimezone: v.string() },
   async handler(ctx, { clientTimezone }) {
-    console.log(clientTimezone);
     const user = await getCurrentUserOrThrow(ctx);
 
     const todayEnd = dayjs()
@@ -142,7 +142,10 @@ export const doTodayTasks = query({
       .filter((q) =>
         q.and(
           q.lte(q.field("due"), todayEnd),
-          q.neq(q.field("status"), "done"),
+          q.or(
+            q.eq(q.field("status"), "todo"),
+            q.eq(q.field("status"), "in_progress"),
+          ),
         ),
       )
       .collect();
