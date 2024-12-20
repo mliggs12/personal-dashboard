@@ -1,7 +1,9 @@
 "use client";
 
 import { Doc } from "@/convex/_generated/dataModel";
+import { formatShortDate } from "@/lib/date.utils";
 import { formatDurationVerbose } from "@/lib/utils";
+
 import SessionItem from "./session-item";
 
 export default function SessionList({
@@ -15,7 +17,7 @@ export default function SessionList({
   return (
     <div className="space-y-2 w-full">
       <p className="text-lg flex flex-col gap-2 border-2 p-4">
-        Today&apos;s Focus Time:
+        {formatShortDate(new Date())} - Today&apos;s Focus Time:
         <span className="text-center text-2xl">
           {formatDurationVerbose(totalDuration)}
         </span>

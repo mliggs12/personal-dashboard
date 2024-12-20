@@ -17,7 +17,7 @@ export default function TitheTrackerPage() {
       <div className="flex flex-col flex-1 space-y-4">
         <TitheTimer />
         {todayTitheSessions === undefined ? (
-          <p>Loading Tithe Sessions...</p>
+          <p>Loading Today Tithe Sessions...</p>
         ) : (
           <SessionList sessions={todayTitheSessions} />
         )}
