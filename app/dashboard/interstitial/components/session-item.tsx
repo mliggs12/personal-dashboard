@@ -15,9 +15,7 @@ export default function SessionItem({ session }: { session: Doc<"sessions"> }) {
   const formattedTimeRange = `${startTime.format("h:mm:ss a")} - ${endTime.format("h:mm:ss a")}`;
 
   const emotionId = session.emotionId as Id<"emotions">;
-  console.log(emotionId);
-  // const emotionLabel = useQuery(api.emotions.labelById, { emotionId });
-  const emotionLabel = "emotionLabel";
+  const emotionLabel = useQuery(api.emotions.labelById, { emotionId });
 
   return (
     <Card className="w-full flex flex-col gap-1">
@@ -29,7 +27,7 @@ export default function SessionItem({ session }: { session: Doc<"sessions"> }) {
             {emotionLabel === undefined ? (
               <p>Loading...</p>
             ) : (
-              <h2>{emotionLabel}</h2>
+              <h2>{emotionLabel ?? "emotion label"}</h2>
             )}
           </div>
         </CardTitle>
