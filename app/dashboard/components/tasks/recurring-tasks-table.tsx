@@ -11,12 +11,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Doc } from "@/convex/_generated/dataModel";
+import { RecurringTask } from "@/types";
 
 dayjs.extend(localizedFormat);
 
-export default function RecurringTasksTable({
-  recurringTasks,
-}: RecurringTasksTableProps) {
+export default function RecurringTasksTable(
+  recurringTasks: Doc<"recurringTasks">[],
+) {
   return (
     <Table>
       <TableHeader className="bg-secondary">
