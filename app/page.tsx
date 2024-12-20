@@ -1,14 +1,15 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { useCurrentUser } from "@/hooks/useCurrentUser";
-import omLogo from "@/public/logo/hinduism-om-icon.svg";
 import { GoogleOneTap, SignUpButton } from "@clerk/nextjs";
 import { Authenticated, Unauthenticated } from "convex/react";
 import { StepForward } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+
+import { Button } from "@/components/ui/button";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+import omLogo from "@/public/logo/hinduism-om-icon.svg";
 
 export default function LandingPage() {
   const { isLoading, isAuthenticated } = useCurrentUser();
