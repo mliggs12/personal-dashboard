@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { getCurrentUserOrThrow } from "./userHelpers";
+import { getCurrentUser, getCurrentUserOrThrow } from "./userHelpers";
 
 export const create = mutation({
   args: {
@@ -75,11 +75,11 @@ export const todaySessions = query({
 export const titheSessions = query({
   args: {},
   async handler(ctx) {
-    const user = await getCurrentUserOrThrow(ctx);
+    const user = await getCurrentUser(ctx);
 
     return await ctx.db
       .query("sessions")
-      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .withIndex("by_user", (q) => q.eq("userId", user?._id))
       .filter((q) => q.neq("emotionId", undefined))
       .order("desc")
       .collect();
