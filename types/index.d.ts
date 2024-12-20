@@ -1,11 +1,13 @@
-declare type Task = Doc<"tasks">;
+import { Doc } from "@/convex/_generated/dataModel";
 
-declare type RecurringTask = Doc<"recurringTasks">;
+export type Task = Doc<"tasks">;
 
-declare interface RecurringTasksTableProps {
+export type RecurringTask = Doc<"recurringTasks">;
+
+export interface RecurringTasksTableProps {
   recurringTasks: RecurringTask[];
 }
 
-declare type MessageWithUserType = Doc<"messages"> & {
+export type MessageWithUserType = Doc<"messages"> & {
   user: Doc<"users">;
 };
