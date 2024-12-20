@@ -12,13 +12,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Doc } from "@/convex/_generated/dataModel";
-import { RecurringTask } from "@/types";
 
 dayjs.extend(localizedFormat);
 
-export default function RecurringTasksTable(
-  recurringTasks: Doc<"recurringTasks">[],
-) {
+interface RecurringTasksTableProps {
+  recurringTasks: Doc<"recurringTasks">[];
+}
+
+export default function RecurringTasksTable({
+  recurringTasks,
+}: RecurringTasksTableProps) {
   return (
     <Table>
       <TableHeader className="bg-secondary">
@@ -40,30 +43,30 @@ export default function RecurringTasksTable(
         </TableRow>
       </TableHeader>
       <TableBody>
-        {recurringTasks.map((r: RecurringTask, index) => {
-          return (
-            <TableRow key={index}>
-              <TableCell className="max-w-[250px] pl-2 pr-10">
-                <div className="flex items-center gap-3">
-                  <h1 className="text-base truncate font-semibold">{r.name}</h1>
-                </div>
-              </TableCell>
-              <TableCell className="pl-2 pr-10 capitalize">
-                {r.status}
-              </TableCell>
-              <TableCell className="pl-2 pr-10">
-                {dayjs(r._creationTime).format("L")}
-              </TableCell>
-              <TableCell className="pl-2 pr-10 text-nowrap">
-                {dayjs(r.updated).format("l LT")}
-              </TableCell>
-              <TableCell className="pl-2 pr-10 capitalize">
-                {r.frequency}
-              </TableCell>
-              <TableCell className="pl-2 pr-10 capitalize">{r.type}</TableCell>
-            </TableRow>
-          );
-        })}
+        {recurringTasks.map((task) => (
+          <TableRow key={task._id}>
+            <TableCell className="max-w-[250px] pl-2 pr-10">
+              <div className="flex items-center gap-3">
+                <h1 className="text-base truncate font-semibold">
+                  {task.name}
+                </h1>
+              </div>
+            </TableCell>
+            <TableCell className="pl-2 pr-10 capitalize">
+              {task.status}
+            </TableCell>
+            <TableCell className="pl-2 pr-10">
+              {dayjs(task._creationTime).format("L")}
+            </TableCell>
+            <TableCell className="pl-2 pr-10 text-nowrap">
+              {dayjs(task.updated).format("l LT")}
+            </TableCell>
+            <TableCell className="pl-2 pr-10 capitalize">
+              {task.frequency}
+            </TableCell>
+            <TableCell className="pl-2 pr-10 capitalize">{task.type}</TableCell>
+          </TableRow>
+        ))}
       </TableBody>
     </Table>
   );
