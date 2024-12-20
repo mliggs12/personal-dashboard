@@ -15,9 +15,11 @@ import type {
 } from "convex/server";
 import type * as activities from "../activities.js";
 import type * as beliefs from "../beliefs.js";
+import type * as chats from "../chats.js";
 import type * as emotions from "../emotions.js";
 import type * as http from "../http.js";
 import type * as intentions from "../intentions.js";
+import type * as messages from "../messages.js";
 import type * as notes from "../notes.js";
 import type * as recurringTasks from "../recurringTasks.js";
 import type * as schedules from "../schedules.js";
@@ -41,9 +43,11 @@ import type * as waterLogHelpers from "../waterLogHelpers.js";
 declare const fullApi: ApiFromModules<{
   activities: typeof activities;
   beliefs: typeof beliefs;
+  chats: typeof chats;
   emotions: typeof emotions;
   http: typeof http;
   intentions: typeof intentions;
+  messages: typeof messages;
   notes: typeof notes;
   recurringTasks: typeof recurringTasks;
   schedules: typeof schedules;
