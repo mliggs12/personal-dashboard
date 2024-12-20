@@ -1,3 +1,5 @@
+"use client";
+
 import { useQuery } from "convex/react";
 import dayjs from "dayjs";
 
@@ -14,7 +16,8 @@ export default function SessionItem({ session }: { session: Doc<"sessions"> }) {
 
   const emotionId = session.emotionId as Id<"emotions">;
   console.log(emotionId);
-  const emotionLabel = useQuery(api.emotions.labelById, { emotionId });
+  // const emotionLabel = useQuery(api.emotions.labelById, { emotionId });
+  const emotionLabel = "emotionLabel";
 
   return (
     <Card className="w-full flex flex-col gap-1">
