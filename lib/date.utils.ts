@@ -8,3 +8,18 @@ dayjs.extend(localizedFormat);
 export function formatShortDate(date: Date) {
   return dayjs(date).format("ll");
 }
+
+export function timestampToShortDate(timestamp: number) {
+  return dayjs(timestamp).format("MM/DD");
+}
+
+export function timestampToTime(timestamp: number) {
+  return dayjs(timestamp).format("LT");
+}
+
+export function calculateDuration(end: number, start: number) {
+  const timeEnd = dayjs(end);
+  const timeStart = dayjs(start);
+
+  return timeEnd.diff(timeStart, "hour", true).toFixed(2);
+}

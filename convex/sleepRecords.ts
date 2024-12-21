@@ -66,3 +66,17 @@ export const recordSleepEnd = mutation({
     });
   },
 });
+
+export const CompletedSleepRecords = query({
+  async handler(ctx) {
+    const user = await getCurrentUserOrThrow(ctx);
+
+    const records = await ctx.db
+      .query("sleepRecords")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .filter((q) => q.eq(q.field("isActive"), false))
+      .collect();
+
+    return records.sort((a, b) => b.sleepStart - a.sleepStart);
+  },
+});
