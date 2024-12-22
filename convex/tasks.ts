@@ -284,18 +284,6 @@ export const update = mutation({
   },
 });
 
-export const recurringTasks = query({
-  args: {},
-  async handler(ctx) {
-    const user = await getCurrentUserOrThrow(ctx);
-
-    return await ctx.db
-      .query("recurringTasks")
-      .withIndex("by_user", (q) => q.eq("userId", user._id))
-      .collect();
-  },
-});
-
 export const createRecurringTask = mutation({
   args: {
     name: v.string(),

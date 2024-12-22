@@ -62,6 +62,7 @@ export const recurringTasksWithStats = query({
     const recurringTasks = await ctx.db
       .query("recurringTasks")
       .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .order("desc")
       .collect();
 
     const recurringTasksWithStats = await Promise.all(
@@ -75,7 +76,7 @@ export const recurringTasksWithStats = query({
           .collect();
 
         const count = instances.length ?? 0;
-        const lastRecurrence = instances[0]?.due;
+        const lastRecurrence = instances[0]._creationTime;
 
         return {
           ...recurringTask,
