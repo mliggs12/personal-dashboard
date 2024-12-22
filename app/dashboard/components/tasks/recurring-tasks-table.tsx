@@ -11,13 +11,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Doc, Id } from "@/convex/_generated/dataModel";
+import { Doc } from "@/convex/_generated/dataModel";
 
 dayjs.extend(localizedFormat);
 
 interface TaskStats {
   count: number;
-  lastRecurrence?: string;
+  lastRecurrence: number;
 }
 
 interface RecurringTaskWithStats extends Doc<"recurringTasks"> {
@@ -52,6 +52,9 @@ export default function RecurringTasksTable({
           <TableHead className="px-2 text-secondary-foreground">
             Count
           </TableHead>
+          <TableHead className="px-2 text-secondary-foreground">
+            Last Recurrence
+          </TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -79,6 +82,9 @@ export default function RecurringTasksTable({
             <TableCell className="pl-2 pr-10 capitalize">{task.type}</TableCell>
             <TableCell className="pl-2 pr-10 capitalize">
               {task.stats.count}
+            </TableCell>
+            <TableCell className="pl-2 pr-10 capitalize">
+              {dayjs(task.stats.lastRecurrence).format("l LT")}
             </TableCell>
           </TableRow>
         ))}
