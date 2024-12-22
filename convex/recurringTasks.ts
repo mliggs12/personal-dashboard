@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 
 import { mutation, query } from "./_generated/server";
+import { getCurrentUserOrThrow } from "./userHelpers";
 
 export const get = query({
   args: { recurringTaskId: v.optional(v.id("recurringTasks")) },
@@ -51,5 +52,41 @@ export const update = mutation({
       type: type || recurringTask.type,
       updated: Date.now(),
     });
+  },
+});
+
+export const recurringTasksWithStats = query({
+  async handler(ctx) {
+    const user = await getCurrentUserOrThrow(ctx);
+
+    const recurringTasks = await ctx.db
+      .query("recurringTasks")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+
+    const recurringTasksWithStats = await Promise.all(
+      recurringTasks.map(async (recurringTask) => {
+        const instances = await ctx.db
+          .query("tasks")
+          .withIndex("by_recurringTaskId", (q) =>
+            q.eq("recurringTaskId", recurringTask._id),
+          )
+          .order("desc")
+          .collect();
+
+        const count = instances.length ?? 0;
+        const lastRecurrence = instances[0]?.due;
+
+        return {
+          ...recurringTask,
+          stats: {
+            count,
+            lastRecurrence,
+          },
+        };
+      }),
+    );
+
+    return recurringTasksWithStats;
   },
 });

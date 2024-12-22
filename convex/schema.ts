@@ -123,7 +123,9 @@ export default defineSchema({
     intentionId: v.optional(v.id("intentions")),
     parentTaskId: v.optional(v.id("tasks")),
     userId: v.optional(v.id("users")),
-  }).index("by_user", ["userId"]),
+  })
+    .index("by_recurringTaskId", ["recurringTaskId"])
+    .index("by_user", ["userId"]),
 
   recurringTasks: defineTable({
     name: v.string(),
