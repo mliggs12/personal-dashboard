@@ -42,7 +42,7 @@ export default function RecurringTasksTable({
           <TableHead className="px-2 text-secondary-foreground">
             Created
           </TableHead>
-          <TableHead className="px-2 text-secondary-foreground">
+          <TableHead className="hidden px-2 text-secondary-foreground">
             Updated
           </TableHead>
           <TableHead className="px-2 text-secondary-foreground">
@@ -73,7 +73,7 @@ export default function RecurringTasksTable({
             <TableCell className="pl-2 pr-10">
               {dayjs(task._creationTime).format("L")}
             </TableCell>
-            <TableCell className="pl-2 pr-10 text-nowrap">
+            <TableCell className="hidden pl-2 pr-10 text-nowrap">
               {dayjs(task.updated).format("l LT")}
             </TableCell>
             <TableCell className="pl-2 pr-10 capitalize">
