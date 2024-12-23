@@ -33,7 +33,7 @@ export default function DashboardLayout({
       <SidebarProvider defaultOpen={false}>
         <SidebarLeft />
         <SidebarInset>
-          <header className="sticky top-0 z-2 flex h-16 shrink-0 items-center justify-between gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+          <header className="sticky top-0 z-50 flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
             <div className="flex items-center gap-2 px-4">
               <SidebarTrigger className="-ml-2" />
               <Separator
@@ -51,9 +51,7 @@ export default function DashboardLayout({
               <p>{dayjs().format("dddd, LL")}</p>
             </div>
           </header>
-          <div className={cn("flex flex-col flex-1 container overflow-hidden")}>
-            {children}
-          </div>
+          <main className="flex-1 overflow-hidden">{children}</main>
           <Toaster />
         </SidebarInset>
         {/* <SidebarRight /> */}

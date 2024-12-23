@@ -7,7 +7,7 @@ import { api } from "@/convex/_generated/api";
 import { Doc } from "@/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
 
-import { AddTaskWrapper } from "../components/tasks/add-task-button";
+import AddTaskDrawerDialog from "../components/tasks/add-task-drawer-dialog";
 import TaskList from "../components/tasks/task-list";
 
 function orderTasks(tasks: Doc<"tasks">[]) {
@@ -45,12 +45,18 @@ export default function TasksPage() {
   }
 
   return (
-    <div
-      className={cn("flex flex-col h-full w-svh md:w-full gap-2 p-1 md:p-0")}
-    >
-      <h1 className="text-lg font-semibold md:text-2xl">Inbox</h1>
-      <TaskList tasks={orderedIncompleteTasks} />
-      <AddTaskWrapper />
+    <div className="flex flex-col h-full">
+      <div className="px-4">
+        <h1 className="text-lg font-semibold md:text-2xl">Inbox</h1>
+      </div>
+      <div className="flex-1 relative">
+        <div className="absolute inset-0 overflow-auto px-2">
+          <TaskList tasks={orderedIncompleteTasks} />
+          <div className="fixed bottom-6 right-6 z-10">
+            <AddTaskDrawerDialog />
+          </div>
+        </div>
+      </div>
       {/* <div
         className={cn(
           "flex flex-col gap-1 py-4",

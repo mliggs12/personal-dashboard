@@ -148,7 +148,7 @@ export function AddTaskForm({ className }: React.ComponentProps<"form">) {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className={cn("space-y-2 p-2 my-2 px-3 pt-4", className)}
+        className={cn("p-2 px-3 pt-4", className)}
       >
         <FormField
           control={form.control}
@@ -159,7 +159,7 @@ export function AddTaskForm({ className }: React.ComponentProps<"form">) {
                 <Input
                   id="name"
                   type="text"
-                  placeholder="Task name"
+                  placeholder="New task"
                   autoComplete="off"
                   autoFocus
                   required
