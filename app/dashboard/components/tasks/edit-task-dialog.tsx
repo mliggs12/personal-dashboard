@@ -1,3 +1,4 @@
+import * as SelectPrimitive from "@radix-ui/react-select";
 import { useMutation, useQuery } from "convex/react";
 import dayjs from "dayjs";
 import { CalendarIcon, CheckCircleIcon, Trash2 } from "lucide-react";
@@ -13,6 +14,7 @@ import { Calendar } from "@/components/ui/calendar";
 import {
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -163,26 +165,21 @@ export default function EditTaskDialog({ data }: { data: Doc<"tasks"> }) {
   };
 
   return (
-    <DialogContent className="max-w-4xl h-4/6 flex flex-col md:flex-row lg:justify-between text-right">
-      <DialogHeader className="w-full">
-        <DialogTitle className="text-xl">{name}</DialogTitle>
-        <DialogDescription className="flex flex-col gap-4">
-          <div className="flex gap-2">
-            <p>Updated: {dayjs(updated).format("ddd MMM D [at] h:mm A")}</p>
-          </div>
-          <TaskNotes task={data} />
-        </DialogDescription>
-      </DialogHeader>
-      <div className="flex flex-col gap-2 w-1/2">
-        <div className="grid gap-2 p-2 py-4 border-b-2">
-          <Label className="flex ml-2 items-start text-base">Due date</Label>
+    <DialogContent className="flex flex-col md:flex-row w-full md:max-w-4xl h-full md:h-auto p-4">
+      <div className="flex flex-col gap-2 w-full md:w-4/6">
+        <DialogTitle className="text-xl text-left">{name}</DialogTitle>
+        <TaskNotes task={data} />
+      </div>
+      <div className="flex flex-col gap-1 w-full md:w-1/2 border-b-2 md:border-none space-y-2 pb-4">
+        <div>
+          <Label className="flex items-start text-lg">Due date</Label>
           <Popover>
             <PopoverTrigger asChild>
               <Button
                 size="sm"
                 variant="ghost"
                 className={cn(
-                  "mr-auto h-8 data-[state=open]:bg-accent",
+                  "mr-auto pl-0 h-8 data-[state=open]:bg-accent text-base font-normal",
                   taskDue === undefined && "text-muted-foreground",
                 )}
               >
@@ -208,15 +205,18 @@ export default function EditTaskDialog({ data }: { data: Doc<"tasks"> }) {
             </PopoverContent>
           </Popover>
         </div>
-        <div className="flex flex-col gap-2 p-2 py-4 border-b-2 text-left">
-          <Label className="flex ml-2 items-start text-base">Status</Label>
+        <div>
+          <Label className="flex items-start text-lg">Status</Label>
           <Select
             onValueChange={handleStatusChange}
             defaultValue={taskStatus?.value}
           >
-            <SelectTrigger className="w-fit h-8 gap-2 border-none hover:bg-secondary focus:ring-0 focus:ring-offset-0">
-              <SelectValue placeholder="Select a status" />
-            </SelectTrigger>
+            <SelectPrimitive.Trigger className="w-fit h-8 pl-0 gap-2 border-none hover:bg-secondary focus:ring-0 focus:ring-offset-0">
+              <SelectPrimitive.Value placeholder="Select a status" />
+              <SelectPrimitive.Icon>
+                <span></span>
+              </SelectPrimitive.Icon>
+            </SelectPrimitive.Trigger>
             <SelectContent>
               {statuses.map((item, index) => (
                 <SelectItem
@@ -232,48 +232,46 @@ export default function EditTaskDialog({ data }: { data: Doc<"tasks"> }) {
             </SelectContent>
           </Select>
         </div>
-        <div className="grid gap-2 p-2 py-4 border-b-2 text-left">
-          <Label className="flex ml-2 items-start text-base">Priority</Label>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                size="sm"
-                variant="ghost"
-                className="mr-auto h-8 data-[state=open]:bg-accent"
-              >
-                {taskPriority?.icon}
-                <span>{taskPriority?.label}</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
-              {priorities.map((priority, index) => (
-                <DropdownMenuItem
+        <div>
+          <Label className="flex items-start text-lg">Priority</Label>
+          <Select
+            onValueChange={handlePriorityChange}
+            defaultValue={taskPriority?.value}
+          >
+            <SelectPrimitive.Trigger className="w-fit h-8 pl-0 gap-2 border-none hover:bg-secondary focus:ring-0 focus:ring-offset-0">
+              <SelectPrimitive.Value placeholder="Select a priority" />
+              <SelectPrimitive.Icon>
+                <span></span>
+              </SelectPrimitive.Icon>
+            </SelectPrimitive.Trigger>
+            <SelectContent>
+              {priorities.map((item, index) => (
+                <SelectItem
                   key={index}
-                  onSelect={() => handlePriorityChange(priority.value)}
-                  className="gap-2"
+                  value={item.value}
                 >
-                  {priority.icon}
-                  <span>{priority.label}</span>
-                </DropdownMenuItem>
+                  <div className="flex items-center gap-2">
+                    {item.icon}
+                    <span>{item.label}</span>
+                  </div>
+                </SelectItem>
               ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+            </SelectContent>
+          </Select>
         </div>
-        <div
-          className={cn(
-            "hidden gap-2 p-2 py-4 border-b-2 text-left",
-            recurringTaskId && "grid",
-          )}
-        >
-          <Label className="flex ml-2 items-start text-base">Recurring</Label>
-          <div className="flex justify-between gap-2">
+        <div className={cn("hidden", recurringTaskId && "grid")}>
+          <Label className="flex items-start text-lg">Recurring</Label>
+          <div className="flex justify-between">
             <Select
               onValueChange={handleFrequencyChange}
               defaultValue={recurFrequency?.value}
             >
-              <SelectTrigger className="w-fit h-8 gap-2 border-none hover:bg-secondary focus:ring-0 focus:ring-offset-0">
-                <SelectValue placeholder="Select a recur frequency" />
-              </SelectTrigger>
+              <SelectPrimitive.Trigger className="w-fit h-8 gap-2 border-none hover:bg-secondary focus:ring-0 focus:ring-offset-0">
+                <SelectPrimitive.Value placeholder="Select a frequency" />
+                <SelectPrimitive.Icon>
+                  <span></span>
+                </SelectPrimitive.Icon>
+              </SelectPrimitive.Trigger>
               <SelectContent>
                 {frequencies.map((item, index) => (
                   <SelectItem
@@ -292,9 +290,12 @@ export default function EditTaskDialog({ data }: { data: Doc<"tasks"> }) {
               onValueChange={handleTypeChange}
               value={recurType}
             >
-              <SelectTrigger className="w-fit h-8 gap-2 border-none hover:bg-secondary focus:ring-0 focus:ring-offset-0">
-                <SelectValue placeholder="Select a type" />
-              </SelectTrigger>
+              <SelectPrimitive.Trigger className="w-fit h-8 pl-0 gap-2 border-none hover:bg-secondary focus:ring-0 focus:ring-offset-0">
+                <SelectPrimitive.Value placeholder="Select a type" />
+                <SelectPrimitive.Icon>
+                  <span></span>
+                </SelectPrimitive.Icon>
+              </SelectPrimitive.Trigger>
               <SelectContent>
                 <SelectItem value="onSchedule">
                   <div className="flex items-center gap-2 text-nowrap">
@@ -312,18 +313,18 @@ export default function EditTaskDialog({ data }: { data: Doc<"tasks"> }) {
             </Select>
           </div>
         </div>
-        <div className="flex gap-2 p-4 w-full justify-end">
-          <form onSubmit={(e) => handleDeleteTask(e)}>
-            <Button
-              size="icon"
-              variant="ghost"
-              type="submit"
-            >
-              <Trash2 className="w-5 h-5 text-destructive" />
-            </Button>
-          </form>
-        </div>
       </div>
+      <DialogFooter className="flex items-end">
+        <form onSubmit={(e) => handleDeleteTask(e)}>
+          <Button
+            size="icon"
+            variant="ghost"
+            type="submit"
+          >
+            <Trash2 className="w-5 h-5 text-destructive" />
+          </Button>
+        </form>
+      </DialogFooter>
     </DialogContent>
   );
 }

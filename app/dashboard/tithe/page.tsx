@@ -5,7 +5,6 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 
 import TitheTimer from "./tithe-timer";
-// import TotalsBarChart from "./totals-bar-chart";
 import SessionList from "../interstitial/components/sessions-list";
 
 export default function TitheTrackerPage() {
@@ -21,7 +20,6 @@ export default function TitheTrackerPage() {
         ) : (
           <SessionList sessions={todayTitheSessions} />
         )}
-        {/* <TotalsBarChart /> */}
       </div>
     </div>
   );

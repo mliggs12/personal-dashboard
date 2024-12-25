@@ -65,6 +65,7 @@ export default function Task({
               checked={isCompleted}
               onCheckedChange={handleOnChange}
             />
+            {/* represents the item row in the list */}
             <DialogTrigger asChild>
               <div className="flex justify-between items-center w-full">
                 <button
@@ -86,11 +87,13 @@ export default function Task({
                           )}
                         />
                       </TooltipTrigger>
+                      {/* TODO: show recur type */}
                       <TooltipContent>
                         <p>{"Recurring"}</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
+                  {/* TODO: add tooltip */}
                   {due && (
                     <p
                       className={cn(

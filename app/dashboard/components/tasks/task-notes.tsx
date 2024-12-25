@@ -23,7 +23,8 @@ export default function TaskNotes({ task }: { task: Doc<"tasks"> }) {
     <Textarea
       value={notes}
       onChange={(e) => setNotes(e.target.value)}
-      className="min-h-[300px] text-base text-foreground"
+      placeholder="Add notes"
+      className="min-h-[14px] md:min-h-[225px] p-0 leading-none text-foreground border-none focus-visible:ring-0 focus-visible:ring-offset-0"
     />
   );
 }

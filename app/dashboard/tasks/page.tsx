@@ -46,11 +46,9 @@ export default function TasksPage() {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="px-4">
-        <h1 className="text-lg font-semibold md:text-2xl">Inbox</h1>
-      </div>
       <div className="flex-1 relative">
         <div className="absolute inset-0 overflow-auto px-2">
+          <h1 className="text-base font-semibold md:text-2xl">Inbox</h1>
           <TaskList tasks={orderedIncompleteTasks} />
           <div className="fixed bottom-6 right-6 z-10">
             <AddTaskDrawerDialog />
