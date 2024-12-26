@@ -1,38 +1,65 @@
 "use client";
 
-import { useQuery } from "convex/react";
-import dayjs from "dayjs";
-import localizedFormat from "dayjs/plugin/localizedFormat";
+import { useQuery, useMutation } from "convex/react";
 import { useParams } from "next/navigation";
+import { useState, useRef, useCallback, useEffect } from "react";
 
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 
-import NoteText from "../components/note-text";
-
-dayjs.extend(localizedFormat);
+import TiptapEditor from "../../components/tiptap-editor";
 
 export default function NotePage() {
   const { id } = useParams<{ id: Id<"notes"> }>();
   const note = useQuery(api.notes.get, { noteId: id });
+  const updateNote = useMutation(api.notes.update);
+  const [isSaving, setIsSaving] = useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout>();
 
-  if (note === undefined) {
-    return <p>Loading...</p>;
-  }
+  const handleChange = useCallback(
+    (content: string) => {
+      setIsSaving(true);
+
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+
+      timeoutRef.current = setTimeout(() => {
+        updateNote({ noteId: id, text: content }).then(() =>
+          setIsSaving(false),
+        );
+      }, 2000);
+    },
+    [id, updateNote],
+  );
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
+  if (!note)
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin">Loading...</div>
+      </div>
+    );
 
   return (
-    <div className="px-4">
-      <div className="flex flex-col mb-4 gap-2">
-        <div className="text-lg w-full">{note!.title}</div>
-        <div className="text-xs text-muted-foreground">
-          Updated: {dayjs(note!.updated).format("lll")}
-        </div>
+    <div className="flex flex-col p-2">
+      <h1 className="text-2xl font-bold">{note.title}</h1>
+      <div>
+        {isSaving && (
+          <span className="text-sm text-muted-foreground">Saving...</span>
+        )}
       </div>
-      <div className="flex flex-col flex-1 h-full">
-        {/* <NoteText note={note!} /> */}
-        <textarea
-          aria-label="Note content"
-          placeholder="Note"
+      <div className="">
+        <TiptapEditor
+          initialContent={note.text}
+          onChange={handleChange}
         />
       </div>
     </div>
