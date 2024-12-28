@@ -4,7 +4,6 @@ import { useQuery } from "convex/react";
 import Link from "next/link";
 
 import { api } from "@/convex/_generated/api";
-import { cn } from "@/lib/utils";
 
 import CreateBeliefButton from "./create-belief-button";
 
