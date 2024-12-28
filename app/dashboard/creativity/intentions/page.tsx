@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "@/convex/_generated/api";
+import { cn } from "@/lib/utils";
 
 import CreateIntentionDialog from "../components/create-intention-dialog";
 import IntentionsTable from "../components/intentions-table";
@@ -60,18 +61,18 @@ export default function IntentionsPage() {
   }, [allowIntentions, update]);
 
   return (
-    <main className="w-full space-y-0 sm:space-y-8">
+    <div className="flex flex-col h-full">
       <Tabs
         value={selectedTab}
         onValueChange={(value) => setSelectedTab(value)}
       >
         <div className="flex justify-between items-center mb-2">
-          <TabsList className="">
+          <TabsList>
             {TABS.map((tab, index) => (
               <TabsTrigger
                 key={index}
                 value={tab.value}
-                className={clsx("w-[75px] text-base", {
+                className={cn("w-[75px] text-base", {
                   hidden: !MOBILE_TABS.includes(tab.value) && true,
                   "sm:inline-flex": !MOBILE_TABS.includes(tab.value),
                 })}
@@ -84,7 +85,7 @@ export default function IntentionsPage() {
         </div>
 
         <Card>
-          <CardHeader className="pb-0 sm:p-6">
+          <CardHeader className="pb-0">
             <CardTitle>Intentions</CardTitle>
             <CardDescription>
               Manage your intentions to tithe and view their progress.
@@ -106,7 +107,7 @@ export default function IntentionsPage() {
           </CardContent>
         </Card>
       </Tabs>
-    </main>
+    </div>
   );
 }
 

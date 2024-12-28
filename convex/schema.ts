@@ -39,6 +39,7 @@ export default defineSchema({
     ),
     notes: v.optional(v.string()),
     updated: v.optional(v.number()),
+    intentionId: v.optional(v.id("intentions")),
     userId: v.optional(v.id("users")),
   }).index("by_user", ["userId"]),
 

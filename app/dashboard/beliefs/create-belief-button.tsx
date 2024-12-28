@@ -26,7 +26,10 @@ export default function CreateBeliefButton() {
       open={isOpen}
     >
       <DialogTrigger asChild>
-        <Button className="flex items-center gap-2">
+        <Button
+          size="sm"
+          className="flex items-center gap-2"
+        >
           <PlusIcon className="w-4 h-4" /> Create Belief
         </Button>
       </DialogTrigger>
@@ -43,6 +46,7 @@ export default function CreateBeliefButton() {
               toast({
                 title: "Belief created",
                 description: "Your belief has been created successfully",
+                duration: 3000,
               });
             }}
           />

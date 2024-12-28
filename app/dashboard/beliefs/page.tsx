@@ -11,44 +11,39 @@ import CreateBeliefButton from "./create-belief-button";
 export default function BeliefsPage() {
   const beliefs = useQuery(api.beliefs.list);
 
-  return (
-    <main className="w-full space-y-8">
-      <div className="flex justify-between items-center">
-        <h1 className="text-4xl font-bold">Beliefs</h1>
+  if (beliefs === undefined) {
+    return <p>Loading...</p>;
+  }
+
+  if (beliefs && beliefs.length === 0) {
+    return (
+      <div className="flex flex-col h-full justify-center items-center border-2 border-dashed border-gray-300 rounded-lg p-4 gap-4">
+        <h2 className="text-xl">You have no active beliefs</h2>
         <CreateBeliefButton />
       </div>
+    );
+  }
 
-      {beliefs?.length === 0 && (
-        <div className="py-12 flex flex-col justify-center items-center gap-8">
-          <h2 className="text-2xl">You have no active beliefs</h2>
-          <CreateBeliefButton />
-        </div>
-      )}
-
-      {beliefs && beliefs.length > 0 && (
-        <div className="flex gap-12">
-          <ul className="space-y-2">
-            {beliefs?.map((belief) => (
-              <li
-                key={belief._id}
-                className={cn(
-                  "text-base hover:text-cyan-300 dark:hover:text-cyan-100",
-                  // {
-                  //   "text-cyan-300": belief._id === beliefId,
-                  // }, This is for when we can see an item in a dialog without leaving the page
-                )}
+  return (
+    <main className="px-4 h-full">
+      <div className="flex justify-between items-center">
+        <h1 className="text-base md:text-2xl font-semibold">Beliefs</h1>
+        <CreateBeliefButton />
+      </div>
+      <div className="flex-1 overflow-auto">
+        <ul className="space-y-2">
+          {beliefs.map((belief) => (
+            <li key={belief._id}>
+              <Link
+                href={`/dashboard/beliefs/${belief._id}`}
+                className="cursor-pointer hover:text-primary"
               >
-                <Link
-                  href={`/beliefs/${belief._id}`}
-                  className="text-xl"
-                >
-                  {belief.title}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+                {belief.title}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
     </main>
   );
 }

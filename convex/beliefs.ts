@@ -27,6 +27,7 @@ export const create = mutation({
     description: v.optional(v.string()),
     status: v.optional(v.union(v.literal("active"), v.literal("backlog"))),
     notes: v.optional(v.string()),
+    intentionId: v.optional(v.id("intentions")),
   },
   async handler(ctx, { title, description, status, notes }) {
     const user = await getCurrentUserOrThrow(ctx);

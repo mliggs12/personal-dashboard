@@ -50,127 +50,130 @@ export default function IntentionPage() {
   const emotion = emotions?.find((e) => e._id === intention.emotionId);
 
   return (
-    <main className="w-full space-y-8">
-      <div className="flex gap-8">
-        <Card className="relative min-w-[750px] min-h-[1100px]">
-          <DeleteIntentionButton intentionId={intention._id} />
-          <CardHeader>
-            <IntentionTitle intention={intention} />
-            <CardDescription>
-              {intention.updated ? (
-                <p>
-                  Updated at: {new Date(intention.updated).toLocaleString()}
-                </p>
-              ) : (
-                <p>
-                  Created: {new Date(intention._creationTime).toLocaleString()}
-                </p>
-              )}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <h4 className="text-3xl">What?</h4>
-                <ul className="space-y-1">
-                  {statements
-                    ?.filter((statement) => statement.type === "what")
-                    .map((whatStatement, index) => (
-                      <StatementItem
-                        key={index}
-                        statement={whatStatement}
-                      />
-                    ))}
-                </ul>
-                <AddStatementInput
-                  intention={intention}
-                  type="what"
-                />
-              </div>
-              <div className="space-y-2">
-                <h4 className="text-3xl">Why?</h4>
-                <ul className="space-y-1">
-                  {statements
-                    ?.filter((statement) => statement.type === "why")
-                    .map((whyStatement, index) => (
-                      <StatementItem
-                        key={index}
-                        statement={whyStatement}
-                      />
-                    ))}
-                </ul>
-                <AddStatementInput
-                  intention={intention}
-                  type="why"
-                />
-              </div>
-              <div>
-                {emotion ? (
-                  // <p className="text-xl">{emotion.label}</p>
-                  <h4 className="text-3xl">
-                    Feeling:{" "}
-                    <span className="hover:text-primary cursor-pointer">
-                      {emotion.label}
-                    </span>
-                  </h4>
+    <div className="flex flex-col h-full px-2">
+      <div className="flex-1 relative">
+        <div className="absolute inset-0 overflow-y-auto">
+          <Card>
+            <DeleteIntentionButton intentionId={intention._id} />
+            <CardHeader>
+              <IntentionTitle intention={intention} />
+              <CardDescription>
+                {intention.updated ? (
+                  <p>
+                    Updated at: {new Date(intention.updated).toLocaleString()}
+                  </p>
                 ) : (
-                  <h4 className="text-3xl flex gap-2">
-                    Feeling:{" "}
-                    <div className="">
-                      <EmotionSelectForm intentionId={intention._id} />
-                    </div>
-                  </h4>
+                  <p>
+                    Created:{" "}
+                    {new Date(intention._creationTime).toLocaleString()}
+                  </p>
                 )}
-              </div>
-              <div className="space-y-2">
-                <h4 className="text-3xl">What is in the way?</h4>
-                <ul className="space-y-1">
-                  {statements
-                    ?.filter((statement) => statement.type === "negative")
-                    .map((negativeStatement, index) => (
-                      <li
-                        key={index}
-                        onClick={() =>
-                          negativeStatement.isComplete
-                            ? unCompleteStatement({
-                                id: negativeStatement._id,
-                              })
-                            : completeStatement({ id: negativeStatement._id })
-                        }
-                        className={cn(
-                          "cursor-pointer text-xl",
-                          negativeStatement.isComplete &&
-                            "line-through text-foreground/50",
-                        )}
-                      >
-                        {negativeStatement.text}
-                      </li>
-                    ))}
-                </ul>
-                <AddStatementInput
-                  intention={intention}
-                  type="negative"
-                />
-              </div>
-              <div className="space-y-4">
-                <h4 className="text-3xl">Notes</h4>
-                <IntentionNotes intention={intention} />
-              </div>
-              <div className="space-y-2">
-                <h4 className="text-3xl">Tasks</h4>
-                <div className="flex flex-col border-y-2">
-                  <TaskList items={tasks ?? []} />
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <h4 className="text-3xl">What?</h4>
+                  <ul className="space-y-1">
+                    {statements
+                      ?.filter((statement) => statement.type === "what")
+                      .map((whatStatement, index) => (
+                        <StatementItem
+                          key={index}
+                          statement={whatStatement}
+                        />
+                      ))}
+                  </ul>
+                  <AddStatementInput
+                    intention={intention}
+                    type="what"
+                  />
                 </div>
-                <AddTaskWrapper intentionId={intention._id} />
+                <div className="space-y-2">
+                  <h4 className="text-3xl">Why?</h4>
+                  <ul className="space-y-1">
+                    {statements
+                      ?.filter((statement) => statement.type === "why")
+                      .map((whyStatement, index) => (
+                        <StatementItem
+                          key={index}
+                          statement={whyStatement}
+                        />
+                      ))}
+                  </ul>
+                  <AddStatementInput
+                    intention={intention}
+                    type="why"
+                  />
+                </div>
+                <div>
+                  {emotion ? (
+                    // <p className="text-xl">{emotion.label}</p>
+                    <h4 className="text-3xl">
+                      Feeling:{" "}
+                      <span className="hover:text-primary cursor-pointer">
+                        {emotion.label}
+                      </span>
+                    </h4>
+                  ) : (
+                    <h4 className="text-3xl flex gap-2">
+                      Feeling:{" "}
+                      <div className="">
+                        <EmotionSelectForm intentionId={intention._id} />
+                      </div>
+                    </h4>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <h4 className="text-3xl">What is in the way?</h4>
+                  <ul className="space-y-1">
+                    {statements
+                      ?.filter((statement) => statement.type === "negative")
+                      .map((negativeStatement, index) => (
+                        <li
+                          key={index}
+                          onClick={() =>
+                            negativeStatement.isComplete
+                              ? unCompleteStatement({
+                                  id: negativeStatement._id,
+                                })
+                              : completeStatement({ id: negativeStatement._id })
+                          }
+                          className={cn(
+                            "cursor-pointer text-xl",
+                            negativeStatement.isComplete &&
+                              "line-through text-foreground/50",
+                          )}
+                        >
+                          {negativeStatement.text}
+                        </li>
+                      ))}
+                  </ul>
+                  <AddStatementInput
+                    intention={intention}
+                    type="negative"
+                  />
+                </div>
+                <div className="space-y-4">
+                  <h4 className="text-3xl">Notes</h4>
+                  <IntentionNotes intention={intention} />
+                </div>
+                <div className="space-y-2">
+                  <h4 className="text-3xl">Tasks</h4>
+                  <div className="flex flex-col border-y-2">
+                    <TaskList items={tasks ?? []} />
+                  </div>
+                  <AddTaskWrapper intentionId={intention._id} />
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-        <div className="w-full">
-          <IntentionStatusSelect intention={intention} />
+            </CardContent>
+          </Card>
         </div>
+        {/* <div className="w-full">
+          <IntentionStatusSelect intention={intention} />
+        </div> */}
       </div>
       <Toaster />
-    </main>
+    </div>
   );
 }
