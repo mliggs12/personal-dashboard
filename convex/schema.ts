@@ -67,7 +67,7 @@ export default defineSchema({
   notes: defineTable({
     title: v.string(),
     text: v.string(),
-    updated: v.optional(v.number()),
+    updated: v.number(),
     userId: v.id("users"),
   }).index("by_user", ["userId"]),
 

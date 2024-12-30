@@ -26,32 +26,25 @@ export default function NotesTable() {
 
   return (
     <Table>
-      <TableHeader>
+      <TableHeader className="hidden md:table-header-group">
         <TableRow>
-          <TableHead className="hidden md:block md:w-[350px]">Title</TableHead>
-          <TableHead className="hidden md:block">Updated</TableHead>
-          <TableHead className="hidden md:block">Created</TableHead>
+          <TableHead>Title</TableHead>
+          <TableHead>Updated</TableHead>
+          <TableHead>Created</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {notes.map((note) => (
           <TableRow key={note._id}>
-            <Link
-              href={`/dashboard/notes/${note._id}`}
-              className="hover:bg-secondary"
-            >
-              <TableCell className="md:block md:w-[350px]">
-                {note.title}
-              </TableCell>
-              <TableCell className="hidden md:block md:w-[350px]">
-                {note.updated !== undefined
-                  ? dayjs(note.updated).fromNow()
-                  : "-"}
-              </TableCell>
-              <TableCell className="hidden md:block md:w-[350px]">
-                {dayjs(note._creationTime).format("MM/DD/YYYY")}
-              </TableCell>
-            </Link>
+            <TableCell className="max-w-[150px] truncate">
+              <Link href={`/dashboard/notes/${note._id}`}>{note.title}</Link>
+            </TableCell>
+            <TableCell className="w-[100px] text-nowrap">
+              {note.updated !== undefined ? dayjs(note.updated).fromNow() : "-"}
+            </TableCell>
+            <TableCell className="w-[100px] text-nowrap">
+              {dayjs(note._creationTime).format("MM/DD/YYYY")}
+            </TableCell>
           </TableRow>
         ))}
       </TableBody>
