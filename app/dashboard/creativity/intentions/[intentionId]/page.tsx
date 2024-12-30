@@ -61,7 +61,7 @@ export default function IntentionPage() {
   const emotion = emotions?.find((e) => e._id === intention.emotionId);
 
   return (
-    <div className="flex flex-col h-full px-2">
+    <div className="flex h-full px-2 gap-2">
       <div className="flex-1 relative">
         <div className="absolute inset-0 overflow-y-auto">
           <Card>
@@ -176,9 +176,9 @@ export default function IntentionPage() {
             </CardContent>
           </Card>
         </div>
-        {/* <div className="w-full">
-          <IntentionStatusSelect intention={intention} />
-        </div> */}
+      </div>
+      <div className="w-48">
+        <IntentionStatusSelect intention={intention} />
       </div>
       <Toaster />
     </div>
