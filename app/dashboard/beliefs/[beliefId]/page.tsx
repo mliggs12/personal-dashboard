@@ -6,7 +6,6 @@ import { useParams } from "next/navigation";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 
-import BeliefDescription from "../belief-description";
 import BeliefTitle from "../belief-title";
 import { DeleteBeliefButton } from "../delete-belief-button";
 
@@ -25,7 +24,6 @@ export default function BeliefPage() {
       <DeleteBeliefButton beliefId={belief._id} />
       <div className="space-y-4">
         <BeliefTitle belief={belief} />
-        <BeliefDescription belief={belief} />
       </div>
     </div>
   );
