@@ -26,22 +26,21 @@ export default defineSchema({
   // Creativity
   beliefs: defineTable({
     title: v.string(),
-    description: v.optional(v.string()),
     status: v.optional(
       v.union(
         v.literal("backlog"),
-        v.literal("todo"),
-        v.literal("in_progress"),
+        v.literal("active"),
         v.literal("done"),
         v.literal("archived"),
-        v.literal("active"),
       ),
     ),
     notes: v.optional(v.string()),
-    updated: v.optional(v.number()),
+    updated: v.number(),
     intentionId: v.optional(v.id("intentions")),
-    userId: v.optional(v.id("users")),
-  }).index("by_user", ["userId"]),
+    userId: v.id("users"),
+  })
+    .index("by_intention", ["intentionId"])
+    .index("by_user", ["userId"]),
 
   emotions: defineTable({
     label: v.string(),

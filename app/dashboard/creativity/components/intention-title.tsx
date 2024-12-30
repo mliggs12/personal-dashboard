@@ -42,14 +42,14 @@ export default function IntentionTitle({
         onBlur={handleBlur}
         onChange={(e) => setTitle(e.target.value)}
         onKeyDown={handleKeyDown}
-        className="text-4xl font-semibold leading-none tracking-tight pl-0 border-none focus-visible:ring-0 focus-visible:ring-offset-0"
+        className="text-3xl font-semibold leading-none tracking-tight pl-0 border-none focus-visible:ring-0 focus-visible:ring-offset-0"
       />
     );
   }
 
   return (
     <CardTitle
-      className="text-4xl cursor-pointer"
+      className="text-3xl cursor-pointer"
       onClick={() => setIsEditing(true)}
     >
       {title}

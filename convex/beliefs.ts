@@ -12,6 +12,18 @@ export const list = query(async (ctx) => {
     .collect();
 });
 
+export const byIntention = query({
+  args: {
+    intentionId: v.id("intentions"),
+  },
+  async handler(ctx, { intentionId }) {
+    return await ctx.db
+      .query("beliefs")
+      .withIndex("by_intention", (q) => q.eq("intentionId", intentionId))
+      .collect();
+  },
+});
+
 export const get = query({
   args: {
     beliefId: v.id("beliefs"),
@@ -24,19 +36,25 @@ export const get = query({
 export const create = mutation({
   args: {
     title: v.string(),
-    description: v.optional(v.string()),
-    status: v.optional(v.union(v.literal("active"), v.literal("backlog"))),
+    status: v.optional(
+      v.union(
+        v.literal("backlog"),
+        v.literal("active"),
+        v.literal("done"),
+        v.literal("archived"),
+      ),
+    ),
     notes: v.optional(v.string()),
     intentionId: v.optional(v.id("intentions")),
   },
-  async handler(ctx, { title, description, status, notes }) {
+  async handler(ctx, { title, status, notes, intentionId }) {
     const user = await getCurrentUserOrThrow(ctx);
 
     return await ctx.db.insert("beliefs", {
       title,
-      description,
-      status: status || "backlog",
+      status: status || "active",
       notes: notes || "",
+      intentionId,
       updated: Date.now(),
       userId: user._id,
     });
@@ -92,28 +110,25 @@ export const update = mutation({
   args: {
     beliefId: v.id("beliefs"),
     title: v.optional(v.string()),
-    description: v.optional(v.string()),
     status: v.optional(
       v.union(
         v.literal("backlog"),
-        v.literal("todo"),
-        v.literal("in_progress"),
+        v.literal("active"),
         v.literal("done"),
         v.literal("archived"),
-        v.literal("active"),
       ),
     ),
     notes: v.optional(v.string()),
   },
-  async handler(ctx, { beliefId, title, description, status, notes }) {
+  async handler(ctx, { beliefId, title, status, notes }) {
     const belief = await ctx.db.get(beliefId);
     if (belief === null) throw new Error("Could not find belief");
 
     await ctx.db.patch(beliefId, {
       title: title ?? belief.title,
-      description: description ?? belief.description,
       status: status ?? belief.status,
       notes: notes ?? belief.notes,
+      updated: Date.now(),
     });
   },
 });

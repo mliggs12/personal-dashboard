@@ -14,6 +14,7 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
 
+import AddBeliefInput from "../../components/add-belief-input";
 import AddStatementInput from "../../components/add-statement-input";
 import { DeleteIntentionButton } from "../../components/delete-intention-button";
 import { EmotionSelectForm } from "../../components/emotion-select-form";
@@ -36,10 +37,20 @@ export default function IntentionPage() {
   const statements = useQuery(api.statements.byIntentionId, {
     intentionId,
   });
+  const beliefs = useQuery(api.beliefs.byIntention, {
+    intentionId,
+  });
   const completeStatement = useMutation(api.statements.complete);
   const unCompleteStatement = useMutation(api.statements.unComplete);
+  const updateBelief = useMutation(api.beliefs.update);
 
-  if (intention === undefined) {
+  if (
+    intention === undefined ||
+    emotions === undefined ||
+    tasks === undefined ||
+    statements === undefined ||
+    beliefs === undefined
+  ) {
     return <p>Loading...</p>;
   }
 
@@ -73,7 +84,7 @@ export default function IntentionPage() {
             <CardContent>
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <h4 className="text-3xl">What?</h4>
+                  <h4 className="text-2xl">What?</h4>
                   <ul className="space-y-1">
                     {statements
                       ?.filter((statement) => statement.type === "what")
@@ -90,7 +101,7 @@ export default function IntentionPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <h4 className="text-3xl">Why?</h4>
+                  <h4 className="text-2xl">Why?</h4>
                   <ul className="space-y-1">
                     {statements
                       ?.filter((statement) => statement.type === "why")
@@ -109,50 +120,46 @@ export default function IntentionPage() {
                 <div>
                   {emotion ? (
                     // <p className="text-xl">{emotion.label}</p>
-                    <h4 className="text-3xl">
-                      Feeling:{" "}
-                      <span className="hover:text-primary cursor-pointer">
-                        {emotion.label}
-                      </span>
+                    <h4 className="text-2xl">
+                      Feeling: <span>{emotion.label}</span>
                     </h4>
                   ) : (
-                    <h4 className="text-3xl flex gap-2">
+                    <h4 className="text-2xl flex gap-2">
                       Feeling:{" "}
-                      <div className="">
+                      <div>
                         <EmotionSelectForm intentionId={intention._id} />
                       </div>
                     </h4>
                   )}
                 </div>
                 <div className="space-y-2">
-                  <h4 className="text-3xl">What is in the way?</h4>
+                  <h4 className="text-2xl">Release Limiting Beliefs</h4>
                   <ul className="space-y-1">
-                    {statements
-                      ?.filter((statement) => statement.type === "negative")
-                      .map((negativeStatement, index) => (
-                        <li
-                          key={index}
-                          onClick={() =>
-                            negativeStatement.isComplete
-                              ? unCompleteStatement({
-                                  id: negativeStatement._id,
-                                })
-                              : completeStatement({ id: negativeStatement._id })
-                          }
-                          className={cn(
-                            "cursor-pointer text-xl",
-                            negativeStatement.isComplete &&
-                              "line-through text-foreground/50",
-                          )}
-                        >
-                          {negativeStatement.text}
-                        </li>
-                      ))}
+                    {beliefs.map((belief, index) => (
+                      <li
+                        key={index}
+                        onClick={() =>
+                          belief.status === "done"
+                            ? updateBelief({
+                                beliefId: belief._id,
+                                status: "active",
+                              })
+                            : updateBelief({
+                                beliefId: belief._id,
+                                status: "done",
+                              })
+                        }
+                        className={cn(
+                          "cursor-pointer hover:text-primary",
+                          belief.status === "done" &&
+                            "line-through text-foreground/50",
+                        )}
+                      >
+                        {belief.title}
+                      </li>
+                    ))}
                   </ul>
-                  <AddStatementInput
-                    intention={intention}
-                    type="negative"
-                  />
+                  <AddBeliefInput intention={intention} />
                 </div>
                 <div className="space-y-4">
                   <h4 className="text-3xl">Notes</h4>
