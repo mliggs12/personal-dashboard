@@ -46,7 +46,7 @@ export default function StatementItem({
         onBlur={handleBlur}
         onChange={(e) => setText(e.target.value)}
         onKeyDown={handleKeyDown}
-        className="text-xl pl-2 border-none focus:h-7 focus-visible:ring-0 focus-visible:ring-offset-0"
+        className="text-base pl-2 border-none focus:h-7 focus-visible:ring-0 focus-visible:ring-offset-0"
         autoComplete="off"
       />
     );
@@ -54,7 +54,7 @@ export default function StatementItem({
 
   return (
     <li
-      className="text-xl cursor-pointer ml-2"
+      className="cursor-pointer hover:text-primary"
       onClick={() => setIsEditing(true)}
     >
       {text}

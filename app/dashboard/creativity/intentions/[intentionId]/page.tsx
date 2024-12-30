@@ -85,7 +85,7 @@ export default function IntentionPage() {
               <div className="space-y-6">
                 <div className="space-y-2">
                   <h4 className="text-2xl">What?</h4>
-                  <ul className="space-y-1">
+                  <ul className="space-y-1 ml-2">
                     {statements
                       ?.filter((statement) => statement.type === "what")
                       .map((whatStatement, index) => (
@@ -102,7 +102,7 @@ export default function IntentionPage() {
                 </div>
                 <div className="space-y-2">
                   <h4 className="text-2xl">Why?</h4>
-                  <ul className="space-y-1">
+                  <ul className="space-y-1 ml-2">
                     {statements
                       ?.filter((statement) => statement.type === "why")
                       .map((whyStatement, index) => (
@@ -119,12 +119,11 @@ export default function IntentionPage() {
                 </div>
                 <div>
                   {emotion ? (
-                    // <p className="text-xl">{emotion.label}</p>
-                    <h4 className="text-2xl">
+                    <h4 className="text-xl">
                       Feeling: <span>{emotion.label}</span>
                     </h4>
                   ) : (
-                    <h4 className="text-2xl flex gap-2">
+                    <h4 className="text-xl flex gap-2">
                       Feeling:{" "}
                       <div>
                         <EmotionSelectForm intentionId={intention._id} />
@@ -134,7 +133,7 @@ export default function IntentionPage() {
                 </div>
                 <div className="space-y-2">
                   <h4 className="text-2xl">Release Limiting Beliefs</h4>
-                  <ul className="space-y-1">
+                  <ul className="space-y-1 ml-2">
                     {beliefs.map((belief, index) => (
                       <li
                         key={index}

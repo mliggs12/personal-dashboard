@@ -34,7 +34,7 @@ export default function AddStatementInput({
       onChange={(e) => setStatement(e.target.value)}
       onKeyDown={handleKeyDown}
       autoComplete="off"
-      className="mt-4 ml-0 pl-2 text-xl"
+      className="ml-0 pl-2"
     />
   );
 }
