@@ -20,7 +20,6 @@ import { api } from "@/convex/_generated/api";
 
 const formSchema = z.object({
   title: z.string().min(1).max(5000),
-  description: z.string().max(5000),
 });
 
 export default function CreateBeliefForm({
@@ -34,14 +33,12 @@ export default function CreateBeliefForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: "",
-      description: "",
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     await createBelief({
       title: values.title,
-      description: values.description,
     });
     onBeliefCreated();
   }
@@ -60,22 +57,6 @@ export default function CreateBeliefForm({
               <FormLabel>Title</FormLabel>
               <FormControl>
                 <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Description</FormLabel>
-              <FormControl>
-                <Textarea
-                  rows={8}
-                  {...field}
-                />
               </FormControl>
               <FormMessage />
             </FormItem>
