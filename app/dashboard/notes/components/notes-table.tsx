@@ -14,6 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { api } from "@/convex/_generated/api";
+import { Doc } from "@/convex/_generated/dataModel";
 
 dayjs.extend(relativeTime);
 
@@ -23,6 +24,11 @@ export default function NotesTable() {
   if (notes === undefined) {
     return <div>Loading...</div>;
   }
+
+  // Sort notes by updated date
+  const sortedNotes: Doc<"notes">[] = notes.sort(
+    (a, b) => b.updated - a.updated,
+  );
 
   return (
     <Table>
@@ -34,7 +40,7 @@ export default function NotesTable() {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {notes.map((note) => (
+        {sortedNotes.map((note) => (
           <TableRow key={note._id}>
             <TableCell className="max-w-[150px] truncate">
               <Link href={`/dashboard/notes/${note._id}`}>{note.title}</Link>
