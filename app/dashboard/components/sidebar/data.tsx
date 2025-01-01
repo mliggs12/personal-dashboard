@@ -3,6 +3,7 @@ import {
   Brain,
   HeartPulse,
   ListTodo,
+  MessagesSquare,
   Shapes,
   Skull,
   StickyNote,
@@ -60,5 +61,10 @@ export const navItems = [
     title: "Memento Mori",
     url: "/dashboard/stoicism",
     icon: Skull,
+  },
+  {
+    title: "Chat",
+    url: "/dashboard/chat",
+    icon: MessagesSquare,
   },
 ];

@@ -19,17 +19,16 @@ export default function Body({ messages }: BodyProps) {
   }, [messages]);
 
   return (
-    <div className="flex-1 overflow-y-auto">
-      {messages.map((message) => (
-        <MessageBox
-          key={message._id}
-          message={message}
-        />
-      ))}
-      <div
-        className="pt-24"
-        ref={bottomRef}
-      />
+    <div className="flex-1 relative">
+      <div className="absolute inset-0 overflow-y-auto">
+        {messages?.map((message) => (
+          <MessageBox
+            key={message._id}
+            message={message}
+          />
+        ))}
+        <div ref={bottomRef} />
+      </div>
     </div>
   );
 }
