@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 
-import MainNav from "./main-nav";
+import NavMain from "./nav-main";
 
 export default function SidebarLeft({
   ...props
@@ -42,7 +42,7 @@ export default function SidebarLeft({
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <MainNav />
+        <NavMain />
       </SidebarContent>
       <SidebarFooter>
         <div

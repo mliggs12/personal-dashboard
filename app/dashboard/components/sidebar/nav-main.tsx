@@ -12,8 +12,7 @@ import {
 import AddNoteButton from "./add-note-button";
 import { navItems } from "./data";
 
-
-export default function MainNav() {
+export default function NavMain() {
   const pathname = usePathname();
 
   return (
