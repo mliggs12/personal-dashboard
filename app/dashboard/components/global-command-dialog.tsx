@@ -1,14 +1,6 @@
 "use client";
 
 import { useQuery } from "convex/react";
-import {
-  Calculator,
-  Calendar,
-  CreditCard,
-  Settings,
-  Smile,
-  User,
-} from "lucide-react";
 import Link from "next/link";
 import * as React from "react";
 import { useState } from "react";
@@ -25,8 +17,6 @@ import {
 } from "@/components/ui/command";
 import { Input } from "@/components/ui/input";
 import { api } from "@/convex/_generated/api";
-
-import NotesSearch from "./notes-search";
 
 export function GlobalCommandDialog() {
   const [open, setOpen] = React.useState(false);
