@@ -22,7 +22,6 @@ import { cn } from "@/lib/utils";
 
 import DashboardBreadcrumbs from "./components/dashboard-breadcrumbs";
 import { GlobalCommandDialog } from "./components/global-command-dialog";
-import SidebarSecondary from "./components/sidebar/sidebar-secondary";
 
 dayjs.extend(localizedFormat);
 
