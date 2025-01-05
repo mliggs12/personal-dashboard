@@ -70,3 +70,17 @@ export const update = mutation({
     });
   },
 });
+
+export const search = query({
+  args: { query: v.string() },
+  async handler(ctx, { query }) {
+    const user = await getCurrentUserOrThrow(ctx);
+
+    return await ctx.db
+      .query("notes")
+      .withSearchIndex("search_title", (q) =>
+        q.search("title", query).eq("userId", user._id),
+      )
+      .collect();
+  },
+});

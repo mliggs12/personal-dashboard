@@ -69,7 +69,12 @@ export default defineSchema({
     text: v.string(),
     updated: v.number(),
     userId: v.id("users"),
-  }).index("by_user", ["userId"]),
+  })
+    .index("by_user", ["userId"])
+    .searchIndex("search_title", {
+      searchField: "title",
+      filterFields: ["userId"],
+    }),
 
   // Tithe/Focus Sessions as defined in Interstitch
   // All parameters are optional to allow for future use cases
