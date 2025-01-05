@@ -11,11 +11,6 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import {
-  SidebarRight,
-  SidebarRightProvider,
-  SidebarRightTrigger,
-} from "@/components/ui/sidebar-right";
 import { Toaster } from "@/components/ui/toaster";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
