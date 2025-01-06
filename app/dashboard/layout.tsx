@@ -16,7 +16,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
 import DashboardBreadcrumbs from "./components/dashboard-breadcrumbs";
-import { GlobalCommandDialog } from "./components/global-command-dialog";
+import { GlobalCommandMenu } from "./components/global-command-menu";
 
 dayjs.extend(localizedFormat);
 
@@ -52,7 +52,7 @@ export default function DashboardLayout({
                   "flex items-center gap-4",
               )}
             >
-              <GlobalCommandDialog />
+              <GlobalCommandMenu />
               <p>{dayjs().format("dddd, LL")}</p>
             </div>
           </header>

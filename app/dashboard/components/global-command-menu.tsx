@@ -18,7 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { api } from "@/convex/_generated/api";
 
-export function GlobalCommandDialog() {
+export function GlobalCommandMenu() {
   const [open, setOpen] = React.useState(false);
   const [searchText, setSearchText] = useState("");
   const searchResults = useQuery(api.notes.search, { query: searchText }) || [];
@@ -47,29 +47,26 @@ export function GlobalCommandDialog() {
         open={open}
         onOpenChange={setOpen}
       >
-        <CommandInput asChild>
-          <Input
-            value={searchText}
-            onChange={(event) => setSearchText(event.target.value)}
-            placeholder="Search notes..."
-          />
-        </CommandInput>
-        <CommandList>
-          <ul className="p-4 space-y-4">
+        <CommandInput
+          value={searchText}
+          onValueChange={setSearchText}
+          placeholder="Search notes..."
+        />
+        <CommandList className="p-4 space-y-4">
+          <CommandEmpty>No results found.</CommandEmpty>
+          <CommandGroup value="Suggestions">
             {searchResults.map((searchResult) => (
-              <li
+              <CommandItem
                 key={searchResult._id}
-                onClick={() => setOpen(false)}
+                onSelect={() => setOpen(false)}
+                value={searchResult.title}
               >
-                <Link
-                  href={`/dashboard/notes/${searchResult._id}`}
-                  className="hover:cursor-pointer hover:text-primary"
-                >
+                <Link href={`/dashboard/notes/${searchResult._id}`}>
                   {searchResult.title}
                 </Link>
-              </li>
+              </CommandItem>
             ))}
-          </ul>
+          </CommandGroup>
         </CommandList>
       </CommandDialog>
     </>
