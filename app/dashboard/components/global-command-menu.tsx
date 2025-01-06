@@ -2,6 +2,7 @@
 
 import { useQuery } from "convex/react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import * as React from "react";
 import { useState } from "react";
 
@@ -15,12 +16,15 @@ import {
   CommandSeparator,
   CommandShortcut,
 } from "@/components/ui/command";
-import { Input } from "@/components/ui/input";
 import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 
 export function GlobalCommandMenu() {
+  const router = useRouter();
+
   const [open, setOpen] = React.useState(false);
   const [searchText, setSearchText] = useState("");
+
   const searchResults = useQuery(api.notes.search, { query: searchText }) || [];
 
   React.useEffect(() => {
@@ -34,6 +38,11 @@ export function GlobalCommandMenu() {
     document.addEventListener("keydown", down);
     return () => document.removeEventListener("keydown", down);
   }, []);
+
+  const handleSelect = (noteId: Id<"notes">) => {
+    setOpen(false);
+    router.push(`/dashboard/notes/${noteId}`);
+  };
 
   return (
     <>
@@ -58,7 +67,7 @@ export function GlobalCommandMenu() {
             {searchResults.map((searchResult) => (
               <CommandItem
                 key={searchResult._id}
-                onSelect={() => setOpen(false)}
+                onSelect={() => handleSelect(searchResult._id)}
                 value={searchResult.title}
               >
                 <Link href={`/dashboard/notes/${searchResult._id}`}>
