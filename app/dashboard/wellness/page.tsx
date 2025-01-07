@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/drawer";
 import { api } from "@/convex/_generated/api";
 
+import WaterDailyProgressChart from "./components/water-daily-progress-chart";
 import WaterLogForm from "./components/water-log-form";
 
 export default function WellnessPage() {
@@ -23,13 +24,15 @@ export default function WellnessPage() {
   const dailyEntries = useQuery(api.waterLogEntries.dailyEntries);
   const dailyTotal = useQuery(api.waterLogEntries.dailyTotal);
 
-  if (dailyEntries === undefined) return <div>Loading...</div>;
+  if (dailyEntries === undefined || dailyTotal === undefined)
+    return <div>Loading...</div>;
 
   return (
     <div className="px-2 space-y-4">
-      <h1>Wellness Page</h1>
+      <h1 className="text-2xl">Wellness Page</h1>
+      <WaterDailyProgressChart currentOunces={dailyTotal} />
       <div>
-        <h2>Daily Water Log</h2>
+        <h2 className="text-xl">Entry Log</h2>
         <div>
           {dailyEntries &&
             dailyEntries.map((entry) => (
@@ -43,7 +46,6 @@ export default function WellnessPage() {
             ))}
         </div>
       </div>
-      <div>Daily Total: {dailyTotal} oz</div>
       <Drawer
         open={open}
         onOpenChange={setOpen}
@@ -52,13 +54,13 @@ export default function WellnessPage() {
           <Button
             size="icon"
             variant="secondary"
-            className="absolute bottom-0 right-0 m-4 z-0"
+            className="fixed bottom-6 right-6 z-10"
           >
             <Plus className="w-8 h-8" />
           </Button>
         </DrawerTrigger>
         <DrawerContent>
-          <WaterLogForm className="" />
+          <WaterLogForm />
           <DrawerFooter>
             <DrawerClose asChild>
               <Button variant="outline">Cancel</Button>
