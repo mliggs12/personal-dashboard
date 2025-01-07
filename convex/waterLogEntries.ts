@@ -1,9 +1,14 @@
 import { v } from "convex/values";
 import dayjs from "dayjs";
+import timezone from "dayjs/plugin/timezone";
+import utc from "dayjs/plugin/utc";
 
 import { mutation, query } from "./_generated/server";
 import { getCurrentUserOrThrow } from "./userHelpers";
 import { getUserWaterEntries } from "./waterLogHelpers";
+
+dayjs.extend(timezone);
+dayjs.extend(utc);
 
 export const create = mutation({
   args: {
@@ -23,24 +28,24 @@ export const create = mutation({
 });
 
 export const dailyEntries = query({
-  async handler(ctx) {
+  args: { tz: v.string() },
+  async handler(ctx, { tz }) {
     const user = await getCurrentUserOrThrow(ctx);
 
-    const now = Date.now();
-    const dayStart = dayjs(now).startOf("day").valueOf();
-    const dayEnd = dayjs(now).endOf("day").valueOf();
+    const dayStart = dayjs().tz(tz).startOf("day").valueOf();
+    const dayEnd = dayjs().tz(tz).endOf("day").valueOf();
 
     return await getUserWaterEntries(ctx, user._id, dayStart, dayEnd);
   },
 });
 
 export const dailyTotal = query({
-  async handler(ctx) {
+  args: { tz: v.string() },
+  async handler(ctx, { tz }) {
     const user = await getCurrentUserOrThrow(ctx);
 
-    const now = Date.now();
-    const dayStart = dayjs(now).startOf("day").valueOf();
-    const dayEnd = dayjs(now).endOf("day").valueOf();
+    const dayStart = dayjs().tz(tz).startOf("day").valueOf();
+    const dayEnd = dayjs().tz(tz).endOf("day").valueOf();
 
     const entries = await getUserWaterEntries(ctx, user._id, dayStart, dayEnd);
 

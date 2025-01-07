@@ -2,6 +2,8 @@
 
 import { useQuery } from "convex/react";
 import dayjs from "dayjs";
+import timezone from "dayjs/plugin/timezone";
+import utc from "dayjs/plugin/utc";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 
@@ -18,11 +20,19 @@ import { api } from "@/convex/_generated/api";
 import WaterDailyProgressChart from "./components/water-daily-progress-chart";
 import WaterLogForm from "./components/water-log-form";
 
+dayjs.extend(timezone);
+dayjs.extend(utc);
+
 export default function WellnessPage() {
   const [open, setOpen] = useState(false);
 
-  const dailyEntries = useQuery(api.waterLogEntries.dailyEntries);
-  const dailyTotal = useQuery(api.waterLogEntries.dailyTotal);
+  const clientTimezone = dayjs.tz.guess();
+  const dailyEntries = useQuery(api.waterLogEntries.dailyEntries, {
+    tz: clientTimezone,
+  });
+  const dailyTotal = useQuery(api.waterLogEntries.dailyTotal, {
+    tz: clientTimezone,
+  });
 
   if (dailyEntries === undefined || dailyTotal === undefined)
     return <div>Loading...</div>;

@@ -18,7 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
-  amount: z.number().min(1, {
+  amount: z.coerce.number().min(1, {
     message: "Amount must be at least 1 oz.",
   }),
   type: z.string().optional(),
@@ -65,7 +65,10 @@ export default function WaterLogForm({
             <FormItem>
               <FormLabel>Amount consumed</FormLabel>
               <FormControl>
-                <Input {...field} />
+                <Input
+                  type="number"
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
