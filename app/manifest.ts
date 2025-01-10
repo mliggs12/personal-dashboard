@@ -6,10 +6,10 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: "Enthousiazein",
     description:
       "A personal dashboard for managing the mundane & creative aspects of life.",
-    start_url: "/dashboard",
+    start_url: "/",
     display: "standalone",
-    background_color: "#ffffff",
-    theme_color: "#000000",
+    background_color: "#0A0A0A",
+    theme_color: "#DC2626",
     icons: [
       {
         src: "/icon-192x192.png",
