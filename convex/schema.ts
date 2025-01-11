@@ -62,7 +62,12 @@ export default defineSchema({
     notes: v.optional(v.string()),
     updated: v.optional(v.number()),
     userId: v.optional(v.id("users")),
-  }).index("by_user", ["userId"]),
+  })
+    .index("by_user", ["userId"])
+    .searchIndex("search_title", {
+      searchField: "title",
+      filterFields: ["userId"],
+    }),
 
   notes: defineTable({
     title: v.string(),
@@ -106,6 +111,23 @@ export default defineSchema({
     .index("by_type", ["type"])
     .index("by_user", ["userId"]),
 
+  // Task Management
+  projects: defineTable({
+    name: v.string(),
+    status: v.union(
+      v.literal("backlog"),
+      v.literal("active"),
+      v.literal("done"),
+      v.literal("archived"),
+    ),
+    priority: v.optional(
+      v.union(v.literal("low"), v.literal("normal"), v.literal("high")),
+    ),
+    notes: v.optional(v.string()),
+    updated: v.number(),
+    userId: v.id("users"),
+  }).index("by_user", ["userId"]),
+
   tasks: defineTable({
     name: v.string(),
     status: v.optional(
@@ -127,10 +149,16 @@ export default defineSchema({
     recurringTaskId: v.optional(v.id("recurringTasks")),
     intentionId: v.optional(v.id("intentions")),
     parentTaskId: v.optional(v.id("tasks")),
+    projectId: v.optional(v.id("projects")),
     userId: v.optional(v.id("users")),
   })
     .index("by_recurringTaskId", ["recurringTaskId"])
-    .index("by_user", ["userId"]),
+    .index("by_project", ["projectId"])
+    .index("by_user", ["userId"])
+    .searchIndex("search_name", {
+      searchField: "name",
+      filterFields: ["userId"],
+    }),
 
   recurringTasks: defineTable({
     name: v.string(),

@@ -125,6 +125,19 @@ export const getByIntention = query({
   },
 });
 
+export const getByStatus = query({
+  args: { status: v.string() },
+  async handler(ctx, { status }) {
+    const user = await getCurrentUserOrThrow(ctx);
+
+    return await ctx.db
+      .query("tasks")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .filter((q) => q.eq(q.field("status"), status))
+      .collect();
+  },
+});
+
 // Get tasks due today or overdue
 export const doTodayTasks = query({
   args: { clientTimezone: v.string() },
@@ -318,5 +331,19 @@ export const createRecurringTask = mutation({
     });
 
     return taskId;
+  },
+});
+
+export const search = query({
+  args: { query: v.string() },
+  async handler(ctx, { query }) {
+    const user = await getCurrentUserOrThrow(ctx);
+
+    return await ctx.db
+      .query("tasks")
+      .withSearchIndex("search_name", (q) =>
+        q.search("name", query).eq("userId", user._id),
+      )
+      .collect();
   },
 });

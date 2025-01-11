@@ -21,6 +21,7 @@ import type * as http from "../http.js";
 import type * as intentions from "../intentions.js";
 import type * as messages from "../messages.js";
 import type * as notes from "../notes.js";
+import type * as projects from "../projects.js";
 import type * as recurringTasks from "../recurringTasks.js";
 import type * as schedules from "../schedules.js";
 import type * as sessions from "../sessions.js";
@@ -29,6 +30,7 @@ import type * as statements from "../statements.js";
 import type * as tasks from "../tasks.js";
 import type * as userHelpers from "../userHelpers.js";
 import type * as users from "../users.js";
+import type * as utils from "../utils.js";
 import type * as waterLogEntries from "../waterLogEntries.js";
 import type * as waterLogHelpers from "../waterLogHelpers.js";
 
@@ -49,6 +51,7 @@ declare const fullApi: ApiFromModules<{
   intentions: typeof intentions;
   messages: typeof messages;
   notes: typeof notes;
+  projects: typeof projects;
   recurringTasks: typeof recurringTasks;
   schedules: typeof schedules;
   sessions: typeof sessions;
@@ -57,6 +60,7 @@ declare const fullApi: ApiFromModules<{
   tasks: typeof tasks;
   userHelpers: typeof userHelpers;
   users: typeof users;
+  utils: typeof utils;
   waterLogEntries: typeof waterLogEntries;
   waterLogHelpers: typeof waterLogHelpers;
 }>;
