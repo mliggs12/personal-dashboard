@@ -1,11 +1,13 @@
 "use client";
 
 import { useQuery } from "convex/react";
-import { Link } from "lucide-react";
 import { useParams } from "next/navigation";
 
+import { DataTable } from "@/components/ui/data-table";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
+
+import { columns } from "./components/columns";
 
 export default function ProjectsPage() {
   const { id } = useParams<{ id: Id<"projects"> }>();
@@ -15,7 +17,7 @@ export default function ProjectsPage() {
   const tasks = useQuery(api.tasks.getByProject, { projectId: id });
 
   if (project === undefined || tasks === undefined) {
-    return <div>Loading...</div>;
+    return <div className="animate-pulse">Loading...</div>;
   }
 
   return (
@@ -24,20 +26,14 @@ export default function ProjectsPage() {
         <h1 className="md:text-2xl font-semibold">Project: {project?.name}</h1>
         <p>{project?.notes}</p>
       </div>
-      <div>
-        <h2 className="md:text-xl font-semibold">Tasks</h2>
-        <ul>
-          {tasks?.map((task) => (
-            <li key={task._id}>
-              <Link
-                href={`/dashboard/tasks/${task._id}`}
-                className="cursor-pointer hover:text-primary"
-              >
-                {task.name}
-              </Link>
-            </li>
-          ))}
-        </ul>
+      <div className="space-y-2">
+        <h2 className="md:text-lg font-semibold">Tasks</h2>
+        <div className="container mx-auto">
+          <DataTable
+            columns={columns}
+            data={tasks}
+          />
+        </div>
       </div>
     </div>
   );

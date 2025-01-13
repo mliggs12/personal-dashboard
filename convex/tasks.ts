@@ -85,6 +85,51 @@ export const create = mutation({
   },
 });
 
+// Create a task for a specific project
+export const createForProject = mutation({
+  args: {
+    name: v.string(),
+    projectId: v.id("projects"),
+    status: v.optional(
+      v.union(
+        v.literal("backlog"),
+        v.literal("todo"),
+        v.literal("in_progress"),
+        v.literal("done"),
+        v.literal("archived"),
+      ),
+    ),
+    priority: v.optional(
+      v.union(v.literal("low"), v.literal("normal"), v.literal("high")),
+    ),
+    notes: v.optional(v.string()),
+    due: v.optional(v.string()),
+    parentTaskId: v.optional(v.id("tasks")),
+    userId: v.optional(v.id("users")),
+  },
+  async handler(
+    ctx,
+    { name, status, priority, notes, due, projectId, parentTaskId, userId },
+  ) {
+    if (!userId) {
+      const user = await getCurrentUserOrThrow(ctx);
+      userId = user._id;
+    }
+
+    return await ctx.db.insert("tasks", {
+      name,
+      projectId,
+      status: status || "todo",
+      priority: priority || "normal",
+      notes: notes || "",
+      due,
+      parentTaskId,
+      updated: Date.now(),
+      userId: userId,
+    });
+  },
+});
+
 export const remove = mutation({
   args: { taskId: v.id("tasks") },
   async handler(ctx, { taskId }) {

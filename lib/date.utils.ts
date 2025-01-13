@@ -13,6 +13,10 @@ export function timestampToShortDate(timestamp: number) {
   return dayjs(timestamp).format("MM/DD");
 }
 
+export function timestampToDateTime(timestamp: number) {
+  return dayjs(timestamp).format("lll");
+}
+
 export function timestampToTime(timestamp: number) {
   return dayjs(timestamp).format("LT");
 }
