@@ -138,6 +138,19 @@ export const getByStatus = query({
   },
 });
 
+export const getByProject = query({
+  args: { projectId: v.id("projects") },
+  async handler(ctx, { projectId }) {
+    const user = await getCurrentUserOrThrow(ctx);
+
+    return await ctx.db
+      .query("tasks")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .filter((q) => q.eq(q.field("projectId"), projectId))
+      .collect();
+  },
+});
+
 // Get tasks due today or overdue
 export const doTodayTasks = query({
   args: { clientTimezone: v.string() },

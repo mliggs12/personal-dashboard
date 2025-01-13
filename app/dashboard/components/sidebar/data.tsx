@@ -1,6 +1,7 @@
 import {
   Bed,
   Brain,
+  Folder,
   HeartPulse,
   ListTodo,
   MessagesSquare,
@@ -16,6 +17,11 @@ export const navItems = [
     title: "Tasks",
     url: "/dashboard/tasks",
     icon: ListTodo,
+  },
+  {
+    title: "Projects",
+    url: "/dashboard/projects",
+    icon: Folder,
   },
   {
     title: "Notes",
