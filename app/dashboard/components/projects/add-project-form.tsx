@@ -18,8 +18,9 @@ const formSchema = z.object({
 });
 
 export function AddProjectForm({ className }: React.ComponentProps<"form">) {
-  const create = useMutation(api.projects.create);
   const { toast } = useToast();
+
+  const create = useMutation(api.projects.create);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -32,10 +33,10 @@ export function AddProjectForm({ className }: React.ComponentProps<"form">) {
   async function onSubmit(data: z.infer<typeof formSchema>) {
     const { name, notes } = data;
 
-    await create({ name: name, notes });
+    await create({ name, notes });
 
     toast({
-      title: `Project ${name} successfully created`,
+      title: `Project ${name} created successfully`,
       duration: 3000,
     });
     form.reset();

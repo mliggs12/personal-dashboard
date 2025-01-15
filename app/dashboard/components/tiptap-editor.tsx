@@ -1,4 +1,6 @@
 import Highlight from "@tiptap/extension-highlight";
+import TaskItem from "@tiptap/extension-task-item";
+import TaskList from "@tiptap/extension-task-list";
 import Typography from "@tiptap/extension-typography";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -15,7 +17,13 @@ export default function TiptapEditor({
   onChange,
 }: TiptapEditorProps) {
   const editor = useEditor({
-    extensions: [StarterKit, Highlight, Typography],
+    extensions: [
+      StarterKit,
+      Highlight,
+      Typography,
+      TaskList,
+      TaskItem.configure({ nested: true }),
+    ],
     content: initialContent,
     editorProps: {
       attributes: {
