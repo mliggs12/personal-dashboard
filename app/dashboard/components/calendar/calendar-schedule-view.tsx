@@ -1,10 +1,13 @@
+"use client";
+
 import { Card, CardContent } from "@/components/ui/card";
+import { Event } from "@/types";
 
+import { getUserEvents } from "./_actions";
 import EventsList from "./events-list";
-import { Event } from "./types";
 
-export default async function CalendarScheduleView() {
-  // const events = await getUserEvents(userId);
+export default function CalendarScheduleView() {
+  // const events: Event[] = await getUserEvents(userId);
   const events: Event[] = [];
 
   return (

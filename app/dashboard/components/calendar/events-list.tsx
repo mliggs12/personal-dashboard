@@ -8,8 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-
-import { Event } from "./types";
+import { Event } from "@/types";
 
 export function EventCard({ event }: { event: Event }) {
   const { start, title } = event;

@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 
-import { Event } from "./types";
+import { Event } from "@/types";
 
 async function getOauthToken(userId: string): Promise<string> {
   try {
@@ -42,14 +42,14 @@ export async function getUserEvents(userId: string): Promise<Event[]> {
 
   const data = await response.json();
 
-  const events: Event[] = data.items.map((item: any) => {
+  const events: Event[] = data.items.map((item: Event) => {
     const event = {
-      _id: item.id,
-      created: new Date(item.created),
+      id: item.id,
+      title: item.title,
       description: item.description,
-      end: new Date(item.end.dateTime),
-      start: new Date(item.start.dateTime),
-      title: item.summary,
+      start: item.start,
+      end: item.end,
+      created: item.created,
       recurringEventId: item.recurringEventId,
     };
     return event;
