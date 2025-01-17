@@ -1,11 +1,14 @@
-import React from 'react'
+import React from "react";
+
+import AddEntryForm from "./components/add-entry-form";
 
 export default function JournalPage() {
   return (
-    <div>
-      <div className="journal-header">
-        <div className="journal-body"></div>
+    <div className="p-4">
+      <div className="journal-header"></div>
+      <div className="journal-body">
+        <AddEntryForm />
       </div>
     </div>
-  )
+  );
 }
