@@ -221,6 +221,18 @@ export default defineSchema({
     authorId: v.id("users"),
   }).index("by_chatId", ["chatId"]),
 
+  journalEntries: defineTable({
+    content: v.string(),
+    type: v.union(
+      v.null(),
+      v.literal("highlight"),
+      v.literal("task"),
+      v.literal("idea"),
+    ),
+    updated: v.number(),
+    userId: v.string(),
+  }).index("by_user", ["userId"]),
+
   userChats: defineTable({
     chatId: v.id("chats"),
     userId: v.id("users"),

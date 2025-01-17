@@ -19,6 +19,7 @@ import type * as chats from "../chats.js";
 import type * as emotions from "../emotions.js";
 import type * as http from "../http.js";
 import type * as intentions from "../intentions.js";
+import type * as journalEntries from "../journalEntries.js";
 import type * as messages from "../messages.js";
 import type * as notes from "../notes.js";
 import type * as projects from "../projects.js";
@@ -49,6 +50,7 @@ declare const fullApi: ApiFromModules<{
   emotions: typeof emotions;
   http: typeof http;
   intentions: typeof intentions;
+  journalEntries: typeof journalEntries;
   messages: typeof messages;
   notes: typeof notes;
   projects: typeof projects;

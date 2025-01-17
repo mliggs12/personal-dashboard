@@ -1,5 +1,6 @@
 import {
   Bed,
+  Book,
   Brain,
   Folder,
   HeartPulse,
@@ -72,5 +73,10 @@ export const navItems = [
     title: "Chat",
     url: "/dashboard/chat",
     icon: MessagesSquare,
+  },
+  {
+    title: "Journal",
+    url: "/dashboard/journal",
+    icon: Book,
   },
 ];

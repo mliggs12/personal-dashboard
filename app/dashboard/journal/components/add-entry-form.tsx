@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "convex/react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -8,19 +9,20 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { api } from "@/convex/_generated/api";
 
 const formSchema = z.object({
   content: z.string(),
 });
 
-export default function AddEntryForm() {
+export function AddEntryForm() {
+  const createJournalEntry = useMutation(api.journalEntries.create);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -28,9 +30,11 @@ export default function AddEntryForm() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    await createJournalEntry({ content: values.content });
+    form.reset();
   }
+
   return (
     <Form {...form}>
       <form
@@ -46,7 +50,7 @@ export default function AddEntryForm() {
                 <Input
                   autoComplete="off"
                   placeholder="What's on your mind?"
-                  className="w-1/2 border-none focus-visible:ring-0"
+                  className="w-1/2 border-none focus-visible:ring-0 p-0 text-base"
                   {...field}
                 />
               </FormControl>

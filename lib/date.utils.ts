@@ -6,7 +6,7 @@ import localizedFormat from "dayjs/plugin/localizedFormat";
 dayjs.extend(localizedFormat);
 
 export function formatShortDate(date: Date) {
-  return dayjs(date).format("ll");
+  return dayjs(date).format("ll"); // "Aug 16, 2018"
 }
 
 export function timestampToShortDate(timestamp: number) {
@@ -14,11 +14,11 @@ export function timestampToShortDate(timestamp: number) {
 }
 
 export function timestampToDateTime(timestamp: number) {
-  return dayjs(timestamp).format("lll");
+  return dayjs(timestamp).format("lll"); // "Aug 16, 2018 2:00 PM"
 }
 
 export function timestampToTime(timestamp: number) {
-  return dayjs(timestamp).format("LT");
+  return dayjs(timestamp).format("LT"); // "2:00 PM"
 }
 
 export function calculateDuration(end: number, start: number) {
