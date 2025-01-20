@@ -9,7 +9,7 @@ export default function EntryList() {
   const entries = useQuery(api.journalEntries.list);
 
   return (
-    <div className="grid grid-cols-[1fr,auto] gap-x-4 gap-y-4">
+    <div className="grid grid-cols-[1fr,auto] gap-4">
       {entries?.map((entry) => (
         <>
           <div
@@ -18,7 +18,7 @@ export default function EntryList() {
           >
             {entry.content}
           </div>
-          <div className="text-base text-muted-foreground whitespace-nowrap">
+          <div className="text-base text-muted-foreground text-right whitespace-nowrap">
             {timestampToTime(entry._creationTime)}
           </div>
         </>
