@@ -9,7 +9,7 @@ export default function EntryList() {
   const entries = useQuery(api.journalEntries.list);
 
   return (
-    <div className="grid grid-cols-[1fr,auto] gap-x-4">
+    <div className="grid grid-cols-[1fr,auto] gap-x-4 gap-y-4">
       {entries?.map((entry) => (
         <>
           <div
