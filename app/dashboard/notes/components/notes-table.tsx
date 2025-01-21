@@ -3,7 +3,7 @@
 import { useQuery } from "convex/react";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import {
   Table,
@@ -19,6 +19,7 @@ import { Doc } from "@/convex/_generated/dataModel";
 dayjs.extend(relativeTime);
 
 export default function NotesTable() {
+  const router = useRouter();
   const notes = useQuery(api.notes.list);
 
   if (notes === undefined) {
@@ -41,9 +42,13 @@ export default function NotesTable() {
       </TableHeader>
       <TableBody>
         {sortedNotes.map((note) => (
-          <TableRow key={note._id}>
+          <TableRow
+            key={note._id}
+            onClick={() => router.push(`/dashboard/notes/${note._id}`)}
+            className="cursor-pointer"
+          >
             <TableCell className="max-w-[150px] truncate">
-              <Link href={`/dashboard/notes/${note._id}`}>{note.title}</Link>
+              {note.title}
             </TableCell>
             <TableCell className="w-[100px] text-nowrap">
               {note.updated !== undefined ? dayjs(note.updated).fromNow() : "-"}
