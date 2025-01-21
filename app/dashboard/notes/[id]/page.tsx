@@ -49,14 +49,16 @@ export default function NotePage() {
     );
 
   return (
-    <div className="flex flex-col p-2">
-      <h1 className="text-2xl font-bold">{note.title}</h1>
-      <div>
-        {isSaving && (
-          <span className="text-sm text-muted-foreground">Saving...</span>
-        )}
+    <div className="flex flex-col p-4">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">{note.title}</h1>
+        <div className="hidden md:block mr-4">
+          {isSaving && (
+            <span className="text-sm text-muted-foreground">Saving...</span>
+          )}
+        </div>
       </div>
-      <div className="">
+      <div>
         <TiptapEditor
           initialContent={note.text}
           onChange={handleChange}
