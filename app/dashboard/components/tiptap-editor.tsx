@@ -24,6 +24,7 @@ export default function TiptapEditor({
       TaskList,
       TaskItem.configure({ nested: true }),
     ],
+    autofocus: true,
     content: initialContent,
     editorProps: {
       attributes: {

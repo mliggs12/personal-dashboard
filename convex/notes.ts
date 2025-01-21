@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 
 import { mutation, query } from "./_generated/server";
-import { getCurrentUserOrThrow } from "./userHelpers";
+import { getCurrentUser, getCurrentUserOrThrow } from "./userHelpers";
 
 export const recent = query({
   async handler(ctx) {
@@ -25,7 +25,7 @@ export const create = mutation({
   async handler(ctx, { title, text }) {
     const user = await getCurrentUserOrThrow(ctx);
 
-    await ctx.db.insert("notes", {
+    return await ctx.db.insert("notes", {
       title,
       text: text || "",
       updated: Date.now(),
@@ -74,7 +74,19 @@ export const update = mutation({
 export const search = query({
   args: { query: v.string() },
   async handler(ctx, { query }) {
-    const user = await getCurrentUserOrThrow(ctx);
+    // First attempt
+    let user = await getCurrentUser(ctx);
+
+    // Retry if first attempt returns null
+    if (!user) {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      user = await getCurrentUser(ctx);
+    }
+
+    // If still null, return empty array
+    if (!user) {
+      return [];
+    }
 
     return await ctx.db
       .query("notes")

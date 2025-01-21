@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "convex/react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -27,6 +28,8 @@ export default function AddNoteForm({
 }: {
   onNoteCreated: () => void;
 }) {
+  const router = useRouter();
+
   const create = useMutation(api.notes.create);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -39,10 +42,11 @@ export default function AddNoteForm({
 
   async function createNote(formData: FormData) {
     const values = Object.fromEntries(formData.entries());
-    await create({
+    const noteId = await create({
       title: values.title as string,
       text: values.text as string,
     });
+    router.push(`/dashboard/notes/${noteId}`);
     onNoteCreated();
   }
 
