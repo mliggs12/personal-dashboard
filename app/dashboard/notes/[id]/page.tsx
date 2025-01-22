@@ -25,7 +25,7 @@ export default function NotePage() {
       }
 
       timeoutRef.current = setTimeout(() => {
-        updateNote({ noteId: id, text: content }).then(() =>
+        updateNote({ noteId: id, content: content }).then(() =>
           setIsSaving(false),
         );
       }, 2000);
@@ -60,7 +60,7 @@ export default function NotePage() {
       </div>
       <div>
         <TiptapEditor
-          initialContent={note.text}
+          initialContent={note.content}
           onChange={handleChange}
         />
       </div>
