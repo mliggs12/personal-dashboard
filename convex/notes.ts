@@ -1,52 +1,41 @@
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 
 import { mutation, query } from "./_generated/server";
-import { getCurrentUser, getCurrentUserOrThrow } from "./userHelpers";
+import { mutationWithUser, queryWithUser } from "./utils";
 
-export const recent = query({
-  async handler(ctx) {
-    const user = await getCurrentUserOrThrow(ctx);
-
-    const last5 = await ctx.db
-      .query("notes")
-      .withIndex("by_user", (q) => q.eq("userId", user._id))
-      .order("desc")
-      .take(5);
-
-    return last5;
-  },
-});
-
-export const create = mutation({
+export const create = mutationWithUser({
   args: {
     title: v.string(),
-    text: v.optional(v.string()),
+    content: v.optional(v.string()),
   },
-  async handler(ctx, { title, text }) {
-    const user = await getCurrentUserOrThrow(ctx);
+  async handler(ctx, { title, content }) {
+    const userId = ctx.userId;
 
     return await ctx.db.insert("notes", {
       title,
-      text: text || "",
+      content: content || "",
       updated: Date.now(),
-      userId: user._id,
+      userId,
     });
   },
 });
 
-export const list = query({
+export const list = queryWithUser({
   async handler(ctx) {
-    const user = await getCurrentUserOrThrow(ctx);
+    const userId = ctx.userId;
+    if (userId === undefined) {
+      return null;
+    }
 
     return await ctx.db
       .query("notes")
-      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .withIndex("by_user", (q) => q.eq("userId", userId))
       .order("desc")
       .collect();
   },
 });
 
-export const get = query({
+export const get = queryWithUser({
   args: { noteId: v.id("notes") },
   async handler(ctx, { noteId }) {
     return await ctx.db.get(noteId);
@@ -57,41 +46,32 @@ export const update = mutation({
   args: {
     noteId: v.id("notes"),
     title: v.optional(v.string()),
-    text: v.optional(v.string()),
+    content: v.optional(v.string()),
   },
-  async handler(ctx, { noteId, title, text }) {
+  async handler(ctx, { noteId, title, content }) {
     const note = await ctx.db.get(noteId);
-    if (note === null) throw new Error("Could not find note");
+    if (note === null) throw new ConvexError("Could not find note");
 
     await ctx.db.patch(noteId, {
       title: title || note.title,
-      text: text || note.text,
+      content: content || note.content,
       updated: Date.now(),
     });
   },
 });
 
-export const search = query({
+export const search = queryWithUser({
   args: { query: v.string() },
   async handler(ctx, { query }) {
-    // First attempt
-    let user = await getCurrentUser(ctx);
-
-    // Retry if first attempt returns null
-    if (!user) {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      user = await getCurrentUser(ctx);
-    }
-
-    // If still null, return empty array
-    if (!user) {
-      return [];
+    const userId = ctx.userId;
+    if (userId === undefined) {
+      return null;
     }
 
     return await ctx.db
       .query("notes")
       .withSearchIndex("search_title", (q) =>
-        q.search("title", query).eq("userId", user._id),
+        q.search("title", query).eq("userId", userId),
       )
       .collect();
   },

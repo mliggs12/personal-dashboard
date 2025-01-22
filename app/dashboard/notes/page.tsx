@@ -1,10 +1,15 @@
-import NotesTable from "./components/notes-table";
+import { preloadQuery } from "convex/nextjs";
 
-export default function NotesPage() {
-  return (
-    <div className="flex flex-col h-full md:px-4">
-      <h1 className="hidden md:block font-semibold text-2xl">Notes</h1>
-      <NotesTable />
-    </div>
-  );
-}
+import { getAuthToken } from "@/app/auth";
+import { api } from "@/convex/_generated/api";
+
+import NotesPage from "./notes";
+
+const ServerNotesPage = async () => {
+  const token = await getAuthToken();
+  const preloadedNotes = await preloadQuery(api.notes.list, {}, { token });
+
+  return <NotesPage preloadedNotes={preloadedNotes} />;
+};
+
+export default ServerNotesPage;

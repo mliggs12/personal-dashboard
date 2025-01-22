@@ -13,23 +13,23 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { api } from "@/convex/_generated/api";
 import { Doc } from "@/convex/_generated/dataModel";
 
 dayjs.extend(relativeTime);
 
-export default function NotesTable() {
-  const router = useRouter();
-  const notes = useQuery(api.notes.list);
+interface NotesTableProps {
+  notes: Doc<"notes">[];
+}
 
-  if (notes === undefined) {
-    return <div>Loading...</div>;
-  }
+export default function NotesTable({ notes }: NotesTableProps) {
+  const router = useRouter();
 
   // Sort notes by updated date
-  const sortedNotes: Doc<"notes">[] = notes.sort(
-    (a, b) => b.updated - a.updated,
-  );
+  const sortedNotes = notes.sort((a, b) => b.updated - a.updated);
+
+  if (!notes.length) {
+    return <div>No notes found</div>;
+  }
 
   return (
     <Table>
