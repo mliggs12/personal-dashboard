@@ -71,7 +71,8 @@ export default defineSchema({
 
   notes: defineTable({
     title: v.string(),
-    content: v.string(),
+    content: v.optional(v.string()),
+    text: v.optional(v.string()),
     updated: v.number(),
     userId: v.string(),
   })

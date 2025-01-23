@@ -60,7 +60,7 @@ export default function NotePage() {
       </div>
       <div>
         <TiptapEditor
-          initialContent={note.content}
+          initialContent={note.content || note.text!}
           onChange={handleChange}
         />
       </div>

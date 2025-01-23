@@ -50,7 +50,7 @@ export function AddEntryForm() {
                 <Input
                   autoComplete="off"
                   placeholder="What's on your mind?"
-                  className="w-1/2 border-none focus-visible:ring-0 p-0 text-base"
+                  className="w-1/2 border-none focus-visible:ring-0 focus-visible:ring-offset-0 p-0 text-base "
                   {...field}
                 />
               </FormControl>
