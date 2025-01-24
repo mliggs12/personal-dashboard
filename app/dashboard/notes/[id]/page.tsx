@@ -17,7 +17,7 @@ export default function NotePage() {
   const timeoutRef = useRef<NodeJS.Timeout>();
 
   const handleChange = useCallback(
-    (content: string) => {
+    (text: string) => {
       setIsSaving(true);
 
       if (timeoutRef.current) {
@@ -25,9 +25,7 @@ export default function NotePage() {
       }
 
       timeoutRef.current = setTimeout(() => {
-        updateNote({ noteId: id, content: content }).then(() =>
-          setIsSaving(false),
-        );
+        updateNote({ noteId: id, text }).then(() => setIsSaving(false));
       }, 2000);
     },
     [id, updateNote],
@@ -60,7 +58,7 @@ export default function NotePage() {
       </div>
       <div>
         <TiptapEditor
-          initialContent={note.content || note.text!}
+          initialContent={note.text}
           onChange={handleChange}
         />
       </div>
