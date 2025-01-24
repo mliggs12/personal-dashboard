@@ -20,7 +20,7 @@ import { api } from "@/convex/_generated/api";
 
 const formSchema = z.object({
   title: z.string().min(1).max(500),
-  content: z.string().optional(),
+  text: z.string().optional(),
 });
 
 export default function AddNoteForm({
@@ -36,7 +36,7 @@ export default function AddNoteForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: "",
-      content: "",
+      text: "",
     },
   });
 
@@ -44,7 +44,7 @@ export default function AddNoteForm({
     const values = Object.fromEntries(formData.entries());
     const noteId = await create({
       title: values.title as string,
-      content: values.content as string,
+      text: values.text as string,
     });
     router.push(`/dashboard/notes/${noteId}`);
     onNoteCreated();
@@ -75,13 +75,13 @@ export default function AddNoteForm({
         />
         <FormField
           control={form.control}
-          name="content"
+          name="text"
           render={({ field }) => (
             <FormItem>
               <FormControl>
                 <Textarea
                   className="text-2xl"
-                  placeholder="Note content"
+                  placeholder="Note text"
                   {...field}
                 />
               </FormControl>

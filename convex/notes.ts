@@ -74,16 +74,8 @@ export const update = mutation({
 export const search = query({
   args: { query: v.string() },
   async handler(ctx, { query }) {
-    // First attempt
-    let user = await getCurrentUser(ctx);
+    const user = await getCurrentUser(ctx);
 
-    // Retry if first attempt returns null
-    if (!user) {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      user = await getCurrentUser(ctx);
-    }
-
-    // If still null, return empty array
     if (!user) {
       return [];
     }
