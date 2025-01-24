@@ -71,10 +71,9 @@ export default defineSchema({
 
   notes: defineTable({
     title: v.string(),
-    content: v.optional(v.string()),
-    text: v.optional(v.string()),
+    text: v.string(),
     updated: v.number(),
-    userId: v.string(),
+    userId: v.id("users"),
   })
     .index("by_user", ["userId"])
     .searchIndex("search_title", {

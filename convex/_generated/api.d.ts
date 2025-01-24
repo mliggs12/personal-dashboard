@@ -31,7 +31,6 @@ import type * as statements from "../statements.js";
 import type * as tasks from "../tasks.js";
 import type * as userHelpers from "../userHelpers.js";
 import type * as users from "../users.js";
-import type * as utils from "../utils.js";
 import type * as waterLogEntries from "../waterLogEntries.js";
 import type * as waterLogHelpers from "../waterLogHelpers.js";
 
@@ -62,7 +61,6 @@ declare const fullApi: ApiFromModules<{
   tasks: typeof tasks;
   userHelpers: typeof userHelpers;
   users: typeof users;
-  utils: typeof utils;
   waterLogEntries: typeof waterLogEntries;
   waterLogHelpers: typeof waterLogHelpers;
 }>;
