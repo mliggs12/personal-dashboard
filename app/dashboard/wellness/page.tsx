@@ -70,7 +70,7 @@ export default function WellnessPage() {
           </Button>
         </DrawerTrigger>
         <DrawerContent>
-          <WaterLogForm />
+          <WaterLogForm onEntryCreated={() => setOpen(false)} />
           <DrawerFooter>
             <DrawerClose asChild>
               <Button variant="outline">Cancel</Button>

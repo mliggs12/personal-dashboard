@@ -17,6 +17,11 @@ import { api } from "@/convex/_generated/api";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
+interface WaterLogFormProps extends React.ComponentProps<"form"> {
+  className?: string;
+  onEntryCreated: () => void;
+}
+
 const formSchema = z.object({
   amount: z.coerce.number().min(1, {
     message: "Amount must be at least 1 oz.",
@@ -26,8 +31,11 @@ const formSchema = z.object({
 
 export default function WaterLogForm({
   className,
-}: React.ComponentProps<"form">) {
+  onEntryCreated,
+}: WaterLogFormProps) {
   const { toast } = useToast();
+
+  const createEntry = useMutation(api.waterLogEntries.create);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -37,18 +45,15 @@ export default function WaterLogForm({
     },
   });
 
-  const createEntry = useMutation(api.waterLogEntries.create);
-
   async function onSubmit(values: z.infer<typeof formSchema>) {
     const { amount, type } = values;
 
     await createEntry({ amount, type });
-
+    onEntryCreated();
     toast({
       title: "Water logged",
       duration: 3000,
     });
-
     form.reset();
   }
 
