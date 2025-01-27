@@ -1,5 +1,5 @@
 import { UserButton } from "@clerk/nextjs";
-import { Box } from "lucide-react";
+import { Box, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
 
 import { ModeToggle } from "@/components/ui/mode-toggle";
@@ -34,8 +34,8 @@ export default function SidebarLeft({
               tooltip="Dashboard"
             >
               <Link href="/dashboard">
-                <Box />
-                <span>Enthousiazein</span>
+                <LayoutDashboard />
+                <span>Dashboard</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import {
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -17,6 +18,7 @@ export default function NavMain() {
 
   return (
     <SidebarGroup>
+      <SidebarGroupLabel>Applications</SidebarGroupLabel>
       <SidebarGroupContent>
         <SidebarMenu>
           {navItems.map((item) => (
