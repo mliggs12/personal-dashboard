@@ -14,7 +14,7 @@ interface TiptapEditorProps {
   placeholder?: string;
 }
 
-export default function TiptapEditor({
+export default function NoteContent({
   initialContent,
   onChange,
 }: TiptapEditorProps) {
@@ -24,6 +24,10 @@ export default function TiptapEditor({
       CodeBlock,
       Link.configure({
         defaultProtocol: "https",
+        HTMLAttributes: {
+          class:
+            "no-underline hover:cursor-pointer hover:text-primary hover:underline hover:underline-offset-4",
+        },
       }),
       StarterKit,
       Typography,

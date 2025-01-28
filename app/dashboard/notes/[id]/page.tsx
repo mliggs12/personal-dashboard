@@ -7,7 +7,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 
-import TiptapEditor from "../../components/tiptap-editor";
+import NoteContent from "../components/note-content";
 import NoteTitle from "../components/note-title";
 
 export default function NotePage() {
@@ -63,7 +63,7 @@ export default function NotePage() {
         </div>
       </div>
       <div>
-        <TiptapEditor
+        <NoteContent
           initialContent={note.text}
           onChange={handleChange}
         />
