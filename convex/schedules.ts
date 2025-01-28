@@ -1,7 +1,13 @@
 import { v } from "convex/values";
+import dayjs from "dayjs";
+import timezone from "dayjs/plugin/timezone";
+import utc from "dayjs/plugin/utc";
 
 import { mutation, query } from "./_generated/server";
 import { getCurrentUserOrThrow } from "./userHelpers";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 export const list = query(async (ctx) => {
   const user = await getCurrentUserOrThrow(ctx);
@@ -41,40 +47,41 @@ export const getOrderedActivities = query({
       return [];
     }
 
-    return activities.sort((a, b) => a.index - b.index);
+    return activities;
   },
 });
 
-export const getByDate = query({
+export const todaySchedule = query({
   args: {
-    date: v.string(),
+    timezone: v.string(),
   },
-  async handler(ctx, { date }) {
+  async handler(ctx, { timezone }) {
     const user = await getCurrentUserOrThrow(ctx);
+
+    const today = dayjs().tz(timezone).format("YYYY/MM/DD");
 
     return await ctx.db
       .query("schedules")
       .withIndex("by_user", (q) => q.eq("userId", user._id))
-      .filter((q) => q.eq("date", date))
-      .first();
+      .filter((q) => q.eq(q.field("date"), today))
+      .unique();
   },
 });
 
-export const createSchedule = mutation({
+export const create = mutation({
   args: {
     name: v.string(),
     date: v.optional(v.string()),
-    isTemplate: v.boolean(),
-    length: v.number(),
+    length: v.optional(v.number()),
   },
-  async handler(ctx, { name, date, isTemplate, length }) {
+  async handler(ctx, { name, date, length }) {
     const user = await getCurrentUserOrThrow(ctx);
 
     return await ctx.db.insert("schedules", {
-      name: name,
-      date: date,
-      isTemplate: isTemplate,
-      length: length,
+      name,
+      date,
+      isTemplate: false,
+      length: length || 16,
       userId: user._id,
     });
   },

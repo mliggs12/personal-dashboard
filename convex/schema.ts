@@ -4,14 +4,12 @@ import { v } from "convex/values";
 export default defineSchema({
   // SM Plan Clone
   activities: defineTable({
-    index: v.number(),
     name: v.string(),
-    start: v.number(), // Minutes since midnight
     length: v.number(), // Duration in minutes
     isForced: v.boolean(),
     isRigid: v.boolean(),
     scheduleId: v.id("schedules"),
-    userId: v.optional(v.id("users")),
+    userId: v.string(),
   }),
 
   schedules: defineTable({

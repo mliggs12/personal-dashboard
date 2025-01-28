@@ -1,5 +1,6 @@
 "use client";
 
+import { useMutation } from "convex/react";
 import dayjs from "dayjs";
 import { useState } from "react";
 
@@ -7,12 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
-import { createNewSchedule } from "../actions";
-
+import { api } from "@/convex/_generated/api";
 
 export default function CreateScheduleForm() {
   const [isTemplate, setIsTemplate] = useState(false);
+
+  const create = useMutation(api.schedules.create);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,7 +22,7 @@ export default function CreateScheduleForm() {
     const scheduleName = formData.get("scheduleName") as string;
     const scheduleDate = formData.get("scheduleDate") as string;
 
-    await createNewSchedule(scheduleName, scheduleDate, isTemplate);
+    await create({ name: scheduleName, date: scheduleDate });
   };
 
   const handleCheckboxChange = (checked: boolean) => {

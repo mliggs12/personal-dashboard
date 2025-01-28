@@ -22,65 +22,49 @@ export const listBySchedule = query({
       .filter((q) => q.eq(q.field("scheduleId"), scheduleId))
       .collect();
 
-    return activities.sort((a, b) => a.index - b.index);
+    return activities;
   },
 });
 
-export const createActivity = mutation({
+export const create = mutation({
   args: {
-    scheduleId: v.id("schedules"),
-    start: v.number(),
+    name: v.string(),
     length: v.number(),
+    scheduleId: v.id("schedules"),
   },
-  async handler(ctx, { scheduleId, start, length }) {
+  async handler(ctx, { scheduleId, name, length }) {
     const user = await getCurrentUserOrThrow(ctx);
 
     return await ctx.db.insert("activities", {
-      index: 0,
-      name: "",
+      name: name || "New activity",
+      length,
       isForced: false,
       isRigid: false,
       scheduleId,
-      start,
-      length,
       userId: user._id,
     });
   },
 });
 
-export const updateLength = mutation({
+export const update = mutation({
   args: {
-    activityId: v.id("activities"),
-    length: v.number(),
-  },
-  async handler(ctx, { activityId, length }) {
-    return await ctx.db.patch(activityId, { length });
-  },
-});
-
-export const updateActivity = mutation({
-  args: {
-    activityId: v.id("activities"),
-    index: v.optional(v.number()),
-    start: v.optional(v.number()),
-    length: v.optional(v.number()),
+    id: v.id("activities"),
     name: v.optional(v.string()),
+    length: v.optional(v.number()),
     isForced: v.optional(v.boolean()),
     isRigid: v.optional(v.boolean()),
-    scheduleId: v.optional(v.id("schedules")),
   },
-  async handler(
-    ctx,
-    { activityId, index, start, length, name, isForced, isRigid, scheduleId },
-  ) {
-    return await ctx.db.patch(activityId, {
-      index,
-      start,
-      length,
-      name,
-      isForced,
-      isRigid,
-      scheduleId,
+  async handler(ctx, { id, length, name, isForced, isRigid }) {
+    const existingActivity = await ctx.db.get(id);
+    if (!existingActivity) {
+      throw new Error("Activity not found");
+    }
+
+    return await ctx.db.patch(id, {
+      name: name || existingActivity.name,
+      length: length || existingActivity.length,
+      isForced: isForced || existingActivity.isForced,
+      isRigid: isRigid || existingActivity.isRigid,
     });
   },
 });

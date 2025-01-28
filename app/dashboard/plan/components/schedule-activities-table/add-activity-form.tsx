@@ -1,12 +1,12 @@
 "use client";
 
+import { useMutation } from "convex/react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { convertTimeInputToMinutes } from "@/lib/utils";
-
-import { addActivity } from "../../actions";
 
 export function AddActivityForm({
   scheduleId,
@@ -15,21 +15,21 @@ export function AddActivityForm({
   scheduleId: string;
   onActivityAdded: () => void;
 }) {
+  const create = useMutation(api.activities.create);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const form = e.target as HTMLFormElement;
     const formData = new FormData(form);
     const activityData = {
       name: formData.get("activityName") as string,
-      start: convertTimeInputToMinutes(formData.get("activityStart") as string),
       length: Number(formData.get("activityLength")),
     };
-    await addActivity(
-      scheduleId as Id<"schedules">,
-      activityData.name,
-      activityData.start,
-      activityData.length,
-    );
+    await create({
+      name: activityData.name,
+      length: activityData.length,
+      scheduleId: scheduleId as Id<"schedules">,
+    });
     onActivityAdded();
   };
 
