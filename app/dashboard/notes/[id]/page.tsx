@@ -8,6 +8,7 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 
 import TiptapEditor from "../../components/tiptap-editor";
+import NoteTitle from "../components/note-title";
 
 export default function NotePage() {
   const { id } = useParams<{ id: Id<"notes"> }>();
@@ -49,7 +50,12 @@ export default function NotePage() {
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{note.title}</h1>
+        <h1 className="text-2xl font-bold">
+          <NoteTitle
+            id={note._id}
+            initialContent={note.title}
+          />
+        </h1>
         <div className="hidden md:block mr-4">
           {isSaving && (
             <span className="text-sm text-muted-foreground">Saving...</span>
