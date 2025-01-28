@@ -29,7 +29,7 @@ export default function NoteTitle({
       },
     },
     onUpdate: ({ editor }) => {
-      handleChange(editor.getHTML());
+      handleChange(editor.getText());
     },
   });
   return <EditorContent editor={editor} />;
