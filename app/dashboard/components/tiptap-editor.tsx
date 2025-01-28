@@ -1,3 +1,5 @@
+import Code from "@tiptap/extension-code";
+import CodeBlock from "@tiptap/extension-code-block";
 import Highlight from "@tiptap/extension-highlight";
 import TaskItem from "@tiptap/extension-task-item";
 import TaskList from "@tiptap/extension-task-list";
@@ -18,8 +20,9 @@ export default function TiptapEditor({
 }: TiptapEditorProps) {
   const editor = useEditor({
     extensions: [
+      Code,
+      CodeBlock,
       StarterKit,
-      Highlight,
       Typography,
       TaskList,
       TaskItem.configure({ nested: true }),
