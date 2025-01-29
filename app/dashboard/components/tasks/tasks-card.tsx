@@ -19,6 +19,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
 import { AddTaskWrapper } from "./add-task-button";
+import AddTaskDrawerDialog from "./add-task-drawer-dialog";
 import TaskList from "./task-list";
 
 function orderTasks(tasks: Doc<"tasks">[]) {
@@ -113,9 +114,17 @@ export default function TasksCard() {
           </Link>
         </Button>
       </CardHeader>
-      <CardContent className="flex flex-col gap-2 p-0 pb-4 overflow-auto">
-        <TaskList tasks={orderedTasks} />
-        <AddTaskWrapper />
+      <CardContent className="flex flex-col h-full gap-2 p-0">
+        <div className="flex-1 relative">
+          <div className="absolute inset-0 overflow-auto px-2">
+            <div className="pb-6">
+              <TaskList tasks={orderedTasks} />
+            </div>
+            <div className="sticky bottom-2 z-10 flex justify-end">
+              <AddTaskDrawerDialog />
+            </div>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );

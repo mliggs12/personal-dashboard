@@ -31,7 +31,7 @@ export default function TaskList({ tasks }: { tasks: Doc<"tasks">[] }) {
       toast({
         title: "Task completed",
         description: "Appreciate yourself for completing the task!",
-        duration: 3000,
+        duration: 1500,
       });
     }
   };
