@@ -36,7 +36,7 @@ export const create = mutation({
     const user = await getCurrentUserOrThrow(ctx);
 
     return await ctx.db.insert("activities", {
-      name: name || "New activity",
+      name,
       length,
       isForced: false,
       isRigid: false,

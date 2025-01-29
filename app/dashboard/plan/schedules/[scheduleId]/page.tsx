@@ -1,13 +1,11 @@
 "use client";
 
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { useParams } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-
-import { addActivity } from "../../actions";
 
 export default function SchedulePage() {
   const { scheduleId } = useParams<{ scheduleId: Id<"schedules"> }>();
@@ -18,6 +16,8 @@ export default function SchedulePage() {
   const activities = useQuery(api.activities.listBySchedule, {
     scheduleId: scheduleId,
   });
+
+  const addActivity = useMutation(api.activities.create);
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
@@ -37,7 +37,13 @@ export default function SchedulePage() {
               Add an activity to the schedule.
             </p>
             <Button
-              onClick={() => addActivity(schedule._id)}
+              onClick={() =>
+                addActivity({
+                  scheduleId: schedule._id,
+                  name: "New activity",
+                  length: 25,
+                })
+              }
               className=""
             >
               Add new activity
@@ -53,7 +59,13 @@ export default function SchedulePage() {
             <span>hours</span>
           </h2>
           <Button
-            onClick={() => addActivity(schedule._id)}
+            onClick={() =>
+              addActivity({
+                scheduleId: schedule._id,
+                name: "New activity",
+                length: 25,
+              })
+            }
             className=""
           >
             Add new activity
