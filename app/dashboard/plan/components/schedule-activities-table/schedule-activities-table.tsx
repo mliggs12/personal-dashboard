@@ -36,9 +36,7 @@ export default function ScheduleActivitiesTable({
             <TableCell className="w-1">
               <Checkbox checked={activity.isRigid} />
             </TableCell>
-            <TableCell className="w-6">
-              {formatMinToReadable(activity.start)}
-            </TableCell>
+            <TableCell className="w-6">{}</TableCell>
             <TableCell className="w-96">{activity.name}</TableCell>
             <TableCell className="w-6">{activity.length}</TableCell>
             <TableCell className="w-6">{"-"}</TableCell>

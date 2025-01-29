@@ -5,12 +5,12 @@ import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
 
+import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
 
 import AddActivityButton from "./components/schedule-activities-table/add-activity-button";
 import ScheduleActivitiesTable from "./components/schedule-activities-table/schedule-activities-table";
 import { TemplateSelect } from "./components/template-select";
-import CreateScheduleButton from "./schedules/create-schedule-button";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -44,7 +44,7 @@ export default function PlanDashboard() {
             <p className="text-sm text-muted-foreground">
               Create a new schedule from scratch or with a template.
             </p>
-            <CreateScheduleButton />
+            <Button>New Schedule</Button>
           </div>
         </div>
       )}
