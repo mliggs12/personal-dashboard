@@ -14,7 +14,7 @@ export default function ActivityLengthCell({
   const [length, setlength] = useState(activity.length);
   const [isEditing, setIsEditing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const updateLength = useMutation(api.activities.updateLength);
+  const updateLength = useMutation(api.activities.update);
 
   const handleLengthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newLength = parseInt(e.target.value);
@@ -25,7 +25,7 @@ export default function ActivityLengthCell({
     if (e.key === "Enter" || e.key === "Escape") {
       setIsEditing(false);
       if (length !== activity.length) {
-        updateLength({ activityId: activity._id, length });
+        updateLength({ id: activity._id, length });
       }
     }
   };
@@ -33,7 +33,7 @@ export default function ActivityLengthCell({
   const handleBlur = () => {
     setIsEditing(false);
     if (length !== activity.length) {
-      updateLength({ activityId: activity._id, length });
+      updateLength({ id: activity._id, length });
     }
   };
 
