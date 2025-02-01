@@ -1,29 +1,26 @@
+import { auth, clerkClient } from "@clerk/nextjs/server";
 import dayjs from "dayjs";
 
 import { Event } from "@/types";
 
-async function getOauthToken(userId: string): Promise<string> {
-  try {
-    const token = await fetch("/api/auth/google-token", {
-      headers: {
-        "user-id": userId,
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => data.token);
-
-    if (!token) {
-      throw new Error("No token found");
-    }
-
-    return token;
-  } catch (error) {
-    throw new Error("Failed to retrieve user OAuth token");
-  }
+async function getOauthToken(userId: string) {
+  const client = await clerkClient();
+  const clerkResponse = await client.users.getUserOauthAccessToken(
+    userId,
+    "oauth_google",
+  );
+  
+  return clerkResponse.data[0].token || "";
 }
 
-export async function getUserEvents(userId: string): Promise<Event[]> {
+export async function getUserEvents() {
+  const { userId } = await auth();
+  if (!userId) {
+    throw new Error("User not authenticated");
+  }
+
   const token = await getOauthToken(userId);
+
   const headers = new Headers();
   headers.append("Authorization", `Bearer ${token}`);
 
@@ -37,23 +34,42 @@ export async function getUserEvents(userId: string): Promise<Event[]> {
   );
 
   if (!response.ok) {
-    throw new Error("Failed to fetch events");
+    throw new Error(response.statusText);
   }
 
   const data = await response.json();
 
-  const events: Event[] = data.items.map((item: Event) => {
-    const event = {
+  const events = data.items.map((item) => {
+    const event: Event = {
       id: item.id,
-      title: item.title,
-      description: item.description,
-      start: item.start,
-      end: item.end,
-      created: item.created,
-      recurringEventId: item.recurringEventId,
+      summary: item.summary,
+      start: item.start.dateTime,
+      end: item.end.date,
     };
     return event;
   });
+  return events;
+}
 
+export async function getHolidayEvents() {
+  const response = await fetch(
+    "https://www.googleapis.com/calendar/v3/calendars/en.usa%23holiday%40group.v.calendar.google.com/events?maxResults=10&orderBy=startTime&singleEvents=true&timeMin=2021-01-01T00%3A00%3A00Z",
+  );
+
+  if (!response.ok) {
+    throw new Error(response.statusText);
+  }
+
+  const data = await response.json();
+
+  const events = data.items.map((item) => {
+    const event: Event = {
+      id: item.id,
+      summary: item.summary,
+      start: item.start.dateTime,
+      end: item.end.date,
+    };
+    return event;
+  });
   return events;
 }

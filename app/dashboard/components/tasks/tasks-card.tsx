@@ -58,7 +58,7 @@ export default function TasksCard() {
     return (
       <Card
         className={cn(
-          "flex flex-col h-full md:h-3/4 w-full md:w-1/2",
+          "flex flex-col h-full md:h-1/2 w-full",
           isMobile && "border-none",
         )}
       >
@@ -92,12 +92,7 @@ export default function TasksCard() {
   }
 
   return (
-    <Card
-      className={cn(
-        "flex flex-col h-full md:h-3/4 w-full md:w-1/2",
-        isMobile && "border-none",
-      )}
-    >
+    <Card className="flex flex-col h-full md:h-1/2 w-full">
       <CardHeader className="flex flex-row items-start justify-between border-b-2 p-3">
         <div className="flex flex-col gap-2 p-0">
           <CardTitle>Do Today Tasks</CardTitle>
