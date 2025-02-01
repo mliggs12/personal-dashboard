@@ -62,7 +62,7 @@ export async function getHolidayEvents() {
 
   const data = await response.json();
 
-  const events = data.items.map((item) => {
+  const events = data.items.map((item: any) => {
     const event: Event = {
       id: item.id,
       summary: item.summary,
