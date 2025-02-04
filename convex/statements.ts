@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 
 import { mutation, query } from "./_generated/server";
-import { getCurrentUserOrThrow } from "./userHelpers";
+import { getCurrentUserOrThrow } from "./users";
 
 export const create = mutation({
   args: {

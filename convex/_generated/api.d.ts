@@ -29,7 +29,6 @@ import type * as sessions from "../sessions.js";
 import type * as sleepRecords from "../sleepRecords.js";
 import type * as statements from "../statements.js";
 import type * as tasks from "../tasks.js";
-import type * as userHelpers from "../userHelpers.js";
 import type * as users from "../users.js";
 import type * as waterLogEntries from "../waterLogEntries.js";
 import type * as waterLogHelpers from "../waterLogHelpers.js";
@@ -59,7 +58,6 @@ declare const fullApi: ApiFromModules<{
   sleepRecords: typeof sleepRecords;
   statements: typeof statements;
   tasks: typeof tasks;
-  userHelpers: typeof userHelpers;
   users: typeof users;
   waterLogEntries: typeof waterLogEntries;
   waterLogHelpers: typeof waterLogHelpers;

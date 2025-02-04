@@ -4,7 +4,7 @@ import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
 
 import { mutation, query } from "./_generated/server";
-import { getCurrentUserOrThrow } from "./userHelpers";
+import { getCurrentUserOrThrow } from "./users";
 import { getUserWaterEntries } from "./waterLogHelpers";
 
 dayjs.extend(timezone);

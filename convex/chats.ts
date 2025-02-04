@@ -2,7 +2,7 @@ import { ConvexError, v } from "convex/values";
 
 import { Doc } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
-import { getCurrentUserOrThrow } from "./userHelpers";
+import { getCurrentUserOrThrow } from "./users";
 
 export const getOrCreate = mutation({
   args: { otherUserId: v.id("users") },

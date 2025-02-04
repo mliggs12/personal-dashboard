@@ -2,7 +2,7 @@ import { v } from "convex/values";
 import dayjs from "dayjs";
 
 import { mutation, query } from "./_generated/server";
-import { getCurrentUser, getCurrentUserOrThrow } from "./userHelpers";
+import { getCurrentUser, getCurrentUserOrThrow } from "./users";
 
 export const create = mutation({
   args: {

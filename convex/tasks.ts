@@ -5,7 +5,7 @@ import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
 
 import { mutation, query } from "./_generated/server";
-import { getCurrentUserOrThrow, userByExternalId } from "./userHelpers";
+import { getCurrentUserOrThrow, userByExternalId } from "./users";
 
 dayjs.extend(isToday);
 dayjs.extend(timezone);

@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 
 import { mutation, query } from "./_generated/server";
-import { getCurrentUser, getCurrentUserOrThrow } from "./userHelpers";
+import { getCurrentUser, getCurrentUserOrThrow } from "./users";
 
 export const recent = query({
   async handler(ctx) {
