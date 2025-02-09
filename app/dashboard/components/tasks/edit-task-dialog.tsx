@@ -2,7 +2,7 @@ import * as SelectPrimitive from "@radix-ui/react-select";
 import { useMutation, useQuery } from "convex/react";
 import dayjs from "dayjs";
 import { CalendarIcon, CheckCircleIcon, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
   frequencies,
@@ -28,15 +28,13 @@ import {
   Select,
   SelectContent,
   SelectItem,
-  SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
 import { api } from "@/convex/_generated/api";
 import { Doc, Id } from "@/convex/_generated/dataModel";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
-import TaskNotes from "./task-notes";
+import TiptapEditor from "../tiptap-editor";
 
 export default function EditTaskDialog({ data }: { data: Doc<"tasks"> }) {
   const { name, updated, notes, status, priority, due, recurringTaskId, _id } =
@@ -50,7 +48,6 @@ export default function EditTaskDialog({ data }: { data: Doc<"tasks"> }) {
 
   const { toast } = useToast();
 
-  // State
   const [taskDue, setTaskDue] = useState<String | undefined>(due);
   const [taskStatus, setTaskStatus] = useState(
     statuses.find((statusInfo) => statusInfo.value === status),
@@ -67,6 +64,7 @@ export default function EditTaskDialog({ data }: { data: Doc<"tasks"> }) {
   const [calendarDate, setCalendarDate] = useState<Date | undefined>(
     taskDue ? dayjs(due).toDate() : undefined,
   );
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (recurringTask) {
@@ -78,6 +76,33 @@ export default function EditTaskDialog({ data }: { data: Doc<"tasks"> }) {
       setRecurType(recurringTask.type);
     }
   }, [recurringTask]);
+
+
+
+  const timeoutRef = useRef<NodeJS.Timeout>();
+
+  const handleChange = useCallback(
+    (notes: string) => {
+      setIsSaving(true);
+
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+
+      timeoutRef.current = setTimeout(() => {
+        updateTask({ taskId: _id, notes }).then(() => setIsSaving(false));
+      }, 2000);
+    },
+    [_id, updateTask],
+  );
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleDeleteTask = (e: any) => {
     e.preventDefault();
@@ -158,11 +183,18 @@ export default function EditTaskDialog({ data }: { data: Doc<"tasks"> }) {
     setRecurType(type);
   };
 
+  if (notes === undefined)
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin">Loading...</div>
+      </div>
+    );
+
   return (
     <DialogContent className="flex flex-col md:flex-row w-full md:max-w-4xl h-full md:h-auto p-4">
       <div className="flex flex-col gap-2 w-full md:w-4/6">
         <DialogTitle className="text-xl text-left">{name}</DialogTitle>
-        <TaskNotes task={data} />
+        <TiptapEditor initialContent={notes} onChange={handleChange} />
       </div>
       <div className="flex flex-col gap-1 w-full md:w-1/2 border-b-2 md:border-none space-y-2 pb-4">
         <div>

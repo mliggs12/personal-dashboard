@@ -23,7 +23,7 @@ const CustomTaskItem = TaskItem.extend({
   content: 'inline*',
 })
 
-export default function NoteContent({
+export default function TiptapEditor({
   initialContent,
   onChange,
 }: TiptapEditorProps) {

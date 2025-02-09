@@ -13,8 +13,11 @@ import NoteTitle from "../components/note-title";
 export default function NotePage() {
   const { id } = useParams<{ id: Id<"notes"> }>();
   const note = useQuery(api.notes.get, { noteId: id });
+
   const updateNote = useMutation(api.notes.update);
+
   const [isSaving, setIsSaving] = useState(false);
+
   const timeoutRef = useRef<NodeJS.Timeout>();
 
   const handleChange = useCallback(
