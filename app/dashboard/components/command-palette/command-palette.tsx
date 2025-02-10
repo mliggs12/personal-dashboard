@@ -1,8 +1,6 @@
 "use client";
 
-import { Dialog, DialogContent } from "@radix-ui/react-dialog";
-import { useMutation, useQuery } from "convex/react";
-import { FileTextIcon } from "lucide-react";
+import { useQuery } from "convex/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import * as React from "react";
@@ -20,8 +18,6 @@ import {
 } from "@/components/ui/command";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-
-import AddNoteDialog from "./add-note-dialog";
 
 export default function CommandPalette() {
   const router = useRouter();
@@ -80,14 +76,6 @@ export default function CommandPalette() {
                 </Link>
               </CommandItem>
             ))}
-          </CommandGroup>
-          <CommandSeparator />
-          <CommandGroup heading="Quick Create (Type first letter)">
-            <CommandItem>
-              <FileTextIcon className="mr-2" />
-              <AddNoteDialog />
-              <CommandShortcut>⌘N</CommandShortcut>
-            </CommandItem>
           </CommandGroup>
         </CommandList>
       </CommandDialog>
