@@ -1,10 +1,12 @@
 "use client";
 
-import { useQuery } from "convex/react";
+import { Dialog, DialogContent } from "@radix-ui/react-dialog";
+import { useMutation, useQuery } from "convex/react";
+import { FileTextIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import * as React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   CommandDialog,
@@ -19,7 +21,9 @@ import {
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 
-export function GlobalCommandMenu() {
+import AddNoteDialog from "./add-note-dialog";
+
+export default function CommandPalette() {
   const router = useRouter();
 
   const [open, setOpen] = React.useState(false);
@@ -27,7 +31,7 @@ export function GlobalCommandMenu() {
 
   const searchResults = useQuery(api.notes.search, { query: searchText }) || [];
 
-  React.useEffect(() => {
+  useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
@@ -49,9 +53,10 @@ export function GlobalCommandMenu() {
       <p className="text-sm text-muted-foreground">
         Search{" "}
         <kbd className="pointer-events-none hidden md:inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
-          <span className="text-xs">⌘</span>K
+          <CommandShortcut>⌘K</CommandShortcut>
         </kbd>
       </p>
+
       <CommandDialog
         open={open}
         onOpenChange={setOpen}
@@ -63,7 +68,7 @@ export function GlobalCommandMenu() {
         />
         <CommandList className="p-4 space-y-4">
           <CommandEmpty>No results found.</CommandEmpty>
-          <CommandGroup value="Suggestions">
+          <CommandGroup heading="Suggestions">
             {searchResults.map((searchResult) => (
               <CommandItem
                 key={searchResult._id}
@@ -76,8 +81,17 @@ export function GlobalCommandMenu() {
               </CommandItem>
             ))}
           </CommandGroup>
+          <CommandSeparator />
+          <CommandGroup heading="Quick Create (Type first letter)">
+            <CommandItem>
+              <FileTextIcon className="mr-2" />
+              <AddNoteDialog />
+              <CommandShortcut>⌘N</CommandShortcut>
+            </CommandItem>
+          </CommandGroup>
         </CommandList>
       </CommandDialog>
     </>
   );
 }
+

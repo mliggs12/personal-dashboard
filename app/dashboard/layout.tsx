@@ -15,9 +15,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
+import CommandPalette from "./components/command-palette/command-palette";
 import DashboardBreadcrumbs from "./components/dashboard-breadcrumbs";
-import { GlobalCommandMenu } from "./components/global-command-menu";
-
 dayjs.extend(localizedFormat);
 
 export default function DashboardLayout({
@@ -45,12 +44,10 @@ export default function DashboardLayout({
             <div
               className={cn(
                 "hidden pr-4 ml-auto",
-                pathname === "/dashboard" &&
-                  !isMobile &&
-                  "flex items-center gap-4",
+                pathname === "/dashboard" && !isMobile && "flex items-center gap-4",
               )}
             >
-              <GlobalCommandMenu />
+              <CommandPalette />
               <p>{dayjs().format("dddd, LL")}</p>
             </div>
           </header>
