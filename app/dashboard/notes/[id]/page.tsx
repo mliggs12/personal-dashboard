@@ -53,24 +53,20 @@ export default function NotePage() {
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">
-          <NoteTitle
-            id={note._id}
-            initialContent={note.title}
-          />
-        </h1>
+        <NoteTitle
+          id={note._id}
+          initialContent={note.title}
+        />
         <div className="hidden md:block mr-4">
           {isSaving && (
             <span className="text-sm text-muted-foreground">Saving...</span>
           )}
         </div>
       </div>
-      <div>
-        <NoteContent
-          initialContent={note.text}
-          onChange={handleChange}
-        />
-      </div>
+      <NoteContent
+        initialContent={note.text}
+        onChange={handleChange}
+      />
     </div>
   );
 }
