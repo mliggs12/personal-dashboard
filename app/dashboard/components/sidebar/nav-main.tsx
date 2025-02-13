@@ -12,6 +12,7 @@ import {
 
 import AddNoteButton from "./add-note-button";
 import { navItems } from "./data";
+import { RecentNotes } from "../recent-notes";
 
 export default function NavMain() {
   const pathname = usePathname();
@@ -34,7 +35,12 @@ export default function NavMain() {
                   <span>{item.title}</span>
                 </Link>
               </SidebarMenuButton>
-              {item.title === "Notes" && <AddNoteButton />}
+              {item.title === "Notes" &&
+                <div>
+                  <AddNoteButton />
+                  <RecentNotes />
+                </div>
+              }
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
