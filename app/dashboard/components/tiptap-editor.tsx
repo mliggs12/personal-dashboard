@@ -50,7 +50,7 @@ export default function TiptapEditor({
     editorProps: {
       attributes: {
         class:
-          "prose dark:prose-invert max-w-none min-h-[150px] rounded-md border-none bg-background px-3 py-2 text-sm ring-offset-background focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none",
+          "prose dark:prose-invert prose-sm prose-p:my-[2px] max-w-none min-h-[150px] rounded-md border-none bg-background ring-offset-background focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none",
       },
     },
     onUpdate: ({ editor }) => {
