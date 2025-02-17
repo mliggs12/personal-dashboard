@@ -8,11 +8,12 @@ import Typography from "@tiptap/extension-typography";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 
+import { cn } from "@/lib/utils";
+
 interface TiptapEditorProps {
   initialContent: string;
   onChange: (content: string) => void;
   className?: string;
-  placeholder?: string;
 }
 
 const CustomDocument = Document.extend({
@@ -26,6 +27,7 @@ const CustomTaskItem = TaskItem.extend({
 export default function TiptapEditor({
   initialContent,
   onChange,
+  className,
 }: TiptapEditorProps) {
   const editor = useEditor({
     extensions: [
@@ -50,7 +52,10 @@ export default function TiptapEditor({
     editorProps: {
       attributes: {
         class:
-          "prose dark:prose-invert prose-sm prose-p:my-[2px] max-w-none min-h-[150px] rounded-md border-none bg-background ring-offset-background focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none",
+          cn(
+            "prose dark:prose-invert prose-sm prose-p:my-[2px] max-w-none min-h-[150px] rounded-md border-none bg-background ring-offset-background focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none",
+            className,
+          )
       },
     },
     onUpdate: ({ editor }) => {

@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 import CalendarScheduleView from "./components/calendar/calendar-schedule-view";
+import Scratchpad from "./components/scratch-pad";
 import TasksCard from "./components/tasks/tasks-card";
 
 export default function DashboardPage() {
@@ -17,9 +18,10 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="h-full flex flex-col md:flex-row flex-1 p-4 gap-4">
+    <div className="h-full flex flex-col flex-1 p-4 gap-4">
       <TasksCard />
       {/* <CalendarScheduleView /> */}
+      <Scratchpad />
     </div>
   );
 }

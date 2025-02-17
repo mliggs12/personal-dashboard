@@ -236,4 +236,10 @@ export default defineSchema({
     userId: v.id("users"),
     updated: v.number(),
   }),
+
+  scratchPads: defineTable({
+    content: v.string(),
+    updated: v.number(),
+    userId: v.id("users"),
+  }).index("by_user", ["userId"]),
 });
