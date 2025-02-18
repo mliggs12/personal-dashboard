@@ -55,7 +55,7 @@ export default function ScratchPad() {
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="ghost" size="sm"
-              className="p-2">
+              className="p-2 prose dark:prose-invert">
               <Ellipsis />
             </Button>
           </PopoverTrigger>
