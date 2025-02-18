@@ -18,7 +18,7 @@ export const create = mutation({
 export const getByUser = query({
   async handler(ctx) {
     const user = await getCurrentUserOrThrow(ctx);
-    
+
     return await ctx.db
       .query("scratchPads")
       .withIndex("by_user", (q) =>
@@ -30,13 +30,13 @@ export const getByUser = query({
 
 export const update = mutation({
   args: {
-    scratchPad: v.id("scratchPads"),
+    id: v.id("scratchPads"),
     content: v.string(),
    },
-  async handler(ctx, { scratchPad, content }) {
+  async handler(ctx, { id, content }) {
     const user = await getCurrentUserOrThrow(ctx);
 
-    return await ctx.db.patch(scratchPad, {
+    return await ctx.db.patch(id, {
       content,
       updated: Date.now(),
       userId: user._id,
