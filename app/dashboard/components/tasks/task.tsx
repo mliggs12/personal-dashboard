@@ -38,12 +38,10 @@ export default function Task({
   data,
   isCompleted,
   handleOnChange,
-  showDetails = false,
 }: {
   data: Doc<"tasks">;
   isCompleted: boolean;
   handleOnChange: any;
-  showDetails?: boolean;
 }) {
   const { name, due, recurringTaskId } = data;
 
@@ -57,11 +55,16 @@ export default function Task({
           <div className="flex px-2 gap-4 items-center w-full">
             <Checkbox
               id="task"
-              className={cn(
-                "w-5 h-5",
-                isCompleted &&
-                  "data-[state=checked]:bg-gray-300 border-gray-300",
-              )}
+              className={
+                cn(
+                  "w-5 h-5",
+                  "transition-all duration-200 ease-in-out",
+                  "hover:scale-105 active:scale-95",
+                  isCompleted
+                    ? "bg-gray-300 border-gray-300"
+                    : "hover:bg-secondary/50 hover:border-primary/70"
+                )
+              }
               checked={isCompleted}
               onCheckedChange={handleOnChange}
             />
@@ -99,27 +102,13 @@ export default function Task({
                       className={cn(
                         "w-[70px] text-xs text-right text-muted-foreground",
                         dayjs(due).isBefore(dayjs().startOf("day")) &&
-                          "text-destructive",
+                        "text-destructive",
                       )}
                     >
                       {displayDueDate(due)}
                     </p>
                   )}
                 </div>
-                {showDetails && (
-                  <div className="flex gap-2">
-                    <div className="flex items-center justify-center gap-1">
-                      <GitBranch className="w-3 h-3 text-foreground/70" />
-                      <p className="text-xs text-foreground/70"></p>
-                    </div>
-                    <div className="flex items-center justify-center gap-1">
-                      <Calendar className="w-3 h-3 text-primary" />
-                      <p className="text-xs text-primary">
-                        {due ? dayjs(due).format("ddd MMM D") : ""}
-                      </p>
-                    </div>
-                  </div>
-                )}
               </div>
             </DialogTrigger>
           </div>
