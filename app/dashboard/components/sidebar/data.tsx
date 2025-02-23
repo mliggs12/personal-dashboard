@@ -2,6 +2,7 @@ import {
   Bed,
   Book,
   Brain,
+  Dumbbell,
   Folder,
   HeartPulse,
   ListTodo,
@@ -59,6 +60,11 @@ export const navItems = [
     title: "Wellness",
     url: "/dashboard/wellness",
     icon: HeartPulse,
+  },
+  {
+    title: "Lift",
+    url: "/dashboard/lift",
+    icon: Dumbbell,
   },
   // {
   //   title: "Sleep Tracker",
