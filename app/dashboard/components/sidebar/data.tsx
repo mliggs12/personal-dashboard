@@ -61,11 +61,11 @@ export const navItems = [
     url: "/dashboard/wellness",
     icon: HeartPulse,
   },
-  {
-    title: "Lift",
-    url: "/dashboard/lift",
-    icon: Dumbbell,
-  },
+  // {
+  //   title: "Lift",
+  //   url: "/dashboard/lift",
+  //   icon: Dumbbell,
+  // },
   // {
   //   title: "Sleep Tracker",
   //   url: "/dashboard/sleep",

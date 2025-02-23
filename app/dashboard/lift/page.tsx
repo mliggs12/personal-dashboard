@@ -10,26 +10,26 @@ export default function Lift() {
           <div className="logo">
             <Button size="default" variant="ghost" className="text-xl font-normal">Lift</Button>
           </div>
-          <div className="menu-items">
-            <Button variant="ghost">
+          <div className="menu-items flex items-center">
+            <Button variant="ghost" className="[&_svg]:size-7">
               <CalendarDays />
             </Button>
-            <Button variant="ghost">
+            <Button variant="ghost" className="[&_svg]:size-7">
               <Plus />
             </Button>
-            <Button variant="ghost">
+            <Button variant="ghost" className="[&_svg]:size-7">
               <EllipsisVertical />
             </Button>
           </div>
         </div>
         <div className="log-select h-[46px] flex justify-between items-center border-b-[3px] border-primary">
-          <Button variant="ghost" className="text-primary">
+          <Button variant="ghost" size="icon" className="text-primary [&_svg]:size-9">
             <ChevronLeft />
           </Button>
           <Button variant="ghost" className="uppercase">
             Today
           </Button>
-          <Button variant="ghost" className="text-primary">
+          <Button variant="ghost" size="icon" className="text-primary [&_svg]:size-9">
             <ChevronRight />
           </Button>
         </div>
