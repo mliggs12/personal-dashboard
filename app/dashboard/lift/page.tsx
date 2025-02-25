@@ -2,6 +2,28 @@ import { CalendarDays, ChevronLeft, ChevronRight, EllipsisVertical, Plus } from 
 
 import { Button } from "@/components/ui/button";
 
+function ExerciseCard({ title, sets }: { title: string, sets: { weight: number, reps: number }[] }) {
+  return (
+    <div className="border bg-secondary">
+      <div className="item-title border-b border-primary text-lg p-2 px-3">{title}</div>
+      <div className="item-body p-[6px] px-3 flex flex-col gap-[7px]">
+        {sets.map((set, index) => (
+          <div key={index} className="item-row grid grid-cols-3 text-right">
+            <div className="item-cell col-start-2 font-semibold text-lg">
+              {set.weight}<span className="ml-1 text-sm text-gray-400 font-normal">lbs</span>
+            </div>
+            <div className="item-cell font-semibold text-lg">
+              {set.reps}<span className="ml-1 text-sm text-gray-400 font-normal">reps</span>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="view-more pr-3 pb-[3px] pt-1 text-right text-sm text-gray-500">{sets.length} more</div>
+    </div>
+  );
+}
+
+
 export default function Lift() {
   return (
     <div className="h-full">

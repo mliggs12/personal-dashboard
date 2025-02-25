@@ -1,3 +1,5 @@
+import "@/app/styles.scss";
+
 import Code from "@tiptap/extension-code";
 import CodeBlock from "@tiptap/extension-code-block";
 import Document from '@tiptap/extension-document';
@@ -16,10 +18,6 @@ interface TiptapEditorProps {
   className?: string;
 }
 
-const CustomDocument = Document.extend({
-  content: 'taskList',
-})
-
 const CustomTaskItem = TaskItem.extend({
   content: 'inline*',
 })
@@ -33,7 +31,7 @@ export default function TiptapEditor({
     extensions: [
       Code,
       CodeBlock,
-      CustomDocument,
+      Document,
       Link.configure({
         defaultProtocol: "https",
         HTMLAttributes: {
@@ -44,8 +42,9 @@ export default function TiptapEditor({
       StarterKit,
       Typography,
       TaskList,
-      TaskItem.configure({ nested: true }),
-      CustomTaskItem,
+      CustomTaskItem.configure({
+        nested: true,
+      }),
     ],
     autofocus: "end",
     content: initialContent,
