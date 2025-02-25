@@ -8,9 +8,10 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { api } from "@/convex/_generated/api";
 import { Doc } from "@/convex/_generated/dataModel";
 
-import TiptapEditor from "./tiptap-editor";
+import ScratchPadEditor, { ScratchPadEditorRef } from "./scratch-pad-editor";
 
 export default function ScratchPad() {
+  const editorRef = useRef<ScratchPadEditorRef>(null);
   const scratchPad = useQuery(api.scratchPads.getByUser);
 
   const createScratchPad = useMutation(api.scratchPads.create);
@@ -40,7 +41,7 @@ export default function ScratchPad() {
     }
   }, [scratchPad, createScratchPad]);
 
-  if (!scratchPad) {
+  if (scratchPad === undefined) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="animate-spin">Loading...</div>
@@ -64,14 +65,15 @@ export default function ScratchPad() {
               <Button variant="ghost" size="sm" disabled className="prose dark:prose-invert">
                 <span className="mr-auto">Convert to note</span>
               </Button>
-              <ClearDialog {...scratchPad} />
+              <ClearDialog editorRef={editorRef} />
             </div>
           </PopoverContent>
         </Popover>
       </div>
       <div className="border bg-blue-300 rounded p-4">
-        <TiptapEditor
-          initialContent={scratchPad.content}
+        <ScratchPadEditor
+          ref={editorRef}
+          initialContent={scratchPad?.content || ""}
           onChange={handleChange}
           className="h-[300px] overflow-y-auto bg-blue-300 text-gray-800 prose-headings:text-gray-800 font-semibold"
         />
@@ -80,19 +82,20 @@ export default function ScratchPad() {
   );
 }
 
-const ClearDialog = (scratchPad: Doc<"scratchPads">) => {
-  const updateScratchPad = useMutation(api.scratchPads.update);
+interface ClearDialogProps {
+  editorRef: React.RefObject<ScratchPadEditorRef>;
+}
 
-  const handleClear = async () => {
-    await updateScratchPad({ id: scratchPad._id, content: "" });
-    // Refresh the page to clear the editor
-    // window.location.reload();
+const ClearDialog = ({ editorRef }: ClearDialogProps) => {
+
+  const handleClear = () => {
+    editorRef.current?.clear();
   }
 
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" disabled className="prose dark:prose-invert">Clear scratch pad</Button>
+        <Button variant="ghost" size="sm" className="prose dark:prose-invert">Clear scratch pad</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>Clear scratch pad?</DialogHeader>
