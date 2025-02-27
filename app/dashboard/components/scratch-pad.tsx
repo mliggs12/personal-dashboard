@@ -1,21 +1,24 @@
 import { useMutation, useQuery } from "convex/react";
+import dayjs from "dayjs";
 import { Ellipsis } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { DialogClose, DialogFooter, DialogHeader, Dialog, DialogTrigger, DialogContent, DialogDescription } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { api } from "@/convex/_generated/api";
-import { Doc } from "@/convex/_generated/dataModel";
 
 import ScratchPadEditor, { ScratchPadEditorRef } from "./scratch-pad-editor";
 
 export default function ScratchPad() {
+  const router = useRouter();
   const editorRef = useRef<ScratchPadEditorRef>(null);
   const scratchPad = useQuery(api.scratchPads.getByUser);
 
   const createScratchPad = useMutation(api.scratchPads.create);
   const updateScratchPad = useMutation(api.scratchPads.update);
+  const createNote = useMutation(api.notes.create);
 
   const timeoutRef = useRef<NodeJS.Timeout>();
 
@@ -34,6 +37,18 @@ export default function ScratchPad() {
     },
     [scratchPad, updateScratchPad],
   );
+
+  const handleConvertToNote = async () => {
+    if (scratchPad) {
+      const noteId = await createNote({
+        title: `Scratch Pad - ${dayjs(Date.now()).format("MMM D, h:mm A")}`,
+        text: scratchPad.content,
+      });
+      updateScratchPad({ id: scratchPad._id, content: "" });
+
+      router.push(`/dashboard/notes/${noteId}`);
+    }
+  }
 
   useEffect(() => {
     if (scratchPad === null) {
@@ -62,7 +77,7 @@ export default function ScratchPad() {
           </PopoverTrigger>
           <PopoverContent align="end" className="w-fit p-2">
             <div className="grid">
-              <Button variant="ghost" size="sm" disabled className="prose dark:prose-invert">
+              <Button variant="ghost" size="sm" disabled={editorRef.current?.isEmpty()} onClick={handleConvertToNote} className="prose dark:prose-invert">
                 <span className="mr-auto">Convert to note</span>
               </Button>
               <ClearDialog editorRef={editorRef} />
@@ -95,7 +110,7 @@ const ClearDialog = ({ editorRef }: ClearDialogProps) => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="prose dark:prose-invert">Clear scratch pad</Button>
+        <Button variant="ghost" size="sm" disabled={editorRef.current?.isEmpty()} className="prose dark:prose-invert">Clear scratch pad</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>Clear scratch pad?</DialogHeader>

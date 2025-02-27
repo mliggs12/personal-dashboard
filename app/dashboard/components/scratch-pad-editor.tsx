@@ -16,6 +16,7 @@ interface ScratchPadEditorProps {
 
 export interface ScratchPadEditorRef {
   clear: () => void;
+  isEmpty: () => boolean;
 }
 
 const ScratchPadEditor = forwardRef<ScratchPadEditorRef, ScratchPadEditorProps>(
@@ -51,8 +52,9 @@ const ScratchPadEditor = forwardRef<ScratchPadEditorRef, ScratchPadEditorProps>(
     }, [editor]);
 
     useImperativeHandle(ref, () => ({
-      clear: clearContent
-    }), [clearContent]);
+      clear: clearContent,
+      isEmpty: () => editor?.isEmpty ?? false,
+    }), [clearContent, editor]);
 
     if (!editor) {
       return null;
