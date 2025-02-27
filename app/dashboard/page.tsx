@@ -19,6 +19,7 @@ export default function DashboardPage() {
 
   return (
     <div className="h-full flex flex-col flex-1 p-4 gap-4">
+      {/* <div className="grid md:grid-cols-2 h-full gap-4 md:px-4"> */}
       <TasksCard />
       {/* <CalendarScheduleView /> */}
       <Scratchpad />
