@@ -36,18 +36,18 @@ function ExerciseCard({ exercise }: { exercise: Exercise }) {
   );
 }
 
-function ExerciseList() {
-  const { date, exercises } = exerciseData;
+// function ExerciseList() {
+//   const { date, exercises } = exerciseData;
 
 
-  return (
-    <div className="log-body p-5 flex flex-col gap-[22px]">
-      {exercises.map((exercise, index) => (
-        <ExerciseCard key={index} exercise={exercise} />
-      ))}
-    </div>
-  );
-}
+//   return (
+//     <div className="log-body p-5 flex flex-col gap-[22px]">
+//       {exercises.map((exercise, index) => (
+//         <ExerciseCard key={index} exercise={exercise} />
+//       ))}
+//     </div>
+//   );
+// }
 
 
 export default function Lift() {
