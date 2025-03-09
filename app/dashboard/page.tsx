@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 import CalendarScheduleView from "./components/calendar/calendar-schedule-view";
-import Scratchpad from "./components/scratch-pad";
+import Scratchpad from "./components/scratch-pad/scratch-pad";
 import TasksCard from "./components/tasks/tasks-card";
 
 export default function DashboardPage() {
