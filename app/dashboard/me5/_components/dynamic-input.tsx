@@ -50,7 +50,7 @@ export default function DynamicInput() {
           </div>
         ))}
       </div>
-      <Link href="/me5/list">
+      <Link href="/dashboard/me5/list">
         <Button>Next Page</Button>
       </Link>
     </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import DynamicInput from "./dynamic-input";
+import DynamicInput from "./_components/dynamic-input";
 
 export default function Me5Page() {
   return (
