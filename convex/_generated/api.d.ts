@@ -14,9 +14,11 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as activities from "../activities.js";
+import type * as banners from "../banners.js";
 import type * as beliefs from "../beliefs.js";
 import type * as chats from "../chats.js";
 import type * as emotions from "../emotions.js";
+import type * as focusBlocks from "../focusBlocks.js";
 import type * as http from "../http.js";
 import type * as intentions from "../intentions.js";
 import type * as journalEntries from "../journalEntries.js";
@@ -29,6 +31,8 @@ import type * as scratchPads from "../scratchPads.js";
 import type * as sessions from "../sessions.js";
 import type * as sleepRecords from "../sleepRecords.js";
 import type * as statements from "../statements.js";
+import type * as systemExerciseCategories from "../systemExerciseCategories.js";
+import type * as systemExercises from "../systemExercises.js";
 import type * as tasks from "../tasks.js";
 import type * as users from "../users.js";
 import type * as waterLogEntries from "../waterLogEntries.js";
@@ -44,9 +48,11 @@ import type * as waterLogHelpers from "../waterLogHelpers.js";
  */
 declare const fullApi: ApiFromModules<{
   activities: typeof activities;
+  banners: typeof banners;
   beliefs: typeof beliefs;
   chats: typeof chats;
   emotions: typeof emotions;
+  focusBlocks: typeof focusBlocks;
   http: typeof http;
   intentions: typeof intentions;
   journalEntries: typeof journalEntries;
@@ -59,6 +65,8 @@ declare const fullApi: ApiFromModules<{
   sessions: typeof sessions;
   sleepRecords: typeof sleepRecords;
   statements: typeof statements;
+  systemExerciseCategories: typeof systemExerciseCategories;
+  systemExercises: typeof systemExercises;
   tasks: typeof tasks;
   users: typeof users;
   waterLogEntries: typeof waterLogEntries;

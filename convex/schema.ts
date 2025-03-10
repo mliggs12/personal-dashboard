@@ -67,6 +67,11 @@ export default defineSchema({
       filterFields: ["userId"],
     }),
 
+  focusBlocks: defineTable({
+    updated: v.number(),
+  }),
+
+  // Notes
   notes: defineTable({
     title: v.string(),
     text: v.string(),
@@ -93,8 +98,6 @@ export default defineSchema({
   }).index("by_user", ["userId"]),
 
   statements: defineTable({
-    date: v.optional(v.string()),
-    isComplete: v.optional(v.boolean()),
     text: v.string(),
     type: v.union(
       v.literal("mind_dump"),
@@ -102,6 +105,7 @@ export default defineSchema({
       v.literal("what"),
       v.literal("why"),
     ),
+    updated: v.number(),
     intentionId: v.optional(v.id("intentions")),
     userId: v.optional(v.id("users")),
   })
@@ -237,9 +241,32 @@ export default defineSchema({
     updated: v.number(),
   }),
 
+  // Lift
+  systemExerciseCategories: defineTable({
+    name: v.string(),
+    colorId: v.optional(v.string()),
+  }),
+
+  systemExercises: defineTable({
+    name: v.string(),
+    categoryId: v.id("systemExerciseCategories"),
+    type: v.union(v.literal("weight_and_reps"), v.literal("distance_and_time"), v.literal("reps"), v.literal("time")),
+    notes: v.optional(v.string()),
+  }).searchIndex("search_name", {
+    searchField: "name",
+    filterFields: ["categoryId"],
+  }).index("by_category", ["categoryId"]),
+
+  // Dashboard
   scratchPads: defineTable({
     content: v.string(),
     updated: v.number(),
     userId: v.id("users"),
+  }).index("by_user", ["userId"]),
+
+  banners: defineTable({
+    content: v.string(),
+    updated: v.number(),
+    userId: v.string(),
   }).index("by_user", ["userId"]),
 });
