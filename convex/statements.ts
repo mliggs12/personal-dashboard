@@ -13,10 +13,10 @@ export const create = mutation({
     const user = await getCurrentUserOrThrow(ctx);
 
     return ctx.db.insert("statements", {
-      isComplete: false,
       text,
       type: type as "what" | "why" | "mind_dump",
       intentionId,
+      updated: Date.now(),
       userId: user._id,
     });
   },
@@ -51,12 +51,9 @@ export const update = mutation({
     id: v.id("statements"),
     date: v.optional(v.string()),
     text: v.optional(v.string()),
-    isComplete: v.optional(v.boolean()),
   },
-  async handler(ctx, { id, text, isComplete, date }) {
+  async handler(ctx, { id, text }) {
     await ctx.db.patch(id, {
-      date,
-      isComplete,
       text,
     });
   },
@@ -65,14 +62,14 @@ export const update = mutation({
 export const complete = mutation({
   args: { id: v.id("statements") },
   async handler(ctx, { id }) {
-    await ctx.db.patch(id, { isComplete: true });
+    await ctx.db.patch(id, {});
   },
 });
 
 export const unComplete = mutation({
   args: { id: v.id("statements") },
   async handler(ctx, { id }) {
-    await ctx.db.patch(id, { isComplete: false });
+    await ctx.db.patch(id, {});
   },
 });
 
