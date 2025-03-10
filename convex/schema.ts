@@ -105,7 +105,7 @@ export default defineSchema({
       v.literal("what"),
       v.literal("why"),
     ),
-    updated: v.number(),
+    updated: v.optional(v.number()),
     intentionId: v.optional(v.id("intentions")),
     userId: v.optional(v.id("users")),
   })
