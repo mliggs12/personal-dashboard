@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "convex/react";
+import { Book, HeartPulse, Home, ListTodo, StickyNote, Target } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import * as React from "react";
@@ -44,6 +45,11 @@ export default function CommandPalette() {
     router.push(`/dashboard/notes/${noteId}`);
   };
 
+  const handleNavigation = (path: string) => {
+    setOpen(false);
+    router.push(path);
+  };
+
   return (
     <>
       <p className="text-sm text-muted-foreground">
@@ -60,11 +66,43 @@ export default function CommandPalette() {
         <CommandInput
           value={searchText}
           onValueChange={setSearchText}
-          placeholder="Search notes..."
+          placeholder="Search notes or type a command"
         />
-        <CommandList className="p-4 space-y-4">
-          <CommandEmpty>No results found.</CommandEmpty>
-          <CommandGroup heading="Suggestions">
+        <CommandList>
+          <CommandGroup heading="Navigation">
+            <CommandItem value="Go to Home" onSelect={() => handleNavigation("/dashboard")} className="gap-2">
+              <Home />
+              <span>Go to Home</span>
+              <CommandShortcut>G then H</CommandShortcut>
+            </CommandItem>
+            <CommandItem onSelect={() => handleNavigation("/dashboard/tasks")} className="gap-2">
+              <ListTodo />
+              <span>Go to Tasks</span>
+              <CommandShortcut>G then T</CommandShortcut>
+            </CommandItem>
+            <CommandItem onSelect={() => handleNavigation("/dashboard/notes")} className="gap-2">
+              <StickyNote />
+              <span>Go to Notes</span>
+              <CommandShortcut>G then N</CommandShortcut>
+            </CommandItem>
+            <CommandItem onSelect={() => handleNavigation("/dashboard/creativity/intentions")} className="gap-2">
+              <Target />
+              <span>Go to Intentions</span>
+              <CommandShortcut>G then I</CommandShortcut>
+            </CommandItem>
+            <CommandItem onSelect={() => handleNavigation("/dashboard/wellness")} className="gap-2">
+              <HeartPulse />
+              <span>Go to Wellness</span>
+              <CommandShortcut>G then W</CommandShortcut>
+            </CommandItem>
+            <CommandItem onSelect={() => handleNavigation("/dashboard/journal")} className="gap-2">
+              <Book />
+              <span>Go to Journal</span>
+              <CommandShortcut>G then J</CommandShortcut>
+            </CommandItem>
+          </CommandGroup>
+          <CommandSeparator />
+          <CommandGroup heading="Notes">
             {searchResults.map((searchResult) => (
               <CommandItem
                 key={searchResult._id}
@@ -77,6 +115,7 @@ export default function CommandPalette() {
               </CommandItem>
             ))}
           </CommandGroup>
+          <CommandEmpty>No results found.</CommandEmpty>
         </CommandList>
       </CommandDialog>
     </>
