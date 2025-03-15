@@ -22,9 +22,11 @@ export default function DashboardPage() {
     <div className="h-full flex flex-col flex-1 px-4 md:p-4 gap-4">
       <DashboardBanner />
       {/* <div className="grid md:grid-cols-2 h-full gap-4 md:px-4"> */}
-      <TasksCard />
-      {/* <CalendarScheduleView /> */}
-      <Scratchpad />
+      <div className="grid md:grid-cols-2 h-full gap-4">
+        <TasksCard />
+        {/* <CalendarScheduleView /> */}
+        <Scratchpad />
+      </div>
     </div>
   );
 }
