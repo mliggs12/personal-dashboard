@@ -13,6 +13,13 @@ export const list = query(async (ctx) => {
     .collect();
 });
 
+export const get = query({
+  args: { id: v.id("journalEntries") },
+  async handler(ctx, { id }) {
+    return await ctx.db.get(id);
+  }
+});
+
 export const create = mutation({
   args: {
     content: v.string(),
@@ -28,9 +35,27 @@ export const create = mutation({
 
     return await ctx.db.insert("journalEntries", {
       content,
-      type: null,
+      type: "none",
       updated: Date.now(),
       userId: user!._id,
+    });
+  },
+});
+
+export const update = mutation({
+  args: {
+    id: v.id("journalEntries"),
+    content: v.optional(v.string()),
+    type: v.optional(v.union(v.literal("none"), v.literal("highlight"), v.literal("task"), v.literal("idea"))),
+  },
+  async handler(ctx, { id, content, type }) {
+    const entry = await ctx.db.get(id);
+    if (entry === null) throw new Error("Could not find entry");
+
+    await ctx.db.patch(id, {
+      content: content || entry.content,
+      type: type || entry.type,
+      updated: Date.now(),
     });
   },
 });

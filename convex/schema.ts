@@ -226,7 +226,7 @@ export default defineSchema({
   journalEntries: defineTable({
     content: v.string(),
     type: v.union(
-      v.null(),
+      v.literal("none"),
       v.literal("highlight"),
       v.literal("task"),
       v.literal("idea"),
