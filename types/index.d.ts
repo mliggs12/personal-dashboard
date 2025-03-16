@@ -21,3 +21,6 @@ export interface Event {
   start: string; // datetime in GEvent; format: 1985-04-12T23:20:50.52Z
   end: string; // datetime in GEvent; format: 1985-04-12T23:20:50.52Z
 }
+
+// Notes
+export type Note = Doc<"notes">;
