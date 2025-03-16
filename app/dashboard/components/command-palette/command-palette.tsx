@@ -40,13 +40,9 @@ export default function CommandPalette() {
     return () => document.removeEventListener("keydown", down);
   }, []);
 
-  const handleSelect = (noteId: Id<"notes">) => {
-    setOpen(false);
-    router.push(`/dashboard/notes/${noteId}`);
-  };
-
   const handleNavigation = (path: string) => {
     setOpen(false);
+    setSearchText("");
     router.push(path);
   };
 
@@ -106,7 +102,7 @@ export default function CommandPalette() {
             {searchResults.map((searchResult) => (
               <CommandItem
                 key={searchResult._id}
-                onSelect={() => handleSelect(searchResult._id)}
+                onSelect={() => handleNavigation(`/dashboard/notes/${searchResult._id}`)}
                 value={searchResult.title}
               >
                 <Link href={`/dashboard/notes/${searchResult._id}`}>
