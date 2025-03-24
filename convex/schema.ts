@@ -46,6 +46,34 @@ export default defineSchema({
     color: v.optional(v.string()),
   }),
 
+  statements: defineTable({
+    text: v.string(),
+    type: v.optional(
+      v.union(
+        v.literal("mind_dump"),
+        v.literal("negative"),
+        v.literal("what"),
+        v.literal("why"),
+      )
+    ),
+    status: v.optional(
+      v.union(
+        v.literal("active"),
+        v.literal("inactive"),
+        v.literal("completed"),
+        v.literal("archived")
+      )
+    ),
+    updated: v.optional(v.number()),
+    focusBlockId: v.optional(v.string()),
+    intentionId: v.optional(v.id("intentions")),
+    userId: v.optional(v.id("users")),
+  })
+    .index("by_focusBlockId", ["focusBlockId"])
+    .index("by_intentionId", ["intentionId"])
+    .index("by_type", ["type"])
+    .index("by_user", ["userId"]),
+
   intentions: defineTable({
     title: v.optional(v.string()),
     status: v.optional(
@@ -68,8 +96,18 @@ export default defineSchema({
     }),
 
   focusBlocks: defineTable({
+    title: v.string(),
+    status: v.union(
+      v.literal("active"),
+      v.literal("inactive"),
+      v.literal("completed"),
+      v.literal("archived")
+    ),
+    startStatement: v.optional(v.string()),
+    endStatement: v.optional(v.string()),
     updated: v.number(),
-  }),
+    userId: v.optional(v.string())
+  }).index("by_user", ["userId"]),
 
   // Notes
   notes: defineTable({
@@ -96,22 +134,6 @@ export default defineSchema({
     intentionId: v.optional(v.id("intentions")),
     userId: v.optional(v.id("users")),
   }).index("by_user", ["userId"]),
-
-  statements: defineTable({
-    text: v.string(),
-    type: v.union(
-      v.literal("mind_dump"),
-      v.literal("negative"),
-      v.literal("what"),
-      v.literal("why"),
-    ),
-    updated: v.optional(v.number()),
-    intentionId: v.optional(v.id("intentions")),
-    userId: v.optional(v.id("users")),
-  })
-    .index("by_intentionId", ["intentionId"])
-    .index("by_type", ["type"])
-    .index("by_user", ["userId"]),
 
   // Task Management
   projects: defineTable({
@@ -265,6 +287,12 @@ export default defineSchema({
   }).index("by_user", ["userId"]),
 
   banners: defineTable({
+    content: v.string(),
+    updated: v.number(),
+    userId: v.string(),
+  }).index("by_user", ["userId"]),
+
+  inboxRecords: defineTable({
     content: v.string(),
     updated: v.number(),
     userId: v.string(),
