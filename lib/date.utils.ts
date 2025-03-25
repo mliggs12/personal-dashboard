@@ -10,11 +10,15 @@ export function formatShortDate(date: Date) {
 }
 
 export function timestampToShortDate(timestamp: number) {
-  return dayjs(timestamp).format("MM/DD");
+  return dayjs(timestamp).format("MM/DD");  // "08/16"
 }
 
 export function timestampToDateTime(timestamp: number) {
   return dayjs(timestamp).format("lll"); // "Aug 16, 2018 2:00 PM"
+}
+
+export function timestampToShortDateTime(timestamp: number) {
+  return dayjs(timestamp).format("MMM D LT"); // "Aug 16 2:00 PM"
 }
 
 export function timestampToTime(timestamp: number) {
