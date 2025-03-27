@@ -6,7 +6,7 @@ import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 import CalendarScheduleView from "./components/calendar/calendar-schedule-view";
 import DashboardBanner from "./components/dashboard-banner";
-import Inbox from "./components/inbox/page";
+import InboxWidget from "./components/inbox/inbox-widget";
 import Scratchpad from "./components/scratch-pad/scratch-pad";
 import TasksCard from "./components/tasks/tasks-card";
 
@@ -27,7 +27,7 @@ export default function DashboardPage() {
         <TasksCard />
         {/* <CalendarScheduleView /> */}
         <Scratchpad />
-        <Inbox />
+        <InboxWidget />
       </div>
     </div>
   );

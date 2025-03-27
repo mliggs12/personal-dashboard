@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/convex/_generated/api"
 import { timestampToShortDateTime } from "@/lib/date.utils";
 
-export default function Inbox() {
+export default function InboxWidget() {
   const recentRecords = useQuery(api.inboxRecords.recent);
 
   return (
