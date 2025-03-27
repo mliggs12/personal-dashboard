@@ -6,6 +6,7 @@ import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 import CalendarScheduleView from "./components/calendar/calendar-schedule-view";
 import DashboardBanner from "./components/dashboard-banner";
+import Inbox from "./components/inbox/page";
 import Scratchpad from "./components/scratch-pad/scratch-pad";
 import TasksCard from "./components/tasks/tasks-card";
 
@@ -22,10 +23,11 @@ export default function DashboardPage() {
     <div className="h-full flex flex-col flex-1 px-4 md:p-4 gap-4">
       <DashboardBanner />
       {/* <div className="grid md:grid-cols-2 h-full gap-4 md:px-4"> */}
-      <div className="grid md:grid-cols-2 h-full gap-4">
+      <div className="grid md:grid-cols-2 h-full gap-4 mb-4 md:mb-0">
         <TasksCard />
         {/* <CalendarScheduleView /> */}
         <Scratchpad />
+        <Inbox />
       </div>
     </div>
   );
