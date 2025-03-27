@@ -20,6 +20,7 @@ import type * as chats from "../chats.js";
 import type * as emotions from "../emotions.js";
 import type * as focusBlocks from "../focusBlocks.js";
 import type * as http from "../http.js";
+import type * as inboxRecords from "../inboxRecords.js";
 import type * as intentions from "../intentions.js";
 import type * as journalEntries from "../journalEntries.js";
 import type * as messages from "../messages.js";
@@ -54,6 +55,7 @@ declare const fullApi: ApiFromModules<{
   emotions: typeof emotions;
   focusBlocks: typeof focusBlocks;
   http: typeof http;
+  inboxRecords: typeof inboxRecords;
   intentions: typeof intentions;
   journalEntries: typeof journalEntries;
   messages: typeof messages;

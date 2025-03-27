@@ -293,7 +293,8 @@ export default defineSchema({
   }).index("by_user", ["userId"]),
 
   inboxRecords: defineTable({
-    content: v.string(),
+    content: v.optional(v.string()),
+    processed: v.optional(v.boolean()),
     updated: v.number(),
     userId: v.string(),
   }).index("by_user", ["userId"]),

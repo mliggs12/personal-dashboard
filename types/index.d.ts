@@ -24,3 +24,6 @@ export interface Event {
 
 // Notes
 export type Note = Doc<"notes">;
+
+// Inbox
+export type InboxRecord = Doc<"inboxRecords">;

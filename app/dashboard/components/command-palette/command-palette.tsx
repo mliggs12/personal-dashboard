@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import * as React from "react";
 import { useEffect, useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import {
   CommandDialog,
   CommandEmpty,
@@ -17,6 +18,8 @@ import {
   CommandSeparator,
   CommandShortcut,
 } from "@/components/ui/command";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 
@@ -51,7 +54,6 @@ export default function CommandPalette() {
   const handleNavigation = (path: string) => {
     setOpen(false);
     setSearchText("");
-    setShowInboxInput(false);
     router.push(path);
   };
 
@@ -59,6 +61,7 @@ export default function CommandPalette() {
     await addInboxRecord({ content });
     setInboxText("");
     setOpen(false);
+    setShowInboxInput(false)
     // TODO: Add toast
   }
 
@@ -88,10 +91,12 @@ export default function CommandPalette() {
         }}
       >
         {showInboxInput ? (
-          <div className="p-4">
-            <input
+          <div className="p-4 space-y-2">
+            <Label htmlFor="inbox">Add to Inbox</Label>
+            <Input
               type="text"
-              placeholder="Add to inbox"
+              id="inbox"
+              placeholder="Write something..."
               className="w-full p-2 border rounded"
               value={inboxText}
               onChange={(e) => setInboxText(e.target.value)}
@@ -156,10 +161,14 @@ export default function CommandPalette() {
               <CommandEmpty>No results found.</CommandEmpty>
             </CommandList>
             <div className="footer border-t p-2">
-              <div className="flex items-center justify-end text-sm gap-2">
-                <span>Add to Inbox</span>
-                <kbd>⌘</kbd>
-                <kbd>K</kbd>
+              <div className="prose dark:prose-invert flex justify-end text-sm gap-2">
+                <Button variant="ghost" size="sm" onClick={() => setShowInboxInput(true)}>
+                  <span>Add to Inbox</span>
+                  <div className="space-x-1">
+                    <kbd>⌘</kbd>
+                    <kbd>K</kbd>
+                  </div>
+                </Button>
               </div>
             </div>
           </>
