@@ -92,7 +92,7 @@ export default function TasksCard() {
   }
 
   return (
-    <Card className="flex flex-col h-full min-h-[350px] md:h-1/2">
+    <Card className="flex flex-col h-full min-h-[350px]">
       <CardHeader className="flex flex-row items-start justify-between border-b-2 p-3">
         <div className="flex flex-col gap-2 p-0">
           <CardTitle>Do Today Tasks</CardTitle>
