@@ -4,8 +4,8 @@ import { useQuery } from "convex/react";
 
 import { api } from "@/convex/_generated/api";
 
-import { columns } from "./_components/data-table/columns";
-import { DataTable } from "./_components/data-table/data-table";
+import { columns } from "./components/data-table/columns";
+import { DataTable } from "./components/data-table/data-table";
 
 export default function NotesPage() {
   const unprocessedRecords = useQuery(api.inboxRecords.getUnprocessed);
