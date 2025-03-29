@@ -59,3 +59,10 @@ export const update = mutation({
     });
   },
 });
+
+export const remove = mutation({
+  args: { id: v.id("journalEntries") },
+  async handler(ctx, { id }) {
+    await ctx.db.delete(id);
+  },
+});

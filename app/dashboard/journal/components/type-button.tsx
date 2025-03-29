@@ -36,7 +36,7 @@ export default function TypeButton({ entryId, entryType }: TypeButtonProps) {
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <div className="flex w-6 shrink-0 items-center justify-center">
+        <div className="w-6 shrink-0">
           <Button size="icon"
             className={cn(
               "w-6 h-6 rounded-full bg-gray-600 hover:bg-gray-500 focus-visible:ring-0 focus-visible:ring-offset-0",
