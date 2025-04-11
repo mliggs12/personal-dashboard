@@ -16,8 +16,10 @@ import { cn } from "@/lib/utils";
 
 import AddBeliefInput from "../../components/add-belief-input";
 import AddStatementInput from "../../components/add-statement-input";
+import CreateFocusBlockInput from "../../components/create-focus-block-input";
 import { DeleteIntentionButton } from "../../components/delete-intention-button";
 import { EmotionSelectForm } from "../../components/emotion-select-form";
+import FocusBlocksList from "../../components/focus-blocks-list";
 import IntentionNotes from "../../components/intention-notes";
 import IntentionStatusSelect from "../../components/intention-status-select";
 import IntentionTitle from "../../components/intention-title";
@@ -140,18 +142,18 @@ export default function IntentionPage() {
                         onClick={() =>
                           belief.status === "done"
                             ? updateBelief({
-                                beliefId: belief._id,
-                                status: "active",
-                              })
+                              beliefId: belief._id,
+                              status: "active",
+                            })
                             : updateBelief({
-                                beliefId: belief._id,
-                                status: "done",
-                              })
+                              beliefId: belief._id,
+                              status: "done",
+                            })
                         }
                         className={cn(
                           "cursor-pointer hover:text-primary",
                           belief.status === "done" &&
-                            "line-through text-foreground/50",
+                          "line-through text-foreground/50",
                         )}
                       >
                         {belief.title}
@@ -160,6 +162,15 @@ export default function IntentionPage() {
                   </ul>
                   <AddBeliefInput intention={intention} />
                 </div>
+
+                <div className="space-y-2">
+                  <h4 className="text-2xl">Create Focus Block</h4>
+                  <div>
+                    <CreateFocusBlockInput intention={intention} />
+                  </div>
+                </div>
+
+                <FocusBlocksList intentionId={intention._id} />
                 <div className="space-y-4">
                   <h4 className="text-3xl">Notes</h4>
                   <IntentionNotes intention={intention} />

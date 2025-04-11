@@ -13,6 +13,7 @@ import {
   Sunrise,
   Target,
   Timer,
+  Zap,
 } from "lucide-react";
 
 export const navItems = [
@@ -50,6 +51,11 @@ export const navItems = [
     title: "Intentions",
     url: "/dashboard/creativity/intentions",
     icon: Target,
+  },
+  {
+    title: "Focus Blocks",
+    url: "/dashboard/creativity/focus-blocks",
+    icon: Zap,
   },
   // {
   //   title: "Beliefs",

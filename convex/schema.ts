@@ -50,6 +50,7 @@ export default defineSchema({
     text: v.string(),
     type: v.optional(
       v.union(
+        v.literal("fb"),
         v.literal("mind_dump"),
         v.literal("negative"),
         v.literal("what"),
@@ -96,7 +97,7 @@ export default defineSchema({
     }),
 
   focusBlocks: defineTable({
-    title: v.string(),
+    title: v.optional(v.string()),
     status: v.union(
       v.literal("active"),
       v.literal("inactive"),
@@ -105,9 +106,12 @@ export default defineSchema({
     ),
     startStatement: v.optional(v.string()),
     endStatement: v.optional(v.string()),
+    intentionId: v.optional(v.id("intentions")),
     updated: v.number(),
     userId: v.optional(v.string())
-  }).index("by_user", ["userId"]),
+  })
+    .index("by_user", ["userId"])
+    .index("by_intention", ["intentionId"]),
 
   // Notes
   notes: defineTable({
