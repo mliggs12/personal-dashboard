@@ -1,6 +1,9 @@
 import { useMutation } from "convex/react";
 import { useState } from "react";
 
+import Clock from "./clock";
+import IntentionSelect from "../intention-select";
+
 import { useAudio } from "@/app/dashboard/interstitial/hooks/use-audio";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,8 +15,6 @@ import {
 } from "@/components/ui/card";
 import { api } from "@/convex/_generated/api";
 
-import SetIntentionButton from "../set-intention-button";
-import Clock from "./clock";
 
 export default function Timer() {
   const [time, setTime] = useState<number>(1500); // Initialize with a default number
@@ -54,12 +55,11 @@ export default function Timer() {
   return (
     <Card className="w-[500px]">
       <CardHeader>
-        <CardTitle>Timer</CardTitle>
-        <CardDescription>Enter a duration and start the timer</CardDescription>
+        <CardTitle className="text-center text-3xl">What&apos;s your focus?</CardTitle>
+        <IntentionSelect />
       </CardHeader>
       <CardContent>
         <div className="flex items-center mb-4">
-          <SetIntentionButton onIntentionSet={handleIntentionSet} />
         </div>
         {whatStatement && whyStatement && (
           <div className="mb-4">
