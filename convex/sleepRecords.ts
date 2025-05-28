@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 
+import { internal } from "./_generated/api";
 import { Id } from "./_generated/dataModel";
 import { internalMutation, mutation, query } from "./_generated/server";
 import { getCurrentUserOrThrow } from "./users";
@@ -41,8 +42,7 @@ export const recordSleepStart = mutation({
   args: { timestamp: v.number() },
   async handler(ctx, { timestamp }) {
     const user = await getCurrentUserOrThrow(ctx);
-
-    await closeActiveRecords(ctx, { userId: user._id });
+    await ctx.runMutation(internal.sleepRecords.closeActiveRecords, { userId: user._id });
 
     return await ctx.db.insert("sleepRecords", {
       userId: user._id,
