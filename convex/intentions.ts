@@ -101,3 +101,22 @@ export const update = mutation({
     await ctx.db.patch(id, updatedIntention);
   },
 });
+
+
+export const search = query({
+  args: { query: v.string() },
+  async handler(ctx, { query }) {
+    const user = await getCurrentUserOrThrow(ctx);
+
+    if (!user) {
+      return [];
+    }
+
+    return await ctx.db
+      .query("intentions")
+      .withSearchIndex("search_title", (q) =>
+        q.search("title", query).eq("userId", user._id),
+      )
+      .collect();
+  },
+});
