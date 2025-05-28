@@ -1,11 +1,10 @@
 "use client";
 
-import SessionItem from "./session-item";
-
 import { Doc } from "@/convex/_generated/dataModel";
 import { formatShortDate } from "@/lib/date.utils";
 import { formatDurationVerbose } from "@/lib/utils";
 
+import SessionItem from "./session-item";
 
 export default function SessionList({
   sessions,

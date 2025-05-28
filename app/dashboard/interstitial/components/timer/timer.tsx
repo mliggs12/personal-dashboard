@@ -1,8 +1,6 @@
 import { useMutation } from "convex/react";
 import { useState } from "react";
 
-import Clock from "./clock";
-import IntentionSelect from "../intention-select";
 
 import { useAudio } from "@/app/dashboard/interstitial/hooks/use-audio";
 import { Button } from "@/components/ui/button";
@@ -14,6 +12,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { api } from "@/convex/_generated/api";
+
+import IntentionSelect from "../intention-select";
+import Clock from "./clock";
 
 
 export default function Timer() {
