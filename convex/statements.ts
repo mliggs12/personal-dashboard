@@ -36,6 +36,28 @@ export const remove = mutation({
   },
 });
 
+export const clearMindDump = mutation({
+  args: {},
+  async handler(ctx) {
+    const user = await getCurrentUserOrThrow(ctx);
+
+    const statements = await ctx.db
+      .query("statements")
+      .withIndex("by_type_user", (q) =>
+        q.eq("type", "mind_dump").eq("userId", user._id),
+      )
+      .collect();
+      
+    if (statements.length === 0) {
+      return;
+    }
+
+    for (const statement of statements) {
+      await ctx.db.delete(statement._id);
+    }
+  },
+});
+
 export const byIntentionId = query({
   args: { intentionId: v.id("intentions") },
   async handler(ctx, { intentionId }) {
