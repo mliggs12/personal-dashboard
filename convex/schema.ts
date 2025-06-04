@@ -1,6 +1,8 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
+import { update } from "./activities";
+
 export default defineSchema({
   // SM Plan Clone
   activities: defineTable({
@@ -72,7 +74,7 @@ export default defineSchema({
   })
     .index("by_focusBlockId", ["focusBlockId"])
     .index("by_intentionId", ["intentionId"])
-    .index("by_type", ["type"])
+    .index("by_type_user", ["type", "userId"])
     .index("by_user", ["userId"]),
 
   intentions: defineTable({
@@ -129,15 +131,27 @@ export default defineSchema({
   // Tithe/Focus Sessions as defined in Interstitch
   // All parameters are optional to allow for future use cases
   sessions: defineTable({
-    duration: v.number(), // seconds
+    start: v.number(),
+    end: v.optional(v.number()),
+    isActive: v.optional(v.boolean()),
+    duration: v.optional(v.number()), // seconds
     pauseDuration: v.optional(v.number()), // seconds
     notes: v.optional(v.string()),
-    what: v.optional(v.string()),
-    why: v.optional(v.string()),
     emotionId: v.optional(v.id("emotions")),
     intentionId: v.optional(v.id("intentions")),
+    updated: v.number(),
     userId: v.optional(v.id("users")),
-  }).index("by_user", ["userId"]),
+  })
+    .index("by_user", ["userId"])
+    .index("by_active_user", ["isActive", "userId"]),
+
+  timers: defineTable({
+    start: v.number(),
+    duration: v.number(), // seconds
+    isActive: v.boolean(),
+    userId: v.optional(v.id("users")),
+  })
+    .index("by_user", ["userId"]),
 
   // Task Management
   projects: defineTable({

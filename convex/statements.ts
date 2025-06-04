@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 
+import { Id } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 import { getCurrentUserOrThrow } from "./users";
 
@@ -44,10 +45,10 @@ export const clearMindDump = mutation({
     const statements = await ctx.db
       .query("statements")
       .withIndex("by_type_user", (q) =>
-        q.eq("type", "mind_dump").eq("userId", user._id),
+        q.eq("type", "mind_dump").eq("userId", user._id as Id<"users">),
       )
       .collect();
-      
+
     if (statements.length === 0) {
       return;
     }
