@@ -1,39 +1,10 @@
 import { v } from "convex/values";
 import dayjs from "dayjs";
 
-import { mutation, query } from "./_generated/server";
+import { internal } from "./_generated/api";
+import { Id } from "./_generated/dataModel";
+import { internalMutation, mutation, query } from "./_generated/server";
 import { getCurrentUser, getCurrentUserOrThrow } from "./users";
-
-export const create = mutation({
-  args: {
-    duration: v.number(),
-    pauseDuration: v.optional(v.number()),
-    notes: v.optional(v.string()),
-    what: v.optional(v.string()),
-    why: v.optional(v.string()),
-    emotionId: v.optional(v.id("emotions")),
-    intentionId: v.optional(v.id("intentions")),
-  },
-  async handler(
-    ctx,
-    { duration, pauseDuration, notes, what, why, emotionId, intentionId },
-  ) {
-    const user = await getCurrentUserOrThrow(ctx);
-
-    const session = {
-      duration,
-      pauseDuration,
-      notes: notes || "",
-      what,
-      why,
-      emotionId,
-      intentionId,
-      userId: user._id,
-    };
-
-    return await ctx.db.insert("sessions", session);
-  },
-});
 
 export const remove = mutation({
   args: { sessionId: v.id("sessions") },
@@ -117,5 +88,82 @@ export const titheSessionsByEmotion = query({
       .query("sessions")
       .filter((q) => q.eq(q.field("emotionId"), emotionId))
       .collect();
+  },
+});
+
+// Using sleepRecords as an example
+export const getActiveSession = query({
+  async handler(ctx) {
+    const user = await getCurrentUserOrThrow(ctx);
+
+    return await ctx.db
+      .query("sessions")
+      .withIndex("by_active_user", (q) => 
+        q.eq("isActive", true).eq("userId", user._id),
+      )
+      .unique();
+  },
+});
+
+export const closeActiveSessions = internalMutation({
+  args: { userId: v.string() },
+  async handler(ctx, { userId }) {
+    const activeSessions = await ctx.db
+      .query("sessions")
+      .withIndex("by_active_user", (q) =>
+        q.eq("isActive", true).eq("userId", userId as Id<"users">),
+      )
+      .collect();
+
+    for (const sessions of activeSessions) {
+      await ctx.db.patch(sessions._id, {
+        isActive: false,
+        updated: Date.now(),
+        userId: userId as Id<"users">,
+      });
+    }
+  },
+});
+
+export const start = mutation({
+  args: {
+    startTimestamp: v.number(), // Grabs local timestamp in milliseconds
+    duration: v.optional(v.number()),
+  },
+  async handler(ctx, { startTimestamp, duration }) {
+    const user = await getCurrentUserOrThrow(ctx);
+
+    await ctx.runMutation(internal.sessions.closeActiveSessions, { userId: user._id });
+
+    const end = duration ? startTimestamp + duration * 1000 : undefined
+
+    return await ctx.db.insert("sessions", {
+      start: startTimestamp,
+      end: end,
+      isActive: true,
+      duration: duration ?? undefined,
+      updated: Date.now(),
+      userId: user._id,
+    });
+  },
+});
+
+export const end = mutation({
+  args: {
+    sessionId: v.id("sessions"),
+    endTimestamp: v.optional(v.number()), // Grabs local timestamp for when a stopwatch session is ended
+  },
+  async handler(ctx, { sessionId, endTimestamp }) {
+    const session = await ctx.db.get(sessionId);
+    if (!session) {
+      throw new Error("Session not found");
+    }
+    
+    return await ctx.db.patch(sessionId, {
+      end: endTimestamp ?? session.end,
+      duration: endTimestamp ? Math.floor((endTimestamp - session.start) / 1000) : session.duration,
+      isActive: false,
+      updated: Date.now(),
+    });
   },
 });
