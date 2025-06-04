@@ -43,8 +43,8 @@ export default function StatementPage() {
   };
 
   return (
-    <div className="mx-4">
-      <Card className="min-w-[750px] min-h-[1100px]">
+    <div className="h-full p-4 pt-0">
+      <Card className="h-full overflow-hidden">
         <div className="m-3">
           <button
             className="hover:text-primary w-8 h-8 flex items-center justify-center"
@@ -65,7 +65,7 @@ export default function StatementPage() {
               {whyStatements.map((statement, index) => (
                 <li
                   key={index}
-                  className="text-xl ml-1 hover:text-primary"
+                  className="ml-1 text-xl hover:text-primary"
                 >
                   {statement}
                 </li>
