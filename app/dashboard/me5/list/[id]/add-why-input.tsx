@@ -28,7 +28,7 @@ export default function AddWhyInput({
       onChange={(e) => setStatement(e.target.value)}
       onKeyDown={handleKeyDown}
       autoComplete="off"
-      className="w-1/2 h-8 p-0 pl-1 text-xl border-0 border-b-2 focus-visible:ring-0 focus-visible:ring-offset-0 rounded-none"
+      className="w-full h-8 p-0 pl-1 text-xl border-0 border-b-2 focus-visible:ring-0 focus-visible:ring-offset-0 rounded-none"
     />
   );
 }

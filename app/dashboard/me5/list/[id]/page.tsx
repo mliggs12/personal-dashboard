@@ -6,7 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 
@@ -57,11 +57,13 @@ export default function StatementPage() {
           <CardTitle className="text-4xl">
             {statement.text}
           </CardTitle>
+          <CardDescription>
+            List any resistance that arises when you think about this statement
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col">
-            <h4 className="text-2xl my-6">Complain to the sheet</h4>
-            <ul className="space-y-2">
+            <ul className="space-y-2 my-6">
               {whyStatements.map((statement, index) => (
                 <li
                   key={index}
@@ -73,18 +75,16 @@ export default function StatementPage() {
               <AddWhyInput onAddWhy={handleAddWhy} />
             </ul>
           </div>
-          <div className="mt-8">
-            <Button
-              className="done-button"
-              onClick={handleDone}
-              disabled={whyStatements.length === 0}
-              size="lg"
-              type="submit"
-              variant="outline"
-            >
-              Done
-            </Button>
-          </div>
+          <Button
+            className="done-button absolute bottom-12 left-12"
+            onClick={handleDone}
+            disabled={whyStatements.length === 0}
+            size="lg"
+            type="submit"
+            variant="outline"
+          >
+            Done
+          </Button>
         </CardContent>
       </Card>
     </div>

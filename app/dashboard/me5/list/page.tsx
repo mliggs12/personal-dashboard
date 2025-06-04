@@ -36,33 +36,34 @@ export default function Statements() {
         <CardContent>
           <div className="flex flex-col">
 
-
             {statements === null || statements && statements.length === 0 && (
               <div className="py-12 flex flex-col justify-center items-center gap-8">
-                <h2 className="text-2xl">You have no statements for today</h2>
+                <h2 className="text-2xl">You have no more statements</h2>
               </div>
             )}
 
-            <ul className="space-y-2 my-6">
-              {statements === undefined ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <li key={i}>
-                    <Skeleton className="h-[28px] w-1/4 rounded-sm" />
-                  </li>
-                ))
-              ) : (
-                statements.map((statement) => (
-                  <li key={statement._id}>
-                    <Link
-                      href={`/dashboard/me5/list/${statement._id}`}
-                      className="text-xl hover:text-primary"
-                    >
-                      {statement.text}
-                    </Link>
-                  </li>
-                ))
-              )}
-            </ul>
+            <div>
+              <ul className="space-y-2 my-6">
+                {statements === undefined ? (
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <li key={i}>
+                      <Skeleton className="h-[28px] w-1/4 rounded-sm" />
+                    </li>
+                  ))
+                ) : (
+                  statements.map((statement) => (
+                    <li key={statement._id}>
+                      <Link
+                        href={`/dashboard/me5/list/${statement._id}`}
+                        className="text-xl hover:text-primary"
+                      >
+                        {statement.text}
+                      </Link>
+                    </li>
+                  ))
+                )}
+              </ul>
+            </div>
 
           </div>
         </CardContent>
