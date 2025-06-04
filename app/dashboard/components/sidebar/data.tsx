@@ -38,11 +38,6 @@ export const navItems = [
   //   icon: Timer,
   // },
   // {
-  //   title: "Mind Dump",
-  //   url: "/dashboard/me5",
-  //   icon: Brain,
-  // },
-  // {
   //   title: "Plan",
   //   url: "/plan",
   //   icon: TableProperties,
@@ -91,5 +86,10 @@ export const navItems = [
     title: "Journal",
     url: "/dashboard/journal",
     icon: Book,
+  },
+  {
+    title: "Mind Dump",
+    url: "/dashboard/me5",
+    icon: Brain,
   },
 ];

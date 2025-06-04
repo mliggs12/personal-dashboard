@@ -1,9 +1,11 @@
 "use client";
 
 import { useMutation, useQuery } from "convex/react";
+import { ArrowLeft } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
@@ -16,9 +18,8 @@ export default function StatementPage() {
   const statement = useQuery(api.statements.get, {
     statementId: id,
   });
-
-  const createBelief = useMutation(api.beliefs.create);
   const removeStatement = useMutation(api.statements.remove);
+
   const router = useRouter();
 
   if (statement === undefined) {
@@ -33,66 +34,59 @@ export default function StatementPage() {
     setWhyStatements((prevStatements) => [...prevStatements, newStatement]);
   };
 
+  const handleDone = async () => {
+    if (whyStatements.length === 0) {
+      return;
+    }
+    router.push("/dashboard/me5/list");
+    await removeStatement({ id });
+  };
+
   return (
-    <Card className="min-w-[750px] min-h-[1100px]">
-      <CardHeader>
-        <CardTitle className="text-4xl hover:text-primary">
-          {statement.text}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div>
-          <div className="space-y-12">
-            <div className="space-y-2">
-              <h4 className="text-3xl">Discover root belief</h4>
-              <ul className="space-y-1">
-                {whyStatements.map((statement, index) => (
-                  <li
-                    key={index}
-                    className="text-xl ml-3 hover:text-primary"
-                  >
-                    {statement}
-                  </li>
-                ))}
-              </ul>
-              <AddWhyInput onAddWhy={handleAddWhy} />
-            </div>
-            <div>
-              <div className="space-y-2">
-                <h4 className="text-3xl">Create a new belief</h4>
-                <form
-                  onSubmit={async (e) => {
-                    e.preventDefault();
-                    const formData = new FormData(e.target as HTMLFormElement);
-                    const title = formData.get("title") as string;
-                    const newBeliefId = await createBelief({
-                      title,
-                      status: "active",
-                    });
-                    await removeStatement({ id: id });
-                    // Go to the new belief detail page
-                    router.push(`/release/beliefs/${newBeliefId}`);
-                  }}
-                >
-                  <input
-                    type="text"
-                    name="title"
-                    placeholder="Enter belief title"
-                    className="border p-2 rounded w-full"
-                    required
-                  />
-                  <button
-                    type="submit"
-                    className="mt-2 p-2 bg-blue-500 text-white rounded"
-                  >
-                    Create Belief
-                  </button>
-                </form>
-              </div>
-            </div>
-          </div>
+    <div className="mx-4">
+      <Card className="min-w-[750px] min-h-[1100px]">
+        <div className="m-3">
+          <button
+            className="hover:text-primary w-8 h-8 flex items-center justify-center"
+            onClick={() => router.push("/dashboard/me5/list")}
+          >
+            <ArrowLeft size={20} />
+          </button>
         </div>
-      </CardContent>
-    </Card>
+        <CardHeader className="pt-2 py-2">
+          <CardTitle className="text-4xl">
+            {statement.text}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col">
+            <h4 className="text-2xl my-6">Complain to the sheet</h4>
+            <ul className="space-y-2">
+              {whyStatements.map((statement, index) => (
+                <li
+                  key={index}
+                  className="text-xl ml-1 hover:text-primary"
+                >
+                  {statement}
+                </li>
+              ))}
+              <AddWhyInput onAddWhy={handleAddWhy} />
+            </ul>
+          </div>
+          <div className="mt-8">
+            <Button
+              className="done-button"
+              onClick={handleDone}
+              disabled={whyStatements.length === 0}
+              size="lg"
+              type="submit"
+              variant="outline"
+            >
+              Done
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
