@@ -10,7 +10,7 @@ export default function Clock(props: ClockProps) {
     secondsToMinutesAndSeconds(time);
 
   return (
-    <div className="text-9xl">
+    <div className="p-4 text-9xl">
       <span className="h-14 xl:h-44 w-12 xl:w-36 py-2 px-1 bg-background">
         {minuteFirstChar}
       </span>

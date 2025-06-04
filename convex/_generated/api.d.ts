@@ -35,6 +35,7 @@ import type * as statements from "../statements.js";
 import type * as systemExerciseCategories from "../systemExerciseCategories.js";
 import type * as systemExercises from "../systemExercises.js";
 import type * as tasks from "../tasks.js";
+import type * as timers from "../timers.js";
 import type * as users from "../users.js";
 import type * as waterLogEntries from "../waterLogEntries.js";
 import type * as waterLogHelpers from "../waterLogHelpers.js";
@@ -70,6 +71,7 @@ declare const fullApi: ApiFromModules<{
   systemExerciseCategories: typeof systemExerciseCategories;
   systemExercises: typeof systemExercises;
   tasks: typeof tasks;
+  timers: typeof timers;
   users: typeof users;
   waterLogEntries: typeof waterLogEntries;
   waterLogHelpers: typeof waterLogHelpers;
