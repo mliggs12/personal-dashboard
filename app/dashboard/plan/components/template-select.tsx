@@ -35,7 +35,7 @@ export function TemplateSelect() {
     return <p>No template schedules.</p>;
   }
 
-  function onSubmit(data: z.infer<typeof FormSchema>) {}
+  function onSubmit(data: z.infer<typeof FormSchema>) { }
 
   return (
     <Form {...form}>
@@ -60,11 +60,11 @@ export function TemplateSelect() {
                 <SelectContent>
                   {templateSchedules.map((template) => (
                     <SelectItem
-                      value={template.name ?? ""}
+                      value={template._id ?? ""}
                       key={template._id}
                       className=""
                     >
-                      {template.name}
+                      {template._id}
                     </SelectItem>
                   ))}
                 </SelectContent>
