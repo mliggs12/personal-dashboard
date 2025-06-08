@@ -9,13 +9,13 @@ export const byScheduleOrder = query({
     scheduleId: v.id("schedules"),
   },
   async handler(ctx, { scheduleId }) {
-    return await ctx.db
+    const orderedActivities = await ctx.db
       .query("activities")
       .withIndex("by_schedule_order", (q) =>
         q.eq("scheduleId", scheduleId)
-      )
-      .order("asc")
-      .collect();
+      ).collect()
+
+    return orderedActivities
   },
 });
 
@@ -42,9 +42,8 @@ async function getScheduleStats(ctx: QueryCtx, scheduleId: Id<"schedules">) {
 
   const activities = await ctx.db
     .query("activities")
-    .withIndex("by_schedule_order", (q) => q.eq("scheduleId", scheduleId))
-    .order("asc")
-    .collect();
+    .withIndex("by_schedule_order", (q) => q.eq("scheduleId", scheduleId)
+  ).collect();
 
     let nextOrder = 0
     let nextStart = 0
@@ -97,9 +96,8 @@ export const update = mutation({
 async function handleLengthChange(ctx: QueryCtx, scheduleId: Id<"schedules">) {
   const activities = await ctx.db
     .query("activities")
-    .withIndex("by_schedule_order", (q) => q.eq("scheduleId", scheduleId))
-    .order("asc")
-    .collect();
+    .withIndex("by_schedule_order", (q) => q.eq("scheduleId", scheduleId)
+  ).collect();
 
   
 }
