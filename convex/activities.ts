@@ -1,70 +1,105 @@
 import { v } from "convex/values";
 
-import { mutation, query } from "./_generated/server";
+import { Id } from "./_generated/dataModel";
+import { mutation, query, QueryCtx, internalQuery } from "./_generated/server";
 import { getCurrentUserOrThrow } from "./users";
 
-export const list = query(async (ctx) => {
-  const user = await getCurrentUserOrThrow(ctx);
-
-  return await ctx.db
-    .query("activities")
-    .filter((q) => q.eq(q.field("userId"), user._id))
-    .collect();
-});
-
-export const listBySchedule = query({
+export const byScheduleOrder = query({
   args: {
     scheduleId: v.id("schedules"),
   },
   async handler(ctx, { scheduleId }) {
-    const activities = await ctx.db
+    return await ctx.db
       .query("activities")
-      .filter((q) => q.eq(q.field("scheduleId"), scheduleId))
+      .withIndex("by_schedule_order", (q) =>
+        q.eq("scheduleId", scheduleId)
+      )
+      .order("asc")
       .collect();
-
-    return activities;
   },
 });
 
 export const create = mutation({
   args: {
-    name: v.string(),
-    length: v.number(),
     scheduleId: v.id("schedules"),
   },
-  async handler(ctx, { scheduleId, name, length }) {
-    const user = await getCurrentUserOrThrow(ctx);
+  async handler(ctx, { scheduleId }) {
+    const { nextStart, nextOrder } = await getScheduleStats(ctx, scheduleId);
 
-    return await ctx.db.insert("activities", {
-      name,
-      length,
+    await ctx.db.insert("activities", {
+      name: "-",
+      length: 25,
+      order: nextOrder,
+      start: nextStart,
       isForced: false,
       isRigid: false,
       scheduleId,
-      userId: user._id,
-    });
+    }); 
   },
 });
+
+async function getScheduleStats(ctx: QueryCtx, scheduleId: Id<"schedules">) {
+
+  const activities = await ctx.db
+    .query("activities")
+    .withIndex("by_schedule_order", (q) => q.eq("scheduleId", scheduleId))
+    .order("asc")
+    .collect();
+
+    let nextOrder = 0
+    let nextStart = 0
+    
+    const count = activities.length;
+    if (count > 0) {
+      const lastActivity = activities[count - 1];
+      nextStart = lastActivity.start + lastActivity.length;
+      nextOrder = lastActivity.order + 1
+    }
+
+    return {
+      nextStart,
+      nextOrder
+  };
+}
 
 export const update = mutation({
   args: {
     id: v.id("activities"),
     name: v.optional(v.string()),
     length: v.optional(v.number()),
+    start: v.optional(v.number()),
+    order: v.optional(v.number()),
     isForced: v.optional(v.boolean()),
     isRigid: v.optional(v.boolean()),
   },
-  async handler(ctx, { id, length, name, isForced, isRigid }) {
-    const existingActivity = await ctx.db.get(id);
-    if (!existingActivity) {
+  async handler(ctx, { id, name, length, start, order, isForced, isRigid }) {
+    const existing = await ctx.db.get(id);
+    if (!existing) {
       throw new Error("Activity not found");
     }
 
-    return await ctx.db.patch(id, {
-      name: name || existingActivity.name,
-      length: length || existingActivity.length,
-      isForced: isForced || existingActivity.isForced,
-      isRigid: isRigid || existingActivity.isRigid,
+    if (length) {
+      // Change subsequent activity's start
+      
+    }
+
+    await ctx.db.patch(id, {
+      name: name ?? existing.name,
+      length: length ?? existing.length,
+      start: start ?? existing.start,
+      order: order ?? existing.order,
+      isForced: isForced ?? existing.isForced,
+      isRigid: isRigid ?? existing.isRigid,
     });
   },
 });
+
+async function handleLengthChange(ctx: QueryCtx, scheduleId: Id<"schedules">) {
+  const activities = await ctx.db
+    .query("activities")
+    .withIndex("by_schedule_order", (q) => q.eq("scheduleId", scheduleId))
+    .order("asc")
+    .collect();
+
+  
+}

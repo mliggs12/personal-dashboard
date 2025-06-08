@@ -3,6 +3,7 @@ import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
 
+import { api } from "./_generated/api";
 import { mutation, query } from "./_generated/server";
 import { getCurrentUserOrThrow } from "./users";
 
@@ -35,53 +36,64 @@ export const get = query({
   },
 });
 
-export const getOrderedActivities = query({
-  args: { scheduleId: v.id("schedules") },
-  async handler(ctx, { scheduleId }) {
-    const activities = await ctx.db
-      .query("activities")
-      .filter((q) => q.eq(q.field("scheduleId"), scheduleId))
-      .collect();
-
-    if (activities.length === 0) {
-      return [];
-    }
-
-    return activities;
-  },
-});
-
-export const todaySchedule = query({
+export const byDate = query({
   args: {
-    timezone: v.string(),
+    date: v.string(),
   },
-  async handler(ctx, { timezone }) {
+  async handler(ctx, { date }) {
     const user = await getCurrentUserOrThrow(ctx);
-
-    const today = dayjs().tz(timezone).format("YYYY/MM/DD");
 
     return await ctx.db
       .query("schedules")
       .withIndex("by_user", (q) => q.eq("userId", user._id))
-      .filter((q) => q.eq(q.field("date"), today))
-      .unique();
+      .filter((q) => q.eq(q.field("date"), date))
+      .first();
+  },
+});
+
+export const getOrCreateByDate = mutation({
+  args: {
+    date: v.string(),
+    length: v.optional(v.number()),
+    isTemplate: v.optional(v.boolean()),
+  },
+  async handler(ctx, { date, length, isTemplate }) {
+    const user = await getCurrentUserOrThrow(ctx);
+
+    let schedule = await ctx.db
+      .query("schedules")
+      .withIndex("by_date_user", (q) => q.eq("date", date).eq("userId", user._id))
+      .first();
+
+    if (!schedule) {
+      const id = await ctx.db.insert("schedules", {
+        date,
+        length: length ?? 16.5,
+        isTemplate: isTemplate ?? false,
+        updated: Date.now(),
+        userId: user._id,
+      });
+      schedule = await ctx.db.get(id);
+      if (!schedule) {
+        throw new Error("Failed to create schedule");
+      }
+    }
+    return schedule;
   },
 });
 
 export const create = mutation({
   args: {
-    name: v.string(),
-    date: v.optional(v.string()),
-    length: v.optional(v.number()),
+    date: v.string(),
   },
-  async handler(ctx, { name, date, length }) {
+  async handler(ctx, { date }) {
     const user = await getCurrentUserOrThrow(ctx);
 
     return await ctx.db.insert("schedules", {
-      name,
       date,
       isTemplate: false,
-      length: length || 16,
+      length: 16.5,
+      updated: Date.now(),
       userId: user._id,
     });
   },
@@ -100,7 +112,6 @@ export const updateSchedule = mutation({
     const user = await getCurrentUserOrThrow(ctx);
 
     return await ctx.db.patch(scheduleId, {
-      name: name,
       date: date,
       isTemplate: isTemplate,
       length: length,

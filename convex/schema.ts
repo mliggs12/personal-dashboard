@@ -1,27 +1,29 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
-import { update } from "./activities";
-
 export default defineSchema({
   // SM Plan Clone
   activities: defineTable({
-    name: v.string(),
+    name: v.optional(v.string()),
     length: v.number(), // Duration in minutes
+    start: v.number(), // Start time in minutes from midnight
+    order: v.number(),
     isForced: v.boolean(),
     isRigid: v.boolean(),
     scheduleId: v.id("schedules"),
-    userId: v.string(),
-  }),
+  })
+  .index("by_schedule", ["scheduleId"])
+  .index("by_schedule_order", ["scheduleId", "order"]),
 
   schedules: defineTable({
-    name: v.optional(v.string()),
-    date: v.optional(v.string()),
-    isTemplate: v.boolean(),
+    date: v.optional(v.string()), // YYYY-MM-DD
     length: v.optional(v.number()),
+    isTemplate: v.boolean(),
     updated: v.optional(v.number()),
-    userId: v.optional(v.id("users")),
-  }).index("by_user", ["userId"]),
+    userId: v.optional(v.string()),
+  })
+    .index("by_user", ["userId"])
+    .index("by_date_user", ["date", "userId"]),
 
   // Creativity
   beliefs: defineTable({
