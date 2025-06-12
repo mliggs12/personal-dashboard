@@ -199,6 +199,7 @@ export default defineSchema({
     .index("by_recurringTaskId", ["recurringTaskId"])
     .index("by_project", ["projectId"])
     .index("by_user", ["userId"])
+    .index("by_user_status", ["userId", "status"])
     .searchIndex("search_name", {
       searchField: "name",
       filterFields: ["userId"],

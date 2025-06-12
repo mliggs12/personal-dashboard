@@ -174,19 +174,6 @@ export const getByIntention = query({
   },
 });
 
-export const getByStatus = query({
-  args: { status: v.string() },
-  async handler(ctx, { status }) {
-    const user = await getCurrentUserOrThrow(ctx);
-
-    return await ctx.db
-      .query("tasks")
-      .withIndex("by_user", (q) => q.eq("userId", user._id))
-      .filter((q) => q.eq(q.field("status"), status))
-      .collect();
-  },
-});
-
 export const getByProject = query({
   args: { projectId: v.id("projects") },
   async handler(ctx, { projectId }) {
@@ -221,14 +208,18 @@ export const getTasks = query({
 });
 
 export const backlogTasks = query({
-  async handler(ctx) {
+  args: { paginationOpts: paginationOptsValidator },
+  async handler(ctx, { paginationOpts }) {
     const user = await getCurrentUserOrThrow(ctx);
 
     return await ctx.db
       .query("tasks")
-      .withIndex("by_user", (q) => q.eq("userId", user._id))
-      .filter((q) => q.eq(q.field("status"), "backlog"))
-      .collect();
+      .withIndex("by_user_status", (q) =>
+        q
+          .eq("userId", user._id)
+          .eq("status", "backlog")
+      )
+      .paginate(paginationOpts);
   },
 });
 
