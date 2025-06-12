@@ -100,7 +100,7 @@ export default function Task({
                   {due && (
                     <p
                       className={cn(
-                        "w-[70px] text-xs text-right text-muted-foreground",
+                        "w-[70px] text-xs text-right text-muted-foreground text-nowrap",
                         dayjs(due).isBefore(dayjs().startOf("day")) &&
                         "text-destructive",
                       )}
