@@ -1,7 +1,6 @@
 "use client";
 
 import { usePaginatedQuery, useQuery } from "convex/react";
-import dayjs from "dayjs";
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -14,50 +13,67 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { api } from "@/convex/_generated/api";
 import { Doc } from "@/convex/_generated/dataModel";
 
 import AddTaskDrawerDialog from "./add-task-drawer-dialog";
 import TaskList from "./task-list";
 
-function orderTasks(tasks: Doc<"tasks">[]) {
-  // Order tasks: first by deadline (if exists), then by updated timestamp
-  const orderedTasks = tasks.sort((a, b) => {
-    // If neither task has a deadline, sort by updated timestamp (newest first)
-    if (!a.due && !b.due) {
-      return dayjs(b.updated).valueOf() - dayjs(a.updated).valueOf();
-    }
-    // If only one task has a deadline, prioritize the task with deadline
-    if (!a.due) return 1; // a goes after b
-    if (!b.due) return -1; // a goes before b
-
-    // If both tasks have deadlines, compare them
-    const dateComparison = dayjs(a.due).valueOf() - dayjs(b.due).valueOf();
-    // If deadlines are the same, sort by updated timestamp
-    return dateComparison === 0
-      ? dayjs(b.updated).valueOf() - dayjs(a.updated).valueOf()
-      : dateComparison;
-  });
-
-  return orderedTasks;
-}
-
 export default function TasksCard() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-  const { results, status, loadMore } = usePaginatedQuery(
+  const { results, status, loadMore, isLoading } = usePaginatedQuery(
     api.tasks.getTasks,
     {},
     { initialNumItems: itemsPerPage },
   )
 
+  const sortedTasks = results?.sort((a, b) => {
+    // 1. Tasks with due date come first
+    const aHasDue = !!a.due;
+    const bHasDue = !!b.due;
+    if (aHasDue !== bHasDue) {
+      return aHasDue ? -1 : 1;
+    }
+
+    const statusOrder: Record<string, number> = { in_progress: 0, todo: 1, backlog: 2 };
+    const aStatus = a.status && statusOrder[a.status] !== undefined ? statusOrder[a.status] : 3;
+    const bStatus = b.status && statusOrder[b.status] !== undefined ? statusOrder[b.status] : 3;
+    if (aStatus !== bStatus) {
+      return aStatus - bStatus;
+    }
+
+    return 0;
+  });
+
+  // function orderTasks(tasks: Doc<"tasks">[]) {
+  //   // Order tasks: first by deadline (if exists), then by updated timestamp
+  //   const orderedTasks = tasks.sort((a, b) => {
+  //     // If neither task has a deadline, sort by updated timestamp (newest first)
+  //     if (!a.due && !b.due) {
+  //       return dayjs(b.updated).valueOf() - dayjs(a.updated).valueOf();
+  //     }
+  //     // If only one task has a deadline, prioritize the task with deadline
+  //     if (!a.due) return 1; // a goes after b
+  //     if (!b.due) return -1; // a goes before b
+
+  //     // If both tasks have deadlines, compare them
+  //     const dateComparison = dayjs(a.due).valueOf() - dayjs(b.due).valueOf();
+  //     // If deadlines are the same, sort by updated timestamp
+  //     return dateComparison === 0
+  //       ? dayjs(b.updated).valueOf() - dayjs(a.updated).valueOf()
+  //       : dateComparison;
+  //   });
+
+  //   return orderedTasks;
+  // }
+
   // Calculate pagination for display
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentTasks = results.slice(startIndex, endIndex);
-  const orderedTasks = orderTasks(currentTasks);
+  const currentTasks = sortedTasks.slice(startIndex, endIndex);
   const totalPages = Math.ceil(results.length / itemsPerPage);
 
   const handlePageChange = (page: number) => {
@@ -103,7 +119,7 @@ export default function TasksCard() {
         </Button>
       </CardHeader>
       <CardContent className="h-[345px] p-0 border-t">
-        <TaskList tasks={orderedTasks} />
+        <TaskList tasks={currentTasks} />
       </CardContent>
       <CardFooter className="h-[69px] flex items-center p-3 px-6">
         {/* Status Info */}
