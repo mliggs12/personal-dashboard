@@ -122,9 +122,7 @@ export default function TasksCard() {
               </PaginationItem>
 
               <PaginationItem>
-                <PaginationLink href="#" className="cursor-default">
-                  {currentPage}
-                </PaginationLink>
+                {currentPage}
               </PaginationItem>
 
               <PaginationItem>
