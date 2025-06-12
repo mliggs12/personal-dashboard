@@ -1,3 +1,4 @@
+import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
 import dayjs from "dayjs";
 import isToday from "dayjs/plugin/isToday";
@@ -12,13 +13,16 @@ dayjs.extend(timezone);
 dayjs.extend(utc);
 const TIMEZONE = "America/Denver";
 
-export const list = query(async (ctx) => {
-  const user = await getCurrentUserOrThrow(ctx);
-
-  return await ctx.db
+export const list = query({
+  args: { paginationOpts: paginationOptsValidator },
+  async handler(ctx, { paginationOpts }) {
+    const user = await getCurrentUserOrThrow(ctx);
+    
+    return await ctx.db
     .query("tasks")
     .withIndex("by_user", (q) => q.eq("userId", user._id))
-    .collect();
+    .paginate(paginationOpts);
+  },
 });
 
 export const get = query({
@@ -197,29 +201,22 @@ export const getByProject = query({
 });
 
 // Get tasks due today or overdue
-export const doTodayTasks = query({
-  args: { clientTimezone: v.string() },
-  async handler(ctx, { clientTimezone }) {
+export const getTasks = query({
+  args: { paginationOpts: paginationOptsValidator },
+  async handler(ctx, { paginationOpts }) {
     const user = await getCurrentUserOrThrow(ctx);
-
-    const todayEnd = dayjs()
-      .tz(clientTimezone)
-      .endOf("day")
-      .format("YYYY/MM/DD");
 
     return await ctx.db
       .query("tasks")
       .withIndex("by_user", (q) => q.eq("userId", user._id))
       .filter((q) =>
-        q.and(
-          q.lte(q.field("due"), todayEnd),
           q.or(
+            q.eq(q.field("status"), "backlog"),
             q.eq(q.field("status"), "todo"),
             q.eq(q.field("status"), "in_progress"),
           ),
-        ),
       )
-      .collect();
+      .paginate(paginationOpts);
   },
 });
 

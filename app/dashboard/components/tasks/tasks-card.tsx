@@ -1,24 +1,23 @@
 "use client";
 
-import { useQuery } from "convex/react";
+import { usePaginatedQuery, useQuery } from "convex/react";
 import dayjs from "dayjs";
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { api } from "@/convex/_generated/api";
 import { Doc } from "@/convex/_generated/dataModel";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { cn } from "@/lib/utils";
 
-import { AddTaskWrapper } from "./add-task-button";
 import AddTaskDrawerDialog from "./add-task-drawer-dialog";
 import TaskList from "./task-list";
 
@@ -44,64 +43,58 @@ function orderTasks(tasks: Doc<"tasks">[]) {
   return orderedTasks;
 }
 
-// TODO: Set or remove Backlog task logic
 export default function TasksCard() {
-  const clientTimezone = dayjs.tz.guess();
-  const tasks = useQuery(api.tasks.doTodayTasks, { clientTimezone }) || [];
-  const orderedTasks = orderTasks(tasks);
-  const backlogTasks = useQuery(api.tasks.backlogTasks) || [];
-  const orderedBacklogTasks = orderTasks(backlogTasks);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
-  const isMobile = useIsMobile();
+  const { results, status, loadMore } = usePaginatedQuery(
+    api.tasks.getTasks,
+    {},
+    { initialNumItems: itemsPerPage },
+  )
 
-  if (tasks.length === 0) {
-    return (
-      <Card
-        className={cn(
-          "flex flex-col h-full min-h-[350px] md:h-1/2",
-          isMobile && "border-none",
-        )}
-      >
-        <CardHeader className="flex flex-row items-start justify-between border-b-2 p-3">
-          <div className="flex flex-col gap-2 p-0">
-            <CardTitle>Backlog Tasks</CardTitle>
-            <CardDescription>
-              There are no urgent tasks. Add a new task to switch back to Do
-              Today.
-            </CardDescription>
-          </div>
-          <Button
-            asChild
-            size="sm"
-            className="gap-1"
-          >
-            <Link href="/tasks">
-              View All
-              <ArrowUpRight className="h-4 w-4" />
-            </Link>
-          </Button>
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="flex flex-col gap-2 p-0 pb-4 overflow-auto">
-            <TaskList tasks={orderedBacklogTasks} />
-            <AddTaskWrapper />
-          </div>
-        </CardContent>
-      </Card>
-    );
+  // Calculate pagination for display
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentTasks = results.slice(startIndex, endIndex);
+  const orderedTasks = orderTasks(currentTasks);
+  const totalPages = Math.ceil(results.length / itemsPerPage);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+
+    const requiredItems = page * itemsPerPage;
+    if (results.length < requiredItems && status === "CanLoadMore") {
+      const itemsToLoad = requiredItems - results.length;
+      loadMore(itemsToLoad);
+    }
   }
 
+  const handlePrevious = () => {
+    if (currentPage > 1) {
+      handlePageChange(currentPage - 1);
+    }
+  };
+
+  const handleNext = () => {
+    if (currentPage < totalPages) {
+      handlePageChange(currentPage + 1);
+    } else if (status === "CanLoadMore") {
+      // Load more items and advance to next page
+      loadMore(itemsPerPage);
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
   return (
-    <Card className="flex flex-col h-full min-h-[350px]">
-      <CardHeader className="flex flex-row items-start justify-between border-b-2 p-3">
-        <div className="flex flex-col gap-2 p-0">
-          <CardTitle>Do Today Tasks</CardTitle>
-          <CardDescription>Tasks due today or overdue</CardDescription>
-        </div>
+    <Card className="relative max-h-[481px]">
+      <CardHeader className="flex-row items-center justify-between p-3">
+        <CardTitle>My tasks</CardTitle>
         <Button
           asChild
           size="sm"
-          className="gap-1"
+          variant="link"
+          className="p-0 gap-1 text-primary-foreground underline"
         >
           <Link href="/dashboard/tasks">
             View All
@@ -109,18 +102,47 @@ export default function TasksCard() {
           </Link>
         </Button>
       </CardHeader>
-      <CardContent className="flex flex-col h-full gap-2 p-0">
-        <div className="flex-1 relative">
-          <div className="absolute inset-0 overflow-auto px-2">
-            <div className="pb-6">
-              <TaskList tasks={orderedTasks} />
-            </div>
-            <div className="sticky bottom-2 z-10 flex justify-end">
-              <AddTaskDrawerDialog />
-            </div>
-          </div>
-        </div>
+      <CardContent className="h-[345px] p-0 border-t">
+        <TaskList tasks={orderedTasks} />
       </CardContent>
+      <CardFooter className="h-[69px] flex items-center p-3 px-6">
+        {/* Status Info */}
+        <div className="w-[120px] flex shrink-0 text-nowrap text-sm text-gray-500 text-center">
+          Showing {startIndex + 1}-{Math.min(endIndex, results.length)} of {results.length}
+        </div>
+
+        {results.length > 0 && (
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious href="#"
+                  onClick={handlePrevious}
+                  className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                />
+              </PaginationItem>
+
+              <PaginationItem>
+                <PaginationLink href="#" className="cursor-default">
+                  {currentPage}
+                </PaginationLink>
+              </PaginationItem>
+
+              <PaginationItem>
+                <PaginationNext href="#"
+                  onClick={handleNext}
+                  className={
+                    (currentPage >= totalPages && status === "Exhausted")
+                      ? "pointer-events-none opacity-50"
+                      : "cursor-pointer"
+                  } />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        )}
+        <div className="absolute right-2 bottom-12 z-10">
+          <AddTaskDrawerDialog />
+        </div>
+      </CardFooter>
     </Card>
   );
 }

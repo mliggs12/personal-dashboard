@@ -1,3 +1,5 @@
+"use client"
+
 import { useMutation } from "convex/react";
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
@@ -16,7 +18,6 @@ dayjs.extend(utc);
 export default function TaskList({ tasks }: { tasks: Doc<"tasks">[] }) {
   const { toast } = useToast();
 
-  // Attempt to set local timezone
   const localTimezone = dayjs.tz.guess();
 
   const todayStart = dayjs().tz(localTimezone).startOf("day").valueOf();
@@ -35,6 +36,7 @@ export default function TaskList({ tasks }: { tasks: Doc<"tasks">[] }) {
       });
     }
   };
+
   return (
     <div>
       {tasks.map((task) => (
