@@ -192,9 +192,6 @@ export const getTasks = query({
   async handler(ctx, { paginationOpts }) {
     const user = await getCurrentUserOrThrow(ctx);
 
-    const today = dayjs().valueOf()
-    console.log(today)
-
     return await ctx.db
       .query("tasks")
       .withIndex("by_user_due", (q) =>
