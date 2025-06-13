@@ -187,22 +187,22 @@ export const getByProject = query({
   },
 });
 
-// Get tasks due today or overdue
 export const getTasks = query({
   args: { paginationOpts: paginationOptsValidator },
   async handler(ctx, { paginationOpts }) {
     const user = await getCurrentUserOrThrow(ctx);
 
+    const end = dayjs().endOf("day")
+    console.log(end)
+
     return await ctx.db
       .query("tasks")
-      .withIndex("by_user", (q) => q.eq("userId", user._id))
-      .filter((q) =>
-          q.or(
-            q.eq(q.field("status"), "backlog"),
-            q.eq(q.field("status"), "todo"),
-            q.eq(q.field("status"), "in_progress"),
-          ),
+      .withIndex("by_user_due", (q) =>
+        q
+          .eq("userId", user._id)
+          .lte("due", dayjs().endOf("day").format("YYYY/MM/DD")),
       )
+      .filter((q) => q.neq(q.field("status"), "done"))
       .paginate(paginationOpts);
   },
 });
