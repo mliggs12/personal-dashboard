@@ -187,9 +187,9 @@ export const getByProject = query({
   },
 });
 
-export const getTasks = query({
-  args: { paginationOpts: paginationOptsValidator },
-  async handler(ctx, { paginationOpts }) {
+export const getTodayTasks = query({
+  args: { paginationOpts: paginationOptsValidator, date: v.string() },
+  async handler(ctx, { paginationOpts, date }) {
     const user = await getCurrentUserOrThrow(ctx);
 
     return await ctx.db
@@ -197,7 +197,7 @@ export const getTasks = query({
       .withIndex("by_user_due", (q) =>
         q
           .eq("userId", user._id)
-          .lte("due", dayjs().endOf("day").format("YYYY/MM/DD")),
+          .lte("due", date),
       )
       .filter((q) => q.neq(q.field("status"), "done"))
       .paginate(paginationOpts);

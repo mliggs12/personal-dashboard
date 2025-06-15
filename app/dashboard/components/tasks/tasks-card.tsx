@@ -47,12 +47,13 @@ export default function TasksCard() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
+  const today = dayjs().endOf("day").format("YYYY/MM/DD")
+
   const { results, status, loadMore } = usePaginatedQuery(
-    api.tasks.getTasks,
-    {},
+    api.tasks.getTodayTasks,
+    { date: today },
     { initialNumItems: itemsPerPage },
   )
-
 
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
