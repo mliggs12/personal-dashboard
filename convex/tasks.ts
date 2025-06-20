@@ -17,11 +17,11 @@ export const list = query({
   args: { paginationOpts: paginationOptsValidator },
   async handler(ctx, { paginationOpts }) {
     const user = await getCurrentUserOrThrow(ctx);
-    
+
     return await ctx.db
-    .query("tasks")
-    .withIndex("by_user", (q) => q.eq("userId", user._id))
-    .paginate(paginationOpts);
+      .query("tasks")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .paginate(paginationOpts);
   },
 });
 
@@ -188,25 +188,28 @@ export const getByProject = query({
 });
 
 export const getTodayTasks = query({
-  args: { paginationOpts: paginationOptsValidator, date: v.string() },
-  async handler(ctx, { paginationOpts, date }) {
+  args: { date: v.string() },
+  async handler(ctx, { date }) {
     const user = await getCurrentUserOrThrow(ctx);
 
     return await ctx.db
       .query("tasks")
-      .withIndex("by_user_due", (q) =>
-        q
-          .eq("userId", user._id)
-          .lte("due", date),
+      .withIndex("by_user_status", (q) =>
+        q.eq("userId", user._id).eq("status", "todo"),
       )
-      .filter((q) => q.neq(q.field("status"), "done"))
-      .paginate(paginationOpts);
+      .filter((q) =>
+        q.or(
+          q.eq(q.field("due"), undefined),
+          q.eq(q.field("due"), date)
+        )
+      )
+      .collect();
   },
 });
 
 export const backlogTasks = query({
-  args: { paginationOpts: paginationOptsValidator },
-  async handler(ctx, { paginationOpts }) {
+  args: {},
+  async handler(ctx) {
     const user = await getCurrentUserOrThrow(ctx);
 
     return await ctx.db
@@ -216,7 +219,27 @@ export const backlogTasks = query({
           .eq("userId", user._id)
           .eq("status", "backlog")
       )
-      .paginate(paginationOpts);
+      .collect();
+  },
+});
+
+export const deadlineTasks = query({
+  args: { date: v.string() },
+  async handler(ctx, { date }) {
+    const user = await getCurrentUserOrThrow(ctx);
+
+    return await ctx.db
+      .query("tasks")
+      .withIndex("by_user_due", (q) =>
+        q
+          .eq("userId", user._id)
+      )
+      .filter((q) =>
+        q.and(
+          q.neq(q.field("status"), "done"),
+          q.neq(q.field("due"), undefined)
+        ))
+      .collect();
   },
 });
 

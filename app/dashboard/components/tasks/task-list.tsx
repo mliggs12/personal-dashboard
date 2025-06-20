@@ -38,7 +38,7 @@ export default function TaskList({ tasks }: { tasks: Doc<"tasks">[] }) {
   };
 
   return (
-    <div>
+    <div className="absolute w-full">
       {tasks.map((task) => (
         <Task
           key={task._id}
