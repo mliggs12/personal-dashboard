@@ -1,7 +1,4 @@
 import { useMutation, useQuery } from "convex/react";
-import { useEffect } from "react";
-
-import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
@@ -16,17 +13,11 @@ import { Id } from "@/convex/_generated/dataModel";
 import { formatMinToReadable } from "@/lib/utils";
 
 import ActivityName from "./activity-name";
+import ActivityLengthCell from "./activity-length-cell";
+import AddActivityDrawerDialog from "./add-activity-drawer-dialog";
 
 export default function ScheduleTable({ scheduleId }: { scheduleId: string }) {
   const activities = useQuery(api.activities.byScheduleOrder, { scheduleId: scheduleId as Id<"schedules"> });
-  const addActivity = useMutation(api.activities.create);
-
-  useEffect(() => {
-    if (activities === undefined || activities.length > 0) return
-    addActivity({
-      scheduleId: scheduleId as Id<"schedules">,
-    });
-  }, [activities, addActivity, scheduleId]);
 
   if (activities === undefined) {
     return (
@@ -48,7 +39,7 @@ export default function ScheduleTable({ scheduleId }: { scheduleId: string }) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {activities.map((activity) => (
+          {activities.length > 0 ? activities.map((activity) => (
             <TableRow key={activity._id}>
               <TableCell className="hidden md:table-cell w-10">
                 <Checkbox checked={activity.isForced} />
@@ -60,18 +51,20 @@ export default function ScheduleTable({ scheduleId }: { scheduleId: string }) {
               <TableCell>
                 <ActivityName activity={activity} />
               </TableCell>
-              <TableCell className="w-14">{activity.length}</TableCell>
-              <TableCell className="w-20">{"-"}</TableCell>
+              <ActivityLengthCell activity={activity} />
+              <TableCell className="w-20">{activity.actLen}</TableCell>
             </TableRow>
-          ))}
+          )) : (
+            <TableRow>
+              <TableCell colSpan={7} className="text-center">
+                <h2>This schedule doesn't have any activities yet.  Add some to begin.</h2>
+              </TableCell>
+            </TableRow>
+          )}
         </TableBody>
       </Table>
-      <div className="absolute bottom-4 right-4">
-        <Button
-          onClick={() => addActivity({ scheduleId: scheduleId as Id<"schedules"> })}
-        >
-          Add activity
-        </Button>
+      <div className="fixed bottom-[118px] right-4">
+        <AddActivityDrawerDialog scheduleId={scheduleId as Id<"schedules">} />
       </div>
     </div>
   );

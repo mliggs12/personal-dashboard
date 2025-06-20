@@ -62,7 +62,7 @@ export const getOrCreateByDate = mutation({
 
     let schedule = await ctx.db
       .query("schedules")
-      .withIndex("by_date_user", (q) => q.eq("date", date).eq("userId", user._id))
+      .withIndex("by_user_date", (q) => q.eq("userId", user._id).eq("date", date))
       .first();
 
     if (!schedule) {

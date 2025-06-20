@@ -1,15 +1,31 @@
+import { useEffect, useState } from "react";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Event } from "@/types";
 
 import { getHolidayEvents, getUserEvents } from "./_actions";
 import EventsList from "./events-list";
 
-export default async function CalendarScheduleView() {
-  const events: Event[] = await getUserEvents();
-  const holidays: Event[] = await getHolidayEvents();
+export default function CalendarScheduleView() {
+  const [events, setEvents] = useState<Event[]>([])
+
+  useEffect(() => {
+    async function fetchEvents() {
+      try {
+        const userEvents: Event[] = await getUserEvents();
+        console.log(userEvents)
+        // const holidays: Event[] = await getHolidayEvents();
+        // const allEvents = [...userEvents, ...holidays];
+        setEvents(userEvents);
+      } catch (error) {
+        console.error("Error fetching events:", error)
+      }
+    }
+    fetchEvents()
+  }, [])
 
   return (
-    <Card className="flex flex-col md:w-[650px] md:h-1/2 w-full overflow-hidden">
+    <Card className="flex flex-col h-[900px] w-full max-w-[600px]">
       <CardHeader className="py-4">
         <CardTitle>Calendar</CardTitle>
       </CardHeader>

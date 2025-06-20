@@ -2,7 +2,7 @@ const { spawnSync } = require("child_process");
 const fs = require("fs");
 
 // List all files in the components directory (/components/ui/) and remove the .tsx extension
-const components = fs.readdirSync("./components/ui/");
+const components = fs.readdirSync("../components/ui/");
 
 components.forEach((component) => {
   // Remove the .tsx extension

@@ -49,14 +49,14 @@ export default function ActivityLengthCell({
 
   if (isEditing) {
     return (
-      <TableCell>
+      <TableCell className="w-14">
         <Input
           ref={inputRef}
           value={length}
           onChange={handleLengthChange}
           onBlur={handleBlur}
           onKeyDown={handleKeyDown}
-          className="bg-slate-600 w-[52px] text-left leading-normal p-0 m-0 ml-2 h-[1.5em] border-none focus-visible:ring-0 focus-visible:ring-offset-0"
+          className="bg-transparent h-5 px-0 border-none focus-visible:ring-0 focus-visible:ring-offset-0"
         />
       </TableCell>
     );
@@ -65,7 +65,7 @@ export default function ActivityLengthCell({
   return (
     <TableCell
       onClick={handleClick}
-      className="text-left leading-normal p-0 m-0 ml-2 h-[1.5em] cursor-pointer"
+      className="w-14 hover:cursor-pointer"
     >
       {length}
     </TableCell>

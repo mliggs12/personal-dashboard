@@ -42,12 +42,12 @@ export default function ActivityName({
         onBlur={handleBlur}
         onChange={(e) => setName(e.target.value)}
         onKeyDown={handleKeyDown}
-        className="h-5 p-0 text-sm leading-none border-none bg-transparent ring-offset-background focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none"
+        className="h-5 px-0 border-none bg-transparent ring-offset-background focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none"
       />
     );
   }
 
   return (
-    <div className="text-nowrap" onClick={() => setIsEditing(true)}>{activity.name}</div>
+    <div className="text-nowrap hover:cursor-pointer" onClick={() => setIsEditing(true)}>{activity.name}</div>
   )
 }

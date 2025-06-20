@@ -4,7 +4,7 @@ import { v } from "convex/values";
 export default defineSchema({
   // SM Plan Clone
   activities: defineTable({
-    name: v.optional(v.string()),
+    name: v.string(),
     length: v.number(), // Duration in minutes
     start: v.number(), // Start time in minutes from midnight
     order: v.number(),
@@ -12,18 +12,19 @@ export default defineSchema({
     isRigid: v.boolean(),
     scheduleId: v.id("schedules"),
   })
-  .index("by_schedule", ["scheduleId"])
-  .index("by_schedule_order", ["scheduleId", "order"]),
+    .index("by_schedule", ["scheduleId"])
+    .index("by_schedule_order", ["scheduleId", "order"]),
 
   schedules: defineTable({
     date: v.optional(v.string()), // YYYY-MM-DD
-    length: v.optional(v.number()),
+    length: v.number(),
+    start: v.optional(v.number()),
     isTemplate: v.boolean(),
-    updated: v.optional(v.number()),
-    userId: v.optional(v.string()),
+    updated: v.number(),
+    userId: v.string(),
   })
     .index("by_user", ["userId"])
-    .index("by_date_user", ["date", "userId"]),
+    .index("by_user_date", ["userId", "date"]),
 
   // Creativity
   beliefs: defineTable({

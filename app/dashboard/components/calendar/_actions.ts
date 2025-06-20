@@ -1,3 +1,5 @@
+"use server"
+
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import dayjs from "dayjs";
 
@@ -33,12 +35,13 @@ export async function getUserEvents() {
     },
   );
 
+  
   if (!response.ok) {
     throw new Error(response.statusText);
   }
-
+  
   const data = await response.json();
-
+  
   const events = data.items.map((item: any) => {
     const event: Event = {
       id: item.id,
