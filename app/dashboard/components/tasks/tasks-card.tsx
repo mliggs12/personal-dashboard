@@ -39,8 +39,10 @@ export default function TasksCard() {
     <Card className="relative max-h-[467px]">
       <CardHeader className="p-3">
         <div className="flex items-center justify-between">
-          <CardTitle>My tasks</CardTitle>
-          <StatusDropdown status={status} onStatusChange={setStatus} />
+          <div className="flex items-center gap-6">
+            <CardTitle>My tasks</CardTitle>
+            <StatusDropdown status={status} onStatusChange={setStatus} />
+          </div>
           <Button
             asChild
             size="sm"
@@ -54,14 +56,13 @@ export default function TasksCard() {
           </Button>
         </div>
       </CardHeader>
-      <CardContent className="relative h-[346px] p-0 border-t overflow-y-auto">
+      <CardContent className="relative h-[346px] p-0 border-t overflow-y-auto hide-scrollbar">
         <TaskList tasks={tasks} />
       </CardContent>
 
-      <CardFooter className="h-[60px] flex items-center p-3 px-6 border-t">
-        <div className="absolute right-2 bottom-12 z-10">
-          <AddTaskDrawerDialog />
-        </div>
+      <CardFooter className="h-[60px] flex items-center justify-between p-3 px-6 text-xs text-muted-foreground">
+        {tasks.length} tasks
+        <AddTaskDrawerDialog />
       </CardFooter>
     </Card>
   );

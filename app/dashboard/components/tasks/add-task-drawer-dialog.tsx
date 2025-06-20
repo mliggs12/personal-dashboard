@@ -36,10 +36,11 @@ export default function AddTaskDrawerDialog() {
       >
         <DrawerTrigger asChild>
           <Button
-            size="icon"
+            className="text-xs font-normal"
+            size="sm"
             variant="secondary"
           >
-            <Plus className="w-8 h-8" />
+            Add Task
           </Button>
         </DrawerTrigger>
         <DrawerContent>
@@ -60,10 +61,11 @@ export default function AddTaskDrawerDialog() {
     >
       <DialogTrigger asChild>
         <Button
-          size="icon"
+          className="text-xs font-normal"
+          size="sm"
           variant="secondary"
         >
-          <Plus className="w-8 h-8" />
+          Add Task
         </Button>
       </DialogTrigger>
       <DialogContent className="w-[875px] max-h-[80vh] p-8 overflow-y-auto fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 border-2 bg-background rounded-xl">
