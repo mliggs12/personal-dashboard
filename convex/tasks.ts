@@ -187,23 +187,32 @@ export const getByProject = query({
   },
 });
 
-export const getTodayTasks = query({
+export const todayTasks = query({
   args: { date: v.string() },
   async handler(ctx, { date }) {
     const user = await getCurrentUserOrThrow(ctx);
 
-    return await ctx.db
+    const tasks = await ctx.db
       .query("tasks")
-      .withIndex("by_user_status", (q) =>
-        q.eq("userId", user._id).eq("status", "todo"),
+      .withIndex("by_user_status_due", (q) =>
+        q
+          .eq("userId", user._id)
+          .eq("status", "todo"),
       )
       .filter((q) =>
-        q.or(
-          q.eq(q.field("due"), undefined),
-          q.eq(q.field("due"), date)
-        )
+        q.lte(q.field("due"), date)
       )
       .collect();
+
+    return tasks.sort((a, b) => {
+      if (a.due && !b.due) {
+        return -1;
+      }
+      if (!a.due && b.due) {
+        return 1;
+      }
+      return 0;
+    });
   },
 });
 
@@ -230,14 +239,11 @@ export const deadlineTasks = query({
 
     return await ctx.db
       .query("tasks")
-      .withIndex("by_user_due", (q) =>
-        q
-          .eq("userId", user._id)
-      )
+      .withIndex("by_user_due", (q) => q.eq("userId", user._id))
       .filter((q) =>
         q.and(
           q.neq(q.field("status"), "done"),
-          q.neq(q.field("due"), undefined)
+          q.gt(q.field("due"), date)
         ))
       .collect();
   },

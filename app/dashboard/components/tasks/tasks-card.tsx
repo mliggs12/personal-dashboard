@@ -26,7 +26,7 @@ export default function TasksCard() {
 
   const today = dayjs().endOf("day").format("YYYY/MM/DD")
 
-  const todayTasks = useQuery(api.tasks.getTodayTasks, { date: today })
+  const todayTasks = useQuery(api.tasks.todayTasks, { date: today })
   const deadlineTasks = useQuery(api.tasks.deadlineTasks, { date: today })
   const backlogTasks = useQuery(api.tasks.backlogTasks)
 
