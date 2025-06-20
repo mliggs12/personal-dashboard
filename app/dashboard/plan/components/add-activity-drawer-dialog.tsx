@@ -8,22 +8,20 @@ import {
   DialogTrigger,
   DialogContent,
   DialogTitle,
-  DialogPortal,
 } from "@/components/ui/dialog";
 import {
   Drawer,
   DrawerClose,
   DrawerContent,
-  DrawerDescription,
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
+import { Id } from "@/convex/_generated/dataModel";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 import { AddActivityForm } from "./add-activity-form";
-import { Id } from "@/convex/_generated/dataModel";
 
 export default function AddActivityDrawerDialog({ scheduleId }: { scheduleId: Id<"schedules"> }) {
   const [open, setOpen] = useState(false);

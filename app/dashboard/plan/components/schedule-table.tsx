@@ -1,4 +1,5 @@
-import { useMutation, useQuery } from "convex/react";
+import { useQuery } from "convex/react";
+
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
@@ -12,8 +13,8 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { formatMinToReadable } from "@/lib/utils";
 
-import ActivityName from "./activity-name";
 import ActivityLengthCell from "./activity-length-cell";
+import ActivityName from "./activity-name";
 import AddActivityDrawerDialog from "./add-activity-drawer-dialog";
 
 export default function ScheduleTable({ scheduleId }: { scheduleId: string }) {
@@ -57,7 +58,7 @@ export default function ScheduleTable({ scheduleId }: { scheduleId: string }) {
           )) : (
             <TableRow>
               <TableCell colSpan={7} className="text-center">
-                <h2>This schedule doesn't have any activities yet.  Add some to begin.</h2>
+                <h2>This schedule doesn&apos;t have any activities yet.  Add some to begin.</h2>
               </TableCell>
             </TableRow>
           )}
