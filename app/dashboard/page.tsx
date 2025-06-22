@@ -11,13 +11,6 @@ import Scratchpad from "./components/scratch-pad/scratch-pad";
 import TasksCard from "./components/tasks/tasks-card";
 
 export default function DashboardPage() {
-  const { isLoading, isAuthenticated } = useCurrentUser();
-
-  if (isLoading) return <div>Loading...</div>;
-
-  if (!isAuthenticated) {
-    redirect("/");
-  };
 
   return (
     <div className="h-full flex flex-col flex-1 md:max-w-[2160px] mx-auto px-4 gap-4">

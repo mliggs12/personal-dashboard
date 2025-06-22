@@ -1,91 +1,47 @@
-"use client";
+"use client"
 
-import { GoogleOneTap, SignUpButton } from "@clerk/nextjs";
-import { Authenticated, Unauthenticated } from "convex/react";
-import { StepForward } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
+import omIcon from "@/public/generated/icon.svg";
+import Image from "next/image"
+import { GoogleOneTap } from "@clerk/nextjs";
+import { SignInButton } from "@clerk/nextjs";
+
+import { LoginForm } from "@/components/login-form"
 import { redirect } from "next/navigation";
+import { useConvexAuth } from "convex/react";
 
-import { Button } from "@/components/ui/button";
-import { useCurrentUser } from "@/hooks/useCurrentUser";
-import omLogo from "@/public/logo/hinduism-om-icon.svg";
+export default function LoginPage() {
+  const { isLoading, isAuthenticated } = useConvexAuth();
 
-export default function LandingPage() {
-  const { isLoading, isAuthenticated } = useCurrentUser();
+  if (isAuthenticated) { redirect("/dashboard") }
 
-  if (isLoading) {
-    <div>Loading...</div>;
-  }
-
-  if (isAuthenticated) {
-    redirect("/dashboard");
-  }
+  if (isLoading) return <div>Loading...</div>
 
   return (
-    <main className="h-full min-h-screen">
-      <div className="container relative m-0 mx-auto py-10 md:px-10">
-        <div className="w-max flex items-center justify-center lg:justify-between">
-          <Link
-            className="flex items-center gap-1"
-            href="/dashboard"
-          >
-            <Image
-              src={omLogo}
-              width="50"
-              height="50"
-              alt="logo"
-              className="h-16 w-20 md:h-16 md:w-20 border-2 border-r-4 bg-white"
-            />
-            <h1 className="text-xl hidden md:flex font-medium text-foreground md:text-3xl">
-              Enthousiazein
-            </h1>
-          </Link>
-          <div className="hidden md:flex w-fit items-center">
-            <GoogleOneTap />
-          </div>
-        </div>
-        <div className="w-full px-4 pt-12 md:px-4 lg:px-8 xl:px-10 2xl:px-0">
-          <div className="flex h-full w-full flex-col items-center justify-center">
-            <h1 className="inline-block text-center text-4xl font-medium tracking-tighter text-dark lg:text-7xl">
-              Personal Dashboard
-            </h1>
-            <div className="mt-12 flex flex-col gap-4">
-              {/* <SignedIn> */}
-              <Authenticated>
-                <Link
-                  className="flex items-center gap-1"
-                  href="/dashboard"
-                >
-                  Go to dashboard
-                </Link>
-              </Authenticated>
-
-              {/* </SignedIn> */}
-              {/* <SignedOut> */}
-              <Unauthenticated>
-                <GetStartedButton />
-              </Unauthenticated>
-              {/* </SignedOut> */}
+    <div className="grid min-h-svh lg:grid-cols-2">
+      <div className="flex flex-col gap-4 p-6 md:p-10">
+        <div className="flex justify-center gap-2 md:justify-start">
+          <a href="#" className="flex items-center gap-2 font-medium">
+            <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
+              <Image src={omIcon} alt="App Icon" className="size-4" />
             </div>
+            Enthousiazein
+          </a>
+        </div>
+        <div className="flex flex-1 items-center justify-center">
+          <div className="w-full max-w-xs">
+            {/* <LoginForm /> */}
+            <GoogleOneTap />
+            <SignInButton />
           </div>
         </div>
       </div>
-    </main>
-  );
-}
-
-function GetStartedButton() {
-  return (
-    <SignUpButton>
-      <Button>
-        <span className="flex items-center gap-1">
-          <>
-            Get started
-            <StepForward />
-          </>
-        </span>
-      </Button>
-    </SignUpButton>
-  );
+      <div className="bg-muted relative hidden lg:block">
+        <img
+          src="/placeholder.svg"
+          alt="Image"
+          className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
+        />
+      </div>
+    </div>
+  )
 }

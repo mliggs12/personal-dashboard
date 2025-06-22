@@ -56,9 +56,7 @@ export async function getCurrentUserOrThrow(ctx: QueryCtx) {
 
 export async function getCurrentUser(ctx: QueryCtx) {
   const identity = await ctx.auth.getUserIdentity();
-  if (!identity) {
-    return null;
-  }
+  if (!identity) throw new Error("Couldn't get `UserIdentity` from the Convex client")
   return await userByExternalId(ctx, identity.subject);
 }
 
