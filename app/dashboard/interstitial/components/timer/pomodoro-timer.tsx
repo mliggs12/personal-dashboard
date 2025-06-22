@@ -10,7 +10,7 @@ import { useAudio } from "../../hooks/use-audio";
 
 export function PomodoroTimer() {
   const defaultTime = 60;
-  const currentTimer = useQuery(api.timers.getCurrent);
+  const currentTimer = useQuery(api.timers.getActive);
   const [localRemaining, setLocalRemaining] = useState(0);
 
   const startTimer = useMutation(api.timers.start);

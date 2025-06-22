@@ -26,19 +26,19 @@ export const start = mutation({
     duration: v.optional(v.number()),
   },
   async handler(ctx, { duration }) {
-      const user = await getCurrentUserOrThrow(ctx);
+    const user = await getCurrentUserOrThrow(ctx);
 
-      const existing = await ctx.runQuery(api.timers.getCurrent);
-      
-      if (existing) {
-        await ctx.db.patch(existing._id, {
-          start: Date.now(),
-          duration: duration ?? 5,
-          isActive: true,
-          userId: user._id,
-        });
-      } else {
-        await ctx.runMutation(internal.timers.create, { duration: duration ?? 5 });
+    const existing = await ctx.runQuery(api.timers.getActive);
+
+    if (existing) {
+      await ctx.db.patch(existing._id, {
+        start: Date.now(),
+        duration: duration ?? 5,
+        isActive: true,
+        userId: user._id,
+      });
+    } else {
+      await ctx.runMutation(internal.timers.create, { duration: duration ?? 5 });
     }
   },
 });
@@ -72,15 +72,14 @@ export const completeInterval = mutation({
   },
 });
 
-export const getCurrent = query({
+export const getActive = query({
   async handler(ctx) {
     const user = await getCurrentUserOrThrow(ctx);
 
     return await ctx.db
       .query("timers")
-      .withIndex("by_user", (q) =>
-        q.eq("userId", user._id)
-      )
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .filter((q) => q.eq(q.field("isActive"), true))
       .first();
   },
 });
