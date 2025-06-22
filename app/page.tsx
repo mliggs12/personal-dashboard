@@ -8,6 +8,7 @@ import { redirect } from "next/navigation";
 
 import { LoginForm } from "@/components/login-form"
 import omIcon from "@/public/generated/icon.svg";
+import bg from "@/public/image/login/login-bg.svg"
 
 export default function LoginPage() {
   const { isLoading, isAuthenticated } = useConvexAuth();
@@ -37,9 +38,9 @@ export default function LoginPage() {
       </div>
       <div className="bg-muted relative hidden lg:block">
         <Image
-          src="/placeholder.svg"
+          src={bg}
           alt="Image"
-          className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
+          className="absolute inset-0 h-full w-full object-cover object-left dark:grayscale"
         />
       </div>
     </div>
