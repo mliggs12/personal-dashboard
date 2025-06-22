@@ -1,5 +1,6 @@
 "use client";
 
+import { Authenticated } from "convex/react";
 import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import { usePathname } from "next/navigation";
@@ -17,7 +18,6 @@ import { cn } from "@/lib/utils";
 
 import CommandPalette from "./components/command-palette/command-palette";
 import DashboardBreadcrumbs from "./components/dashboard-breadcrumbs";
-import { Authenticated } from "convex/react";
 
 dayjs.extend(localizedFormat);
 

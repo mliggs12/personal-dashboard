@@ -1,9 +1,11 @@
-import { cn } from "@/lib/utils"
+import { SignInButton } from "@clerk/nextjs"
+
+import { Icons } from "@/components/icons"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Icons } from "@/components/icons"
-import { SignInButton } from "@clerk/nextjs"
+import { cn } from "@/lib/utils"
+
 
 export function LoginForm({
   className,
