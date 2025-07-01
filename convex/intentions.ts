@@ -15,10 +15,10 @@ export const list = query(async (ctx) => {
 
 export const get = query({
   args: {
-    intentionId: v.id("intentions"),
+    id: v.id("intentions"),
   },
-  async handler(ctx, { intentionId }) {
-    return await ctx.db.get(intentionId);
+  async handler(ctx, { id }) {
+    return await ctx.db.get(id);
   },
 });
 

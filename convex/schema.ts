@@ -16,6 +16,8 @@ export default defineSchema({
     .index("by_schedule_order", ["scheduleId", "order"]),
 
   schedules: defineTable({
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
     date: v.optional(v.string()), // YYYY-MM-DD
     length: v.number(),
     start: v.optional(v.number()),
@@ -135,26 +137,25 @@ export default defineSchema({
   // All parameters are optional to allow for future use cases
   sessions: defineTable({
     start: v.number(),
-    end: v.optional(v.number()),
-    isActive: v.optional(v.boolean()),
-    duration: v.optional(v.number()), // seconds
-    pauseDuration: v.optional(v.number()), // seconds
+    end: v.number(),
+    duration: v.number(),
+    pauseDuration: v.optional(v.number()),
     notes: v.optional(v.string()),
     emotionId: v.optional(v.id("emotions")),
     intentionId: v.optional(v.id("intentions")),
     updated: v.number(),
-    userId: v.optional(v.id("users")),
-  })
-    .index("by_user", ["userId"])
-    .index("by_active_user", ["isActive", "userId"]),
+    userId: v.id("users"),
+  }).index("by_user", ["userId"]),
 
   timers: defineTable({
-    start: v.number(),
-    duration: v.number(), // seconds
+    duration: v.number(),
+    startedAt: v.number(),
+    pausedAt: v.optional(v.number()),
+    totalPauseTime: v.number(),
     isActive: v.boolean(),
-    userId: v.optional(v.id("users")),
-  })
-    .index("by_user", ["userId"]),
+    isPaused: v.boolean(),
+    userId: v.string(),
+  }).index("by_user", ["userId"]),
 
   // Task Management
   projects: defineTable({

@@ -77,7 +77,7 @@ export function FocusBlock({ focusBlock, statements }: FocusBlockProps) {
   // Get the intention if this focus block is related to one
   const intention = useQuery(
     api.intentions.get,
-    focusBlock?.intentionId ? { intentionId: focusBlock.intentionId } : "skip"
+    focusBlock?.intentionId ? { id: focusBlock.intentionId } : "skip"
   );
 
   return (

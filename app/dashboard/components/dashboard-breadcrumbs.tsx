@@ -116,29 +116,33 @@ export default function DashboardBreadcrumbs() {
   const { current, showParent, showSection, section, sectionUrl } =
     getBreadcrumbDetails(pathname);
 
-  // Extract IDs from the path for different content types
   const segments = pathname.split("/").filter(Boolean);
-  const isNotePage = section === "Notes" && segments.length > 3;
+
+  const isNotePage = section === "Notes" && segments.length > 2;
   const isFocusBlockPage = section === "Focus Blocks" && segments.length > 3;
   const isIntentionPage = section === "Intentions" && segments.length > 3;
+  const contentId = (isNotePage || isFocusBlockPage || isIntentionPage)
+    ? (segments[segments.length - 1] as Id<any>)
+    : undefined;
 
-  // Get the ID from the last segment
-  const contentId = segments[segments.length - 1] as Id<any>;
+  const note = useQuery(
+    api.notes.get,
+    isNotePage && contentId ? { noteId: contentId as Id<"notes"> } : "skip"
+  );
+  const focusBlock = useQuery(
+    api.focusBlocks.get,
+    isFocusBlockPage && contentId ? { id: contentId as Id<"focusBlocks"> } : "skip"
+  );
+  const intention = useQuery(
+    api.intentions.get,
+    isIntentionPage && contentId ? { id: contentId as Id<"intentions"> } : "skip"
+  );
 
-  // Query different content types based on the page type
-  const note = useQuery(api.notes.get, isNotePage ? { noteId: contentId as Id<"notes"> } : "skip");
-  const focusBlock = useQuery(api.focusBlocks.get, isFocusBlockPage ? { id: contentId as Id<"focusBlocks"> } : "skip");
-  const intention = useQuery(api.intentions.get, isIntentionPage ? { intentionId: contentId as Id<"intentions"> } : "skip");
-
-  // Determine the display title based on the content type
-  let displayTitle = current;
-  if (note) {
-    displayTitle = note.title;
-  } else if (focusBlock) {
-    displayTitle = focusBlock.startStatement || "Focus Block";
-  } else if (intention) {
-    displayTitle = intention.title || "Intention";
-  }
+  const displayTitle =
+    note?.title ||
+    focusBlock?.startStatement ||
+    intention?.title ||
+    current;
 
   return (
     <Breadcrumb>

@@ -28,22 +28,12 @@ import { AddTaskWrapper } from "../../components/tasks/add-task-button";
 import TaskList from "../../components/tasks/task-list";
 
 export default function IntentionPage() {
-  const { intentionId } = useParams<{ intentionId: Id<"intentions"> }>();
-  const intention = useQuery(api.intentions.get, {
-    intentionId,
-  });
+  const { id } = useParams<{ id: string }>();
+  const intention = useQuery(api.intentions.get, { id: id as Id<"intentions"> });
   const emotions = useQuery(api.emotions.list);
-  const tasks = useQuery(api.tasks.getByIntention, {
-    intentionId,
-  });
-  const statements = useQuery(api.statements.byIntentionId, {
-    intentionId,
-  });
-  const beliefs = useQuery(api.beliefs.byIntention, {
-    intentionId,
-  });
-  const completeStatement = useMutation(api.statements.complete);
-  const unCompleteStatement = useMutation(api.statements.unComplete);
+  const tasks = useQuery(api.tasks.getByIntention, { intentionId: id as Id<"intentions"> });
+  const statements = useQuery(api.statements.byIntentionId, { intentionId: id as Id<"intentions"> });
+  const beliefs = useQuery(api.beliefs.byIntention, { intentionId: id as Id<"intentions"> });
   const updateBelief = useMutation(api.beliefs.update);
 
   if (
@@ -67,7 +57,7 @@ export default function IntentionPage() {
       <div className="flex-1 relative">
         <div className="absolute inset-0 overflow-y-auto">
           <Card>
-            <DeleteIntentionButton intentionId={intention._id} />
+            <DeleteIntentionButton id={intention._id} />
             <CardHeader>
               <IntentionTitle intention={intention} />
               <CardDescription>

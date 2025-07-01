@@ -21,11 +21,7 @@ import { Id } from "@/convex/_generated/dataModel";
 
 import { LoadingButton } from "./loading-button";
 
-export function DeleteIntentionButton({
-  intentionId,
-}: {
-  intentionId: Id<"intentions">;
-}) {
+export function DeleteIntentionButton({ id }: { id: Id<"intentions"> }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const deleteIntention = useMutation(api.intentions.remove);
@@ -59,9 +55,7 @@ export function DeleteIntentionButton({
           <LoadingButton
             onClick={() => {
               setIsLoading(true);
-              deleteIntention({
-                id: intentionId,
-              })
+              deleteIntention({ id })
                 .then(() => {
                   router.push("/creativity/intentions");
                 })
