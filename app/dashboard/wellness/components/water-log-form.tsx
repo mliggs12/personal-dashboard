@@ -52,7 +52,7 @@ export default function WaterLogForm({
     onEntryCreated();
     toast({
       title: "Water logged",
-      duration: 3000,
+      duration: 1500,
     });
     form.reset();
   }

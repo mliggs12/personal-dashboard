@@ -1,5 +1,7 @@
-import dayjs from "dayjs"
+import { v } from "convex/values";
+import dayjs from "dayjs";
 import isToday from "dayjs/plugin/isToday";
+import { action } from "./_generated/server";
 
 dayjs.extend(isToday);
 
@@ -72,3 +74,12 @@ export async function fetchDayTotals({ date }: { date: any }) {
 
   return data["dates"][0]
 }
+
+export const getDayTotals = action({
+  args: {
+    date: v.string()
+  },
+  async handler(ctx, { date }) {
+    return await fetchDayTotals({ date: dayjs(date).format("YYYY-MM-DD") })
+  }
+})

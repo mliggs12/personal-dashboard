@@ -3,9 +3,9 @@ import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
 
+import { Id } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 import { getCurrentUserOrThrow } from "./users";
-import { getUserWaterEntries } from "./waterLogHelpers";
 
 dayjs.extend(timezone);
 dayjs.extend(utc);
@@ -19,36 +19,40 @@ export const create = mutation({
     const user = await getCurrentUserOrThrow(ctx);
 
     await ctx.db.insert("waterLogEntries", {
-      amount,
-      type,
-      timestamp: Date.now(),
       userId: user._id,
+      amount,
+      timestamp: dayjs().toISOString(),
+      type,
     });
   },
 });
 
 export const dailyEntries = query({
-  args: { tz: v.string() },
-  async handler(ctx, { tz }) {
-    const user = await getCurrentUserOrThrow(ctx);
-
-    const dayStart = dayjs().tz(tz).startOf("day").valueOf();
-    const dayEnd = dayjs().tz(tz).endOf("day").valueOf();
-
-    return await getUserWaterEntries(ctx, user._id, dayStart, dayEnd);
+  args: {
+    timestamp: v.string(),
+    userTimezone: v.string(),
   },
-});
-
-export const dailyTotal = query({
-  args: { tz: v.string() },
-  async handler(ctx, { tz }) {
+  async handler(ctx, { timestamp, userTimezone }) {
     const user = await getCurrentUserOrThrow(ctx);
 
-    const dayStart = dayjs().tz(tz).startOf("day").valueOf();
-    const dayEnd = dayjs().tz(tz).endOf("day").valueOf();
+    const dayStart = dayjs(timestamp).tz(userTimezone).startOf("day").toISOString();
+    const dayEnd = dayjs(timestamp).tz(userTimezone).endOf("day").toISOString();
 
-    const entries = await getUserWaterEntries(ctx, user._id, dayStart, dayEnd);
+    const entries = await ctx.db
+      .query("waterLogEntries")
+      .withIndex("by_user_timestamp", (q) =>
+        q
+          .eq("userId", user._id as Id<"users">)
+          .gte("timestamp", dayStart)
+          .lt("timestamp", dayEnd),
+      )
+      .collect();
 
-    return entries.reduce((total, entry) => total + entry.amount, 0);
+    const dayTotalConsumed = entries.reduce((sum, entry) => sum + (entry.amount || 0), 0);
+
+    return {
+      entries,
+      dayTotalConsumed,
+    };
   },
 });

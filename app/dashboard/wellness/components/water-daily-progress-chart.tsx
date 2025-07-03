@@ -1,6 +1,5 @@
 "use client";
 
-import { TrendingUp } from "lucide-react";
 import {
   Label,
   PolarGrid,
@@ -18,6 +17,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ChartConfig, ChartContainer } from "@/components/ui/chart";
+import dayjs from "dayjs";
 
 const chartConfig = {
   ounces: {
@@ -30,11 +30,12 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 interface WaterProgressProps {
+  date: Date;
   currentOunces: number;
   goalOunces?: number;
 }
 
-function calculateWaterAngles(current: number, goal: number = 96) {
+function calculateWaterAngles(current: number, goal: number) {
   const percentage = Math.min(current / goal, 1);
   const degrees = percentage * 360;
   return {
@@ -44,6 +45,7 @@ function calculateWaterAngles(current: number, goal: number = 96) {
 }
 
 export default function WaterDailyProgressChart({
+  date,
   currentOunces = 24,
   goalOunces = 96,
 }: WaterProgressProps) {
@@ -60,7 +62,7 @@ export default function WaterDailyProgressChart({
     <Card className="flex flex-col">
       <CardHeader className="items-center pb-0">
         <CardTitle>Water Daily Progress</CardTitle>
-        <CardDescription>{"todayDate"}</CardDescription>
+        <CardDescription>{dayjs(date).format("M/D")}</CardDescription>
       </CardHeader>
       <CardContent className="flex-1 pb-0">
         <ChartContainer

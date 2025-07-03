@@ -38,7 +38,6 @@ import type * as tasks from "../tasks.js";
 import type * as timers from "../timers.js";
 import type * as users from "../users.js";
 import type * as waterLogEntries from "../waterLogEntries.js";
-import type * as waterLogHelpers from "../waterLogHelpers.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -74,7 +73,6 @@ declare const fullApi: ApiFromModules<{
   timers: typeof timers;
   users: typeof users;
   waterLogEntries: typeof waterLogEntries;
-  waterLogHelpers: typeof waterLogHelpers;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,

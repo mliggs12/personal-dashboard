@@ -2,8 +2,6 @@
 
 import { useQuery } from "convex/react";
 import dayjs from "dayjs";
-import timezone from "dayjs/plugin/timezone";
-import utc from "dayjs/plugin/utc";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 
@@ -13,39 +11,41 @@ import {
   DrawerClose,
   DrawerContent,
   DrawerFooter,
+  DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { api } from "@/convex/_generated/api";
 
+import { getUserTimezone } from "@/lib/timezone.utils";
+import { DatePicker } from "./components/date-picker";
 import WaterDailyProgressChart from "./components/water-daily-progress-chart";
 import WaterLogForm from "./components/water-log-form";
 
-dayjs.extend(timezone);
-dayjs.extend(utc);
-
 export default function WellnessPage() {
   const [open, setOpen] = useState(false);
+  const [date, setDate] = useState<Date>(new Date())
 
-  const clientTimezone = dayjs.tz.guess();
-  const dailyEntries = useQuery(api.waterLogEntries.dailyEntries, {
-    tz: clientTimezone,
-  });
-  const dailyTotal = useQuery(api.waterLogEntries.dailyTotal, {
-    tz: clientTimezone,
+  const dayData = useQuery(api.waterLogEntries.dailyEntries, {
+    timestamp: dayjs(date).toISOString(),
+    userTimezone: getUserTimezone()
   });
 
-  if (dailyEntries === undefined || dailyTotal === undefined)
+  if (dayData === undefined)
     return <div>Loading...</div>;
 
   return (
     <div className="px-2 space-y-4">
-      <h1 className="text-2xl">Wellness Page</h1>
-      <WaterDailyProgressChart currentOunces={dailyTotal} />
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl">Wellness Page</h1>
+        <DatePicker date={date} onSelect={(e) => setDate(e)} />
+      </div>
+
+      <WaterDailyProgressChart date={date} currentOunces={dayData.dayTotalConsumed} />
       <div>
         <h2 className="text-xl">Entry Log</h2>
         <div>
-          {dailyEntries &&
-            dailyEntries.map((entry) => (
+          {dayData.entries &&
+            dayData.entries.map((entry) => (
               <div
                 key={entry._id}
                 className="flex gap-2"
@@ -70,6 +70,7 @@ export default function WellnessPage() {
           </Button>
         </DrawerTrigger>
         <DrawerContent>
+          <DrawerTitle className="hidden" />
           <WaterLogForm onEntryCreated={() => setOpen(false)} />
           <DrawerFooter>
             <DrawerClose asChild>

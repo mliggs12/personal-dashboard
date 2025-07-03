@@ -243,7 +243,7 @@ export default defineSchema({
 
   waterLogEntries: defineTable({
     amount: v.number(),
-    timestamp: v.number(),
+    timestamp: v.string(), // UTC ISO-8601 eg. "2025-07-02T20:15:00Z"
     type: v.optional(v.string()), // eg. "coffee", "energy drink", "sports drink", "juice"
     userId: v.id("users"),
   })
