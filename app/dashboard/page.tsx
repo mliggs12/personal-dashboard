@@ -1,11 +1,9 @@
 "use client";
 
-import CalendarScheduleView from "./components/calendar/calendar-schedule-view";
 import DashboardBanner from "./components/dashboard-banner";
-import InboxWidget from "./components/inbox/inbox-widget";
 import Scratchpad from "./components/scratch-pad/scratch-pad";
 import TasksCard from "./components/tasks/tasks-card";
-import Timer from "./components/timer/timer";
+// import Timer from "./components/timer/timer";
 
 export default function DashboardPage() {
 
