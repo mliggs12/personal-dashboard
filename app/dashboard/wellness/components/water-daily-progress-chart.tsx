@@ -1,5 +1,6 @@
 "use client";
 
+import dayjs from "dayjs";
 import {
   Label,
   PolarGrid,
@@ -17,7 +18,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ChartConfig, ChartContainer } from "@/components/ui/chart";
-import dayjs from "dayjs";
 
 const chartConfig = {
   ounces: {
