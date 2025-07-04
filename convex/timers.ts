@@ -2,101 +2,178 @@ import { v } from "convex/values";
 
 import { api, internal } from "./_generated/api";
 import { Id } from "./_generated/dataModel";
-import { internalMutation, mutation, query } from "./_generated/server";
+import { internalMutation, mutation, query, QueryCtx } from "./_generated/server";
 import { getCurrentUserOrThrow } from "./users";
-
-export const create = internalMutation({
-  args: {
-    duration: v.number(),
-  },
-  async handler(ctx, { duration }) {
-    const user = await getCurrentUserOrThrow(ctx);
-
-    return await ctx.db.insert("timers", {
-      start: Date.now(),
-      duration,
-      isActive: true,
-      userId: user._id,
-    });
-  },
-});
 
 export const start = mutation({
   args: {
-    duration: v.optional(v.number()),
+    duration: v.number(),  // s
+    intentionId: v.optional(v.string())
   },
   async handler(ctx, { duration }) {
-    const user = await getCurrentUserOrThrow(ctx);
+    const now = Math.floor(Date.now() / 1000)
 
-    const existing = await ctx.runQuery(api.timers.getActive);
+    const timer = await getCurrentTimer(ctx)
 
-    if (existing) {
-      await ctx.db.patch(existing._id, {
-        start: Date.now(),
-        duration: duration ?? 5,
-        isActive: true,
-        userId: user._id,
-      });
+    const timerData = {
+      duration,
+      startedAt: now,
+      pausedAt: undefined,
+      totalPauseTime: 0,
+      isActive: true,
+      isPaused: false,
+    };
+
+    if (timer) {
+      await ctx.db.replace(timer._id, { ...timerData, userId: timer.userId });
     } else {
-      await ctx.runMutation(internal.timers.create, { duration: duration ?? 5 });
+      const user = await getCurrentUserOrThrow(ctx)
+      await ctx.db.insert("timers", { ...timerData, userId: user._id });
     }
-  },
+  }
 });
 
 export const pause = mutation({
-  args: { timerId: v.id("timers") },
-  async handler(ctx, { timerId }) {
-    const existing = await ctx.db.get(timerId);
-    if (!existing) return null;
-
-    const elapsed = Math.floor((Date.now() - existing.start) / 1000);
-    const newDuration = Math.max(existing.duration - elapsed, 0);
-
-    await ctx.db.patch(timerId, {
-      duration: newDuration,
-      isActive: false,
-    });
-  },
-});
-
-export const completeInterval = mutation({
-  args: { timerId: v.id("timers") },
-  async handler(ctx, { timerId }) {
-    const existing = await ctx.db.get(timerId);
-    if (!existing) return null;
-
-    await ctx.db.patch(timerId, {
-      duration: existing.duration,
-      isActive: false,
-    });
-  },
-});
-
-export const getActive = query({
+  args: {},
   async handler(ctx) {
-    const user = await getCurrentUserOrThrow(ctx);
+    const timer = await getCurrentTimer(ctx)
 
-    return await ctx.db
-      .query("timers")
-      .withIndex("by_user", (q) => q.eq("userId", user._id))
-      .filter((q) => q.eq(q.field("isActive"), true))
-      .first();
-  },
-});
-
-export const deactivateTimer = internalMutation({
-  args: { userId: v.string() },
-  async handler(ctx, { userId }) {
-    const existing = await ctx.db
-      .query("timers")
-      .withIndex("by_user", (q) =>
-        q.eq("userId", userId as Id<"users">)
-      )
-      .filter(q => q.eq(q.field("isActive"), true))
-      .first();
-
-    if (existing) {
-      await ctx.db.patch(existing._id, { isActive: false });
+    if (!timer || !timer.isActive || timer.isPaused) {
+      throw new Error("No active timer to pause");
     }
+
+    const now = Date.now()
+
+    await ctx.db.patch(timer._id, {
+      isPaused: true,
+      pausedAt: now,
+    });
   },
 });
+
+export const resume = mutation({
+  args: {},
+  async handler(ctx) {
+    const timer = await getCurrentTimer(ctx)
+
+    if (!timer || !timer.isActive || !timer.isPaused || !timer.pausedAt) {
+      throw new Error("No paused timer to resume");
+    }
+
+    const now = Date.now()
+    const pauseDuration = now - timer.pausedAt;
+    const newTotalPauseTime = timer.totalPauseTime + pauseDuration
+
+    const elapsedTime = now - timer.startedAt - newTotalPauseTime;
+    const remainingTime = Math.max(timer.duration - elapsedTime, 0);
+
+    const scheduledFunctionId = await ctx.scheduler.runAfter(
+      remainingTime,
+      internal.timers.complete,
+      {}
+    )
+
+    await ctx.db.patch(timer._id, {
+      isPaused: false,
+      pausedAt: undefined,
+      totalPauseTime: newTotalPauseTime,
+    });
+  },
+});
+
+export const stop = mutation({
+  args: { intentionId: v.optional(v.string()) },
+  handler: async (ctx, { intentionId }) => {
+    await finishTimerLogic(ctx, intentionId, true);
+  },
+});
+
+// Scheduled function
+export const complete = internalMutation({
+  args: {
+    intentionId: v.optional(v.string()),
+    wasStopped: v.optional(v.boolean())
+  },
+  async handler(ctx, { intentionId, wasStopped }) {
+    await finishTimerLogic(ctx, intentionId, wasStopped)
+  }
+});
+
+export async function finishTimerLogic(ctx: any, intentionId?: string, wasStopped?: boolean) {
+  const timer = await getCurrentTimer(ctx)
+
+  if (!timer) return
+
+  const now = Date.now()
+  let actualDuration = now - timer.startedAt - timer.totalPauseTime
+
+  if (wasStopped) {
+    const currentPauseTime = timer.isPaused && timer.pausedAt
+      ? now - timer.pausedAt
+      : 0;
+    actualDuration = now - timer.startedAt - timer.totalPauseTime - currentPauseTime
+  }
+
+  await ctx.db.insert("sessions", {
+    start: timer.startedAt,
+    end: now,
+    duration: actualDuration,
+    intentionId: intentionId as Id<"intentions"> ?? undefined,
+    updated: now,
+    userId: timer.userId,
+  });
+
+  await ctx.db.patch(timer._id, {
+    isActive: false,
+    isPaused: false,
+    pausedAt: undefined,
+    totalPauseTime: 0,
+    scheduledFunctionId: undefined
+  })
+}
+
+export const getTimerState = query({
+  args: {},
+  async handler(ctx) {
+    const timer = await getCurrentTimer(ctx)
+
+    if (!timer || !timer.isActive) {
+      return { duration: 0, isActive: false, isPaused: false, timeLeft: 0 };
+    }
+
+    const now = Date.now();
+
+    if (timer.isPaused && timer.pausedAt) {
+      const elapsedBeforePause = timer.pausedAt - timer.startedAt - timer.totalPauseTime;
+      const timeLeft = Math.max(timer.duration - elapsedBeforePause, 0);
+
+      return {
+        duration: timer.duration,
+        startedAt: timer.startedAt,
+        isActive: true,
+        isPaused: true,
+        timeLeft,
+      };
+    }
+
+    const elapsed = now - timer.startedAt - timer.totalPauseTime;
+    const timeLeft = Math.max(timer.duration - elapsed, 0);
+
+    return {
+      duration: timer.duration,
+      startedAt: timer.startedAt,
+      isActive: true,
+      isPaused: false,
+      timeLeft,
+    };
+  },
+});
+
+async function getCurrentTimer(ctx: QueryCtx) {
+  const user = await getCurrentUserOrThrow(ctx)
+
+  return await ctx.db
+    .query("timers")
+    .withIndex("by_user", (q) => q.eq("userId", user._id))
+    .first();
+}
