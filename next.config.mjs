@@ -2,7 +2,14 @@
 
 const nextConfig = {
   images: {
-    remotePatterns: [new URL('https://nix-tag-images.s3.amazonaws.com/**')]
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'nix-tag-images.s3.amazonaws.com',
+        port: '',
+        pathname: '/**'
+      }
+    ]
   }
 };
 
