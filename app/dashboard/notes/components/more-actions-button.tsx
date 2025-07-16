@@ -1,20 +1,18 @@
-"use client"
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+
+import { useMutation } from "convex/react";
+import { MoreHorizontal, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
-import { useMutation } from "convex/react";
-
-import { MoreHorizontal, Trash2 } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
 
 export default function MoreActionsButton({ id }: { id: Id<"notes"> }) {
   const [open, setOpen] = useState(false);
@@ -31,14 +29,14 @@ export default function MoreActionsButton({ id }: { id: Id<"notes"> }) {
       <DropdownMenuTrigger asChild>
         <Button
           className="hover:bg-secondary"
-          size="icon"
+          size="sm"
           variant="ghost"
         >
           <MoreHorizontal />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuSeparator />
+        {/* <DropdownMenuSeparator /> */}
         <DropdownMenuItem
           className="text-destructive"
           onSelect={handleDelete}

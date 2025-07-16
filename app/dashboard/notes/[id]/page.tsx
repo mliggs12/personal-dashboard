@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery } from "convex/react";
 import { useParams } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
@@ -17,20 +17,17 @@ export default function NotePage() {
 
   const updateNote = useMutation(api.notes.update);
 
-  const [isSaving, setIsSaving] = useState(false);
-
   const timeoutRef = useRef<NodeJS.Timeout>();
 
   const handleChange = useCallback(
     (text: string) => {
-      setIsSaving(true);
 
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
 
       timeoutRef.current = setTimeout(() => {
-        updateNote({ noteId: id, text }).then(() => setIsSaving(false));
+        updateNote({ noteId: id, text })
       }, 2000);
     },
     [id, updateNote],
