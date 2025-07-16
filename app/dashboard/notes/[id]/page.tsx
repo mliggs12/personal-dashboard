@@ -1,13 +1,14 @@
 "use client";
 
-import { useQuery, useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { useParams } from "next/navigation";
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 
 import TiptapEditor from "../../components/tiptap-editor";
+import MoreActionsButton from "../components/more-actions-button";
 import NoteTitle from "../components/note-title";
 
 export default function NotePage() {
@@ -57,11 +58,7 @@ export default function NotePage() {
           id={note._id}
           initialContent={note.title}
         />
-        <div className="hidden md:block mr-4">
-          {isSaving && (
-            <span className="text-sm text-muted-foreground">Saving...</span>
-          )}
-        </div>
+        <MoreActionsButton id={note._id} />
       </div>
       <TiptapEditor
         initialContent={note.text}

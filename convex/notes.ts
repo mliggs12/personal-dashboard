@@ -88,3 +88,15 @@ export const search = query({
       .collect();
   },
 });
+
+export const deleteNote = mutation({
+  args: {
+    id: v.id("notes"),
+  },
+  async handler(ctx, { id }) {
+    const note = await ctx.db.get(id);
+    if (note === null) throw new Error("Could not find note");
+
+    await ctx.db.delete(id);
+  },
+});
