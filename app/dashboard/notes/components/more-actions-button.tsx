@@ -1,6 +1,3 @@
-import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
-
 import { useMutation } from "convex/react";
 import { MoreHorizontal, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -13,6 +10,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 
 export default function MoreActionsButton({ id }: { id: Id<"notes"> }) {
   const [open, setOpen] = useState(false);
