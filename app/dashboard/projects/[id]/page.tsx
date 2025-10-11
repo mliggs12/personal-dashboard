@@ -1,7 +1,7 @@
 "use client";
 
-import { useQuery } from "convex/react";
 import { useParams } from "next/navigation";
+import { useQuery } from "convex/react";
 
 import { DataTable } from "@/components/ui/data-table";
 import { api } from "@/convex/_generated/api";

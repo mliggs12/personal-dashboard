@@ -9,8 +9,9 @@ import { api } from "@/convex/_generated/api";
 import { Doc } from "@/convex/_generated/dataModel";
 import { useToast } from "@/hooks/use-toast";
 
-import Task from "./task";
 import { completeTask } from "../../tasks/actions";
+
+import Task from "./task";
 
 dayjs.extend(timezone);
 dayjs.extend(utc);

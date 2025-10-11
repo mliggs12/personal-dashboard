@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 
 import { Id } from "./_generated/dataModel";
-import { mutation, query, QueryCtx, internalQuery } from "./_generated/server";
+import { internalQuery,mutation, query, QueryCtx } from "./_generated/server";
 import { getCurrentUserOrThrow } from "./users";
 
 export const byScheduleOrder = query({
@@ -37,6 +37,22 @@ export const byScheduleOrder = query({
     });
 
     return result;
+  },
+});
+
+export const reorder = mutation({
+  args: {
+    updates: v.array(
+      v.object({
+        id: v.id("activities"),
+        order: v.number(),
+      })
+    ),
+  },
+  handler: async (ctx, { updates }) => {
+    for (const { id, order } of updates) {
+      await ctx.db.patch(id, { order });
+    }
   },
 });
 
@@ -130,12 +146,3 @@ export const update = mutation({
     });
   },
 });
-
-async function handleLengthChange(ctx: QueryCtx, scheduleId: Id<"schedules">) {
-  const activities = await ctx.db
-    .query("activities")
-    .withIndex("by_schedule_order", (q) => q.eq("scheduleId", scheduleId)
-    ).collect();
-
-
-}

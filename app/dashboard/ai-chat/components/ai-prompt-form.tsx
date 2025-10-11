@@ -8,6 +8,7 @@ import {
   IconWorld,
   IconX,
 } from "@tabler/icons-react"
+import { LucideIcon } from "lucide-react"
 
 import {
   Command,
@@ -23,7 +24,6 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Field, FieldLabel } from "@/components/ui/field"
@@ -44,8 +44,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+
 import { navItems } from "../../components/sidebar/data"
-import { LucideIcon } from "lucide-react"
 
 interface MentionableItem {
   title: string
@@ -104,7 +104,7 @@ export function AiPromptForm({ input, onInputChange, onSubmit, disabled = false 
     // Submit on Enter (without Shift)
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault()
-      onSubmit(e as any)
+      onSubmit(e as React.FormEvent)
     }
   }
 

@@ -2,7 +2,7 @@ import dayjs from "dayjs";
 import isToday from "dayjs/plugin/isToday";
 import isYesterday from "dayjs/plugin/isYesterday";
 import relativeTime from "dayjs/plugin/relativeTime";
-import { Calendar, GitBranch, Repeat } from "lucide-react";
+import { Repeat } from "lucide-react";
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
@@ -48,7 +48,7 @@ export default function Task({
   return (
     <div
       key={data._id}
-      className="py-6 px-1 border-b w-full flex justify-between space-x-2 animate-in fade-in hover:bg-secondary hover:cursor-pointer"
+      className="py-8 sm:py-6 px-1 border-b w-full flex justify-between space-x-2 animate-in fade-in hover:bg-secondary hover:cursor-pointer"
     >
       <Dialog>
         <div className="flex gap-2 items-center justify-end w-full">
@@ -57,7 +57,7 @@ export default function Task({
               id="task"
               className={
                 cn(
-                  "w-5 h-5",
+                  "w-6 h-6 sm:w-5 sm:h-5",
                   "transition-all duration-200 ease-in-out",
                   "hover:scale-105 active:scale-95",
                   isCompleted
@@ -73,7 +73,7 @@ export default function Task({
               <div className="flex justify-between items-center w-full">
                 <button
                   className={cn(
-                    "text-sm font-normal text-left",
+                    "sm:text-sm font-normal text-left",
                     isCompleted && "line-through text-foreground/30",
                   )}
                 >

@@ -1,7 +1,7 @@
 "use client";
 
-import { useMutation, useQuery } from "convex/react";
 import { useParams } from "next/navigation";
+import { useMutation, useQuery } from "convex/react";
 
 import {
   Card,

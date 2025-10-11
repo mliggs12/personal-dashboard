@@ -1,5 +1,5 @@
-import { Loader2 } from "lucide-react";
 import { MouseEvent, ReactNode } from "react";
+import { Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 

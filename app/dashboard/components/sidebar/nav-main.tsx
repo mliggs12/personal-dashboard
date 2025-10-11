@@ -10,9 +10,10 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 
+import { RecentNotes } from "../recent-notes";
+
 import AddNoteButton from "./add-note-button";
 import { navItems } from "./data";
-import { RecentNotes } from "../recent-notes";
 
 export default function NavMain() {
   const pathname = usePathname();

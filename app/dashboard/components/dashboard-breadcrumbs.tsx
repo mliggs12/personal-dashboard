@@ -1,5 +1,5 @@
-import { useQuery } from "convex/react";
 import { usePathname } from "next/navigation";
+import { useQuery } from "convex/react";
 
 import { navItems } from "@/app/dashboard/components/sidebar/data";
 import {

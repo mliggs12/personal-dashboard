@@ -1,12 +1,12 @@
-import "@/app/styles.scss";
-
+import { forwardRef, useCallback, useImperativeHandle } from "react";
 import Document from '@tiptap/extension-document';
 import Link from "@tiptap/extension-link";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { forwardRef, useCallback, useImperativeHandle } from "react";
 
 import { cn } from "@/lib/utils";
+
+import "@/app/styles.scss";
 
 interface ScratchPadEditorProps {
   initialContent: string;

@@ -1,11 +1,11 @@
+import { useCallback, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { useMutation, useQuery } from "convex/react";
 import dayjs from "dayjs";
 import { Ellipsis } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { DialogClose, DialogFooter, DialogHeader, Dialog, DialogTrigger, DialogContent, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTrigger } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { api } from "@/convex/_generated/api";
 
@@ -65,7 +65,7 @@ export default function ScratchPad() {
   }
 
   return (
-    <div className="max-w-[600px]">
+    <div className="hidden sm:block max-w-[600px]">
       <div className="flex items-center justify-between mb-1">
         <h2 className="prose dark:prose-invert text-lg font-semibold">Scratch Pad</h2>
         <Popover>

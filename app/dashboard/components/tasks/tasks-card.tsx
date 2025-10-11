@@ -1,10 +1,10 @@
 "use client";
 
+import { useState } from "react";
+import Link from "next/link";
 import { useQuery } from "convex/react";
 import dayjs from "dayjs";
 import { ArrowUpRight } from "lucide-react";
-import Link from "next/link";
-import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -18,7 +18,7 @@ import { api } from "@/convex/_generated/api";
 import { Doc } from "@/convex/_generated/dataModel";
 
 import AddTaskDrawerDialog from "./add-task-drawer-dialog";
-import StatusDropdown from "./status-dropdown"
+import StatusDropdown from "./status-dropdown";
 import TaskList from "./task-list";
 
 export default function TasksCard() {
@@ -36,7 +36,7 @@ export default function TasksCard() {
   if (status === "backlog" && backlogTasks) tasks = backlogTasks
 
   return (
-    <Card className="relative max-h-[467px]">
+    <Card className="relative max-h-[570px] sm:max-h-[467px]">
       <CardHeader className="p-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-6">
@@ -56,7 +56,7 @@ export default function TasksCard() {
           </Button>
         </div>
       </CardHeader>
-      <CardContent className="relative h-[346px] p-0 border-t overflow-y-auto hide-scrollbar">
+      <CardContent className="relative h-[445px] sm:h-[346px] p-0 border-t overflow-y-auto hide-scrollbar">
         <TaskList tasks={tasks} />
       </CardContent>
 

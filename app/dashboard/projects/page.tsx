@@ -1,9 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useQuery } from "convex/react";
 import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat";
-import Link from "next/link";
 
 import { api } from "@/convex/_generated/api";
 

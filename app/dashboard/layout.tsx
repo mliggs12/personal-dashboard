@@ -1,9 +1,9 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { Authenticated } from "convex/react";
 import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat";
-import { usePathname } from "next/navigation";
 
 import SidebarLeft from "@/app/dashboard/components/sidebar/sidebar-left";
 import { Separator } from "@/components/ui/separator";
@@ -54,7 +54,7 @@ export default function DashboardLayout({
                 <p>{dayjs().format("dddd, LL")}</p>
               </div>
             </header>
-            <main className="flex-1 overflow-hidden">{children}</main>
+            <main className="h-[calc(100vh-64px)] md:h-[calc(100vh-48px)] overflow-hidden">{children}</main>
             <Toaster />
           </SidebarInset>
         </Authenticated>

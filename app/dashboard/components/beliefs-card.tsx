@@ -1,8 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useQuery } from "convex/react";
 import { ArrowUpRight } from "lucide-react";
-import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

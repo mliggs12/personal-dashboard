@@ -1,6 +1,6 @@
-export const runtime = 'edge';
-
 import { auth } from '@clerk/nextjs/server';
+
+export const runtime = 'edge';
 
 interface OllamaMessage {
   role: 'user' | 'assistant' | 'system';

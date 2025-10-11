@@ -1,8 +1,8 @@
+import { useCallback, useEffect, useRef, useState } from "react";
 import * as SelectPrimitive from "@radix-ui/react-select";
 import { useMutation, useQuery } from "convex/react";
 import dayjs from "dayjs";
 import { CalendarIcon, CheckCircleIcon, Trash2 } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
   frequencies,
@@ -48,7 +48,7 @@ export default function EditTaskDialog({ data }: { data: Doc<"tasks"> }) {
 
   const { toast } = useToast();
 
-  const [taskDue, setTaskDue] = useState<String | undefined>(due);
+  const [taskDue, setTaskDue] = useState<string | undefined>(due);
   const [taskStatus, setTaskStatus] = useState(
     statuses.find((statusInfo) => statusInfo.value === status),
   );

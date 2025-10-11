@@ -1,10 +1,10 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useEffect,useState } from "react";
 
 import {
+  sendNotification,
   subscribeUser,
   unsubscribeUser,
-  sendNotification,
 } from "@/app/actions";
 
 function urlBase64ToUint8Array(base64String: string) {

@@ -1,7 +1,7 @@
 "use server";
 
-import webpush from "web-push";
-import { PushSubscription as WebPushSubscription } from "web-push";
+import webpush, { PushSubscription as WebPushSubscription } from "web-push";
+
 
 interface PushSubscription extends WebPushSubscription {
   keys: {

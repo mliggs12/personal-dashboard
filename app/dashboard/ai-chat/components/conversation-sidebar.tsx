@@ -1,12 +1,13 @@
 "use client";
 
-import { MessageSquare, Trash2, Plus, Bot, PanelLeftClose, PanelLeft } from "lucide-react";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+import { Bot, MessageSquare, PanelLeft,PanelLeftClose, Plus, Trash2 } from "lucide-react";
+
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Id } from "@/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
