@@ -1,9 +1,9 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useQuery } from "convex/react";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import { useRouter } from "next/navigation";
 
 import {
   Table,
@@ -32,7 +32,7 @@ export default function NotesTable() {
   );
 
   return (
-    <Table>
+    <Table className="flex flex-col h-full">
       <TableHeader className="hidden md:table-header-group">
         <TableRow>
           <TableHead>Title</TableHead>
@@ -40,7 +40,7 @@ export default function NotesTable() {
           <TableHead>Created</TableHead>
         </TableRow>
       </TableHeader>
-      <TableBody>
+      <TableBody className="h-full overflow-y-scroll">
         {sortedNotes.map((note) => (
           <TableRow
             key={note._id}

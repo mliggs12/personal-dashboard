@@ -7,9 +7,9 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 
-import TiptapEditor from "../../../components/tiptap-editor";
-import MoreActionsButton from "../../components/more-actions-button";
-import NoteTitle from "../../components/note-title";
+import TiptapEditor from "../../components/tiptap-editor";
+import MoreActionsButton from "../components/more-actions-button";
+import NoteTitle from "../components/note-title";
 
 export default function NotePage() {
   const { id } = useParams<{ id: Id<"notes"> }>();
