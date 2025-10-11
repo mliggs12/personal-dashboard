@@ -1,6 +1,7 @@
 import {
   Bed,
   Book,
+  Bot,
   Brain,
   Dumbbell,
   Folder,
@@ -31,6 +32,11 @@ export const navItems = [
     title: "Notes",
     url: "/dashboard/notes",
     icon: StickyNote,
+  },
+  {
+    title: "AI Chat",
+    url: "/dashboard/ai-chat",
+    icon: Bot,
   },
   // {
   //   title: "Interstitial/Pomodoro",

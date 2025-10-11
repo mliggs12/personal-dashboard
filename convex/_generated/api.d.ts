@@ -14,6 +14,8 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as activities from "../activities.js";
+import type * as aiConversations from "../aiConversations.js";
+import type * as aiMessages from "../aiMessages.js";
 import type * as banners from "../banners.js";
 import type * as beliefs from "../beliefs.js";
 import type * as chats from "../chats.js";
@@ -30,6 +32,7 @@ import type * as projects from "../projects.js";
 import type * as recurringTasks from "../recurringTasks.js";
 import type * as schedules from "../schedules.js";
 import type * as scratchPads from "../scratchPads.js";
+import type * as sessions from "../sessions.js";
 import type * as sleepRecords from "../sleepRecords.js";
 import type * as statements from "../statements.js";
 import type * as systemExerciseCategories from "../systemExerciseCategories.js";
@@ -49,6 +52,8 @@ import type * as waterLogEntries from "../waterLogEntries.js";
  */
 declare const fullApi: ApiFromModules<{
   activities: typeof activities;
+  aiConversations: typeof aiConversations;
+  aiMessages: typeof aiMessages;
   banners: typeof banners;
   beliefs: typeof beliefs;
   chats: typeof chats;
@@ -65,6 +70,7 @@ declare const fullApi: ApiFromModules<{
   recurringTasks: typeof recurringTasks;
   schedules: typeof schedules;
   scratchPads: typeof scratchPads;
+  sessions: typeof sessions;
   sleepRecords: typeof sleepRecords;
   statements: typeof statements;
   systemExerciseCategories: typeof systemExerciseCategories;

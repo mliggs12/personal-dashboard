@@ -138,23 +138,33 @@ export default defineSchema({
   sessions: defineTable({
     start: v.number(),
     end: v.number(),
-    duration: v.number(),
-    pauseDuration: v.optional(v.number()),
+    duration: v.number(), // Active focus time (excluding pauses)
+    pauseDuration: v.optional(v.number()), // Total time spent paused
+    totalElapsed: v.optional(v.number()), // Total wall-clock time (including pauses)
+    timerType: v.optional(v.union(v.literal("session"), v.literal("tithe"))),
+    description: v.optional(v.string()),
     notes: v.optional(v.string()),
     emotionId: v.optional(v.id("emotions")),
     intentionId: v.optional(v.id("intentions")),
     updated: v.number(),
     userId: v.id("users"),
-  }).index("by_user", ["userId"]),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_start", ["userId", "start"]),
 
   timers: defineTable({
     duration: v.number(),
-    startedAt: v.number(),
-    pausedAt: v.optional(v.number()),
-    totalPauseTime: v.number(),
-    isActive: v.boolean(),
-    isPaused: v.boolean(),
-    userId: v.string(),
+    startTime: v.optional(v.string()),
+    status: v.union(
+      v.literal("idle"),
+      v.literal("running"),
+      v.literal("paused"),
+    ),
+    timerType: v.optional(v.union(v.literal("session"), v.literal("tithe"))),
+    intentionId: v.optional(v.id("intentions")),
+    pausedTime: v.optional(v.number()), // Total time spent paused (in seconds)
+    lastPauseStart: v.optional(v.string()), // When the current pause started
+    userId: v.id("users"),
   }).index("by_user", ["userId"]),
 
   // Task Management
@@ -323,4 +333,21 @@ export default defineSchema({
     updated: v.number(),
     userId: v.string(),
   }).index("by_user", ["userId"]),
+
+  // AI Chat
+  aiConversations: defineTable({
+    title: v.optional(v.string()),
+    updated: v.number(),
+    userId: v.id("users"),
+  }).index("by_user", ["userId"]),
+
+  aiMessages: defineTable({
+    conversationId: v.id("aiConversations"),
+    content: v.string(),
+    role: v.union(v.literal("user"), v.literal("assistant")),
+    timestamp: v.number(),
+    model: v.optional(v.string()), // AI model used for assistant messages
+    duration: v.optional(v.number()), // Generation time in milliseconds
+    tokens: v.optional(v.number()), // Token count (for future usage tracking)
+  }).index("by_conversation", ["conversationId"]),
 });
