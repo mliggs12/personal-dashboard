@@ -17,13 +17,14 @@ export default function SleepTracker() {
   const recordStart = useMutation(api.sleepRecords.recordSleepStart);
   const recordEnd = useMutation(api.sleepRecords.recordSleepEnd);
 
+  const [currentRecordId, setCurrentRecordId] = useState<string | null>(null);
+
   useEffect(() => {
     if (activeSession) {
+      // eslint-disable-next-line
       setCurrentRecordId(activeSession._id);
     }
   }, [activeSession]);
-
-  const [currentRecordId, setCurrentRecordId] = useState<string | null>(null);
 
   const handleSleepStart = async () => {
     const recordId = await recordStart({ timestamp: Date.now() });

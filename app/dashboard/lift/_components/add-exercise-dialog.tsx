@@ -1,6 +1,6 @@
-import { useRef, useState } from "react";
-import { useMutation,useQuery } from "convex/react";
-import { ChevronLeft,Plus, Search } from "lucide-react";
+import { useState } from "react";
+import { useQuery } from "convex/react";
+import { ChevronLeft, Plus, Search } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import { cn } from "@/lib/utils";
 
 type Page = 'categories' | 'exercises';
 
@@ -44,7 +43,7 @@ export function AddExerciseDialog() {
     return <div>Loading...</div>;
   }
 
-  const Content = () => (
+  const content = (
     <div className="p-2">
       <div className="search flex items-center p-4 gap-4 w-full bg-secondary border">
         {currentPage === 'exercises' && (
@@ -110,7 +109,7 @@ export function AddExerciseDialog() {
           </Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">
-          <Content />
+          {content}
         </DialogContent>
       </Dialog>
     );
@@ -124,7 +123,7 @@ export function AddExerciseDialog() {
         </Button>
       </DrawerTrigger>
       <DrawerContent>
-        <Content />
+        {content}
       </DrawerContent>
     </Drawer>
   );

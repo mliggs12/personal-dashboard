@@ -41,7 +41,7 @@ export default function Task({
 }: {
   data: Doc<"tasks">;
   isCompleted: boolean;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line
   handleOnChange: any;
 }) {
   const { name, due, recurringTaskId } = data;

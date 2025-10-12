@@ -1,19 +1,14 @@
 "use client";
 
-import { useMutation, useQuery } from "convex/react";
-import dayjs from "dayjs";
-import timezone from "dayjs/plugin/timezone";
-import utc from "dayjs/plugin/utc";
 import { useEffect, useState } from "react";
+import { useMutation } from "convex/react";
+import dayjs from "dayjs";
 
 import { api } from "@/convex/_generated/api";
-import { Doc, Id } from "@/convex/_generated/dataModel";
+import { Doc } from "@/convex/_generated/dataModel";
 
+import { ActivitiesDataTable } from "./components/activities-data-table";
 import LayoutTable from "./components/layout-table";
-import ScheduleTable from "./components/schedule-table";
-
-dayjs.extend(utc);
-dayjs.extend(timezone);
 
 export default function PlanDashboard() {
   const [schedule, setSchedule] = useState<Doc<"schedules"> | null>(null);
@@ -38,7 +33,7 @@ export default function PlanDashboard() {
       </div>
       <div className="h-full flex flex-col">
         {schedule ? (
-          <ScheduleTable scheduleId={schedule._id} />
+          <ActivitiesDataTable scheduleId={schedule._id} />
         ) : (
           <LayoutTable />
         )}

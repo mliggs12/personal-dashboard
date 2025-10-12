@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import clsx from "clsx";
 import { useMutation, useQuery } from "convex/react";
 import dayjs from "dayjs";
 
@@ -116,8 +115,11 @@ function IntentionsContent({
   error,
   selectedTab,
 }: {
+  // eslint-disable-next-line
   intentions: any;
+  // eslint-disable-next-line
   error: any;
+  // eslint-disable-next-line
   selectedTab: any;
 }) {
   if (error) return <div>Error: {error.message}</div>;

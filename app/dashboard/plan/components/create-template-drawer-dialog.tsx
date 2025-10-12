@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import { CirclePlus, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -21,9 +21,9 @@ import {
 import { Id } from "@/convex/_generated/dataModel";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-import { AddActivityForm } from "./add-activity-form";
+import { CreateTemplateForm } from "./create-template-form";
 
-export default function AddActivityDrawerDialog({ scheduleId }: { scheduleId: Id<"schedules"> }) {
+export default function CreateTemplateDrawerDialog() {
   const [open, setOpen] = useState(false);
   const isMobile = useIsMobile();
 
@@ -40,9 +40,9 @@ export default function AddActivityDrawerDialog({ scheduleId }: { scheduleId: Id
         </DrawerTrigger>
         <DrawerContent>
           <DrawerHeader className="text-left">
-            <DrawerTitle>Add activity</DrawerTitle>
+            <DrawerTitle>Create template</DrawerTitle>
           </DrawerHeader>
-          <AddActivityForm scheduleId={scheduleId} className="px-4" />
+          <CreateTemplateForm className="px-4" />
           <DrawerFooter className="pt-2">
             <DrawerClose asChild>
               <Button variant="outline">Cancel</Button>
@@ -57,17 +57,17 @@ export default function AddActivityDrawerDialog({ scheduleId }: { scheduleId: Id
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button
-          size="icon"
+          size="sm"
           variant="secondary"
         >
-          <Plus className="w-8 h-8" />
+          <CirclePlus /><span>Create</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="w-[875px] max-h-[80vh] p-8 overflow-y-auto fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 border-2 bg-background rounded-xl">
         <DialogHeader>
-          <DialogTitle>Add activity</DialogTitle>
+          <DialogTitle>Create template</DialogTitle>
         </DialogHeader>
-        <AddActivityForm scheduleId={scheduleId} />
+        <CreateTemplateForm />
       </DialogContent>
     </Dialog>
   );

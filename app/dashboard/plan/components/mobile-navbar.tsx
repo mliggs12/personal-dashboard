@@ -1,5 +1,5 @@
-import { Plus, Files, TableProperties } from "lucide-react"
 import Link from "next/link"
+import { Files, Plus, TableProperties } from "lucide-react"
 
 
 export default function MobileNavbar() {
