@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import dayjs from "dayjs";
 
@@ -240,7 +240,7 @@ export function CountdownTimer({
     }));
   };
 
-  const handleFinish = (): void => {
+  const handleFinish = useCallback((): void => {
     playAlarmSound();
     
     // Set flag to prevent state restoration
@@ -283,7 +283,7 @@ export function CountdownTimer({
       ...prevState,
       focusModeActive: false,
     }));
-  };
+  }, [playAlarmSound, state.startTime, state.pausedTime, state.status, state.lastPauseStart, state.duration, timerType, recordSession, selectedIntentionId, selectedIntention?.title, finishTimer]);
 
   useEffect(() => {
     if (state.status === "running") {

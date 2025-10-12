@@ -2,7 +2,6 @@ import NotesTable from "./components/notes-table";
 
 interface NotesLayoutProps {
   children: React.ReactNode;
-  modal: React.ReactNode;
 }
 
 export default function NotesLayout({
