@@ -1,5 +1,6 @@
 "use client"
 
+import { use } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "convex/react";
 import { X } from "lucide-react";
@@ -10,15 +11,16 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 
 interface NoteModalProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default function NoteModal({ params }: NoteModalProps) {
+  const { id } = use(params);
   const router = useRouter();
   const note = useQuery(api.notes.get, {
-    noteId: params.id as Id<"notes">
+    noteId: id as Id<"notes">
   });
 
   const handleClose = () => {
