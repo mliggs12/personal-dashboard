@@ -116,7 +116,9 @@ export default function AiChatPage() {
       setMessages([]);
       toast.success('New conversation started');
     } catch (error) {
-      toast.error('Failed to create conversation');
+      toast.error('Failed to create conversation', {
+        description: error instanceof Error ? error.message : 'Failed to create conversation',
+      });
     }
   }, [isStreaming, createConversation]);
 
@@ -138,7 +140,9 @@ export default function AiChatPage() {
       }
       toast.success('Conversation deleted');
     } catch (error) {
-      toast.error('Failed to delete conversation');
+      toast.error('Failed to delete conversation', {
+        description: error instanceof Error ? error.message : 'Failed to delete conversation',
+      });
     }
   }, [isStreaming, deleteConversation, currentConversationId]);
 

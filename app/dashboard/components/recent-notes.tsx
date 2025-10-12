@@ -1,6 +1,6 @@
+import Link from "next/link";
 import { useQuery } from "convex/react";
 import { FileText } from "lucide-react";
-import Link from "next/link";
 
 import { SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem } from "@/components/ui/sidebar";
 import { api } from "@/convex/_generated/api";

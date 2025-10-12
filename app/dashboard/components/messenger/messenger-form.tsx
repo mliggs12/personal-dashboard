@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "convex/react";
 import { Send } from "lucide-react";
@@ -11,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { useApiMutation } from "@/hooks/use-api-mutation";
 
 const formSchema = z.object({
   content: z.string().min(1, "Message cannot be empty"),
@@ -25,7 +23,6 @@ interface FormProps {
 }
 
 export const MessengerForm = ({ authorId, chatId }: FormProps) => {
-  const [content, setContent] = useState<string>("");
   const send = useMutation(api.messages.send);
 
   const form = useForm<FormValues>({

@@ -1,7 +1,7 @@
-import { useQuery } from "convex/react";
 import * as React from "react"
+import { useQuery } from "convex/react";
 
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardContent,CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/convex/_generated/api"
 import { timestampToShortDateTime } from "@/lib/date.utils";

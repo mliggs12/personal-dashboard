@@ -29,6 +29,7 @@ export default function AddTaskButton({
   onClick,
   name,
 }: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onClick: Dispatch<SetStateAction<any>>;
   name: string;
 }) {

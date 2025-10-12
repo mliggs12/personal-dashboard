@@ -1,7 +1,7 @@
 import { useState } from "react"
 
 export default function DashboardBanner() {
-  const [content, setContent] = useState("Become the master you already are...right now, in this moment. It is the truth that you are already perfect. Surrender to this truth. You are what you think.")
+  const [content] = useState("Become the master you already are...right now, in this moment. It is the truth that you are already perfect. Surrender to this truth. You are what you think.")
 
   // const getBanner = useMutation(api.banners.get)
 

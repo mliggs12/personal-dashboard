@@ -1,19 +1,11 @@
 import {
-  Bed,
   Book,
   Bot,
   Brain,
-  Dumbbell,
-  Folder,
   HeartPulse,
   ListTodo,
-  MessagesSquare,
-  Shapes,
-  Skull,
   StickyNote,
-  Sunrise,
   Target,
-  Timer,
   Zap,
 } from "lucide-react";
 

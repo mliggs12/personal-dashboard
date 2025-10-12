@@ -77,7 +77,7 @@ export default function ScratchPad() {
           </PopoverTrigger>
           <PopoverContent align="end" className="w-fit p-2">
             <div className="grid">
-              <Button variant="ghost" size="sm" disabled={editorRef.current?.isEmpty()} onClick={handleConvertToNote} className="prose dark:prose-invert">
+              <Button variant="ghost" size="sm" onClick={handleConvertToNote} className="prose dark:prose-invert">
                 <span className="mr-auto">Convert to note</span>
               </Button>
               <ClearDialog editorRef={editorRef} />
@@ -110,7 +110,7 @@ const ClearDialog = ({ editorRef }: ClearDialogProps) => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" disabled={editorRef.current?.isEmpty()} className="prose dark:prose-invert">Clear scratch pad</Button>
+        <Button variant="ghost" size="sm" className="prose dark:prose-invert">Clear scratch pad</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>Clear scratch pad?</DialogHeader>

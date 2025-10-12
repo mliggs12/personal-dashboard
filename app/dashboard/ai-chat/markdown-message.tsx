@@ -119,7 +119,7 @@ export function MarkdownMessage({ content }: MarkdownMessageProps) {
             </p>
           ),
           // Style pre (code block container) with copy button
-          pre: ({ children, ...props }) => (
+          pre: ({ children }) => (
             <CodeBlock>
               {children}
             </CodeBlock>

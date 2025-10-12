@@ -48,7 +48,7 @@ export default function AddSubtaskForm({ parentTaskId, onCancel, onSuccess }: Ad
     } catch (error) {
       toast({
         title: "Error creating subtask",
-        description: "Please try again",
+        description: error instanceof Error ? error.message : "Please try again",
         variant: "destructive",
         duration: 3000,
       });
