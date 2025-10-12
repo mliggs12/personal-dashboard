@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useState } from "react";
+import { useState } from "react";
 import { Plus } from "lucide-react";
 
 import { Doc } from "@/convex/_generated/dataModel";
@@ -29,7 +29,7 @@ export default function AddTaskButton({
   onClick,
   name,
 }: {
-  onClick: Dispatch<SetStateAction<unknown>>;
+  onClick: () => void;
   name: string;
 }) {
   return (

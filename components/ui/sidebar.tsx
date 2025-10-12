@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
-import { cva,VariantProps } from "class-variance-authority";
+import { cva, VariantProps } from "class-variance-authority";
 import { PanelLeft } from "lucide-react";
 
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -666,8 +666,11 @@ const SidebarMenuSkeleton = React.forwardRef<
 >(({ className, showIcon = false, ...props }, ref) => {
   // Random width between 50 to 90%.
   const width = React.useMemo(() => {
-    return `${Math.floor(Math.random() * 40) + 50}%`;
-  }, []);
+    // Use a deterministic approach based on component instance
+    const hash = Math.abs(props.children?.toString().length || 0) + (showIcon ? 1 : 0);
+    const randomValue = (hash * 9301 + 49297) % 233280 / 233280;
+    return `${Math.floor(randomValue * 40) + 50}%`;
+  }, [props.children, showIcon]);
 
   return (
     <div
@@ -778,5 +781,6 @@ export {
   SidebarRail,
   SidebarSeparator,
   SidebarTrigger,
-  useSidebar,
+  useSidebar
 };
+

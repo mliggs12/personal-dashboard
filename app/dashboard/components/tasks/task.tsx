@@ -41,8 +41,8 @@ export default function Task({
 }: {
   data: Doc<"tasks">;
   isCompleted: boolean;
-  // eslint-disable-next-line
-  handleOnChange: any;
+   
+  handleOnChange: () => void;
 }) {
   const { name, due, recurringTaskId } = data;
 
