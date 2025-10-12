@@ -13,12 +13,10 @@ export default function Task({
   data,
   isCompleted,
   handleOnChange,
-  showDetails = false,
 }: {
   data: Doc<"tasks">;
   isCompleted: boolean;
-  handleOnChange: any;
-  showDetails?: boolean;
+  handleOnChange: () => void;
 }) {
   const { name, due } = data;
 

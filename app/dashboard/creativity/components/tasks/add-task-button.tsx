@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useState } from "react";
+import { useState } from "react";
 import { Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -30,7 +30,7 @@ export default function AddTaskButton({
   onClick,
   name,
 }: {
-  onClick: Dispatch<SetStateAction<any>>;
+  onClick: () => void;
   name: string;
 }) {
   return (
