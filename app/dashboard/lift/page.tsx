@@ -1,15 +1,13 @@
 "use client"
 
 import { useQuery } from "convex/react";
-import { CalendarDays, ChevronLeft, ChevronRight, EllipsisVertical, Plus } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, EllipsisVertical } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
-import { Doc } from "@/convex/_generated/dataModel";
 
 import { AddExerciseDialog } from "./_components/add-exercise-dialog";
 import EditSetsDialog from "./_components/edit-sets-dialog";
-import WorkoutLog from "./_components/workout-log";
 
 // function ExerciseCard({ exercise }: { exercise: Doc<"systemExercises"> }) {
 //   const { } = exercise;

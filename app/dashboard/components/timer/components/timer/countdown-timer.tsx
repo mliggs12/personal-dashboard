@@ -322,7 +322,7 @@ export function CountdownTimer({
       hasFinishedRef.current = false;
     }
     return () => clearInterval(timerRef.current as NodeJS.Timeout);
-  }, [state.status, duration, timerType]);
+  }, [state.status, duration, timerType, handleFinish]);
 
   useEffect(() => {
     // Only restore timer state if we have a valid timer store and our local state is idle
@@ -364,7 +364,7 @@ export function CountdownTimer({
       }
     }
 
-  }, [timerStore?.status, timerStore?.startTime, timerStore?.timerType, state.status, state.startTime]);
+  }, [timerStore?.status, timerStore?.startTime, timerStore?.timerType, state.status, state.startTime, timerStore]);
 
   // Cleanup effect for component unmount
   useEffect(() => {

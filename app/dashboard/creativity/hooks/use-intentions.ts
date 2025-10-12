@@ -2,9 +2,6 @@ import { useQuery } from "convex/react";
 
 import { api } from "@/convex/_generated/api";
 
-type StatusType = "tithe" | "draft" | "allow" | "done" | "all";
-type TabType = { value: StatusType; label: string };
-
 export function useIntentions(selectedTab: string) {
   const query =
     selectedTab === "all" ? api.intentions.list : api.intentions.getByStatus;

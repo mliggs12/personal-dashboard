@@ -25,23 +25,20 @@ export function TemplateSelect() {
     resolver: zodResolver(FormSchema),
   });
 
-  const templateSchedules = useQuery(api.schedules.templateSchedules);
+  const templateSchedules = useQuery(api.schedules.getTemplates);
 
   if (templateSchedules === undefined) {
     return <p>Loading...</p>;
   }
 
-  if (templateSchedules && templateSchedules.length === 0) {
-    return <p>No template schedules.</p>;
-  }
-
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   function onSubmit(data: z.infer<typeof FormSchema>) { }
 
   return (
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="flex gap-2 w-2/3"
+        className="flex gap-2 w-1/3"
       >
         <FormField
           control={form.control}

@@ -1,13 +1,12 @@
 "use client"
 
-import Image from "next/image"
+import Image from "next/image";
 import { redirect } from "next/navigation";
-import { GoogleOneTap , SignInButton } from "@clerk/nextjs";
+import { GoogleOneTap, SignInButton } from "@clerk/nextjs";
 import { useConvexAuth } from "convex/react";
 
-import { LoginForm } from "@/components/login-form"
 import omIcon from "@/public/generated/icon.svg";
-import bg from "@/public/image/login/login-bg.svg"
+import bg from "@/public/image/login/login-bg.svg";
 
 export default function LoginPage() {
   const { isLoading, isAuthenticated } = useConvexAuth();

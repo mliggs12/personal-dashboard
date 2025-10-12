@@ -24,34 +24,7 @@ export default function IntentionSelect({
   const intention = useQuery(api.intentions.get,
     selectedIntentionId ? { id: selectedIntentionId as Id<"intentions"> } : "skip"
   )
-  const emotions = useQuery(api.emotions.list);
 
-  const getEmotionColor = (emotionId: string) => {
-    const emotion = emotions?.find((e) => e._id === emotionId);
-    if (!emotion) return "#6c757d"; // Subtle gray color if emotion not found
-
-    if (!emotion.color) {
-      // Assign a subtle color if none exists
-      switch (emotion.label.toLowerCase()) {
-        case "freedom":
-          return "#4a90e2"; // Subtle blue
-        case "fullness":
-          return "#8e44ad"; // Subtle purple
-        case "passion":
-          return "#c0392b"; // Subtle red
-        case "joy":
-          return "#f39c12"; // Subtle yellow
-        case "enjoyment":
-          return "#27ae60"; // Subtle green
-        case "enthusiasm":
-          return "#d35400"; // Subtle orange
-        default:
-          return "#6c757d"; // Subtle gray
-      }
-    }
-
-    return emotion.color;
-  };
 
 
   const handleClick = async () => {

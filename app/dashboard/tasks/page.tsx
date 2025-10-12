@@ -5,12 +5,15 @@ import dayjs from "dayjs";
 
 import { api } from "@/convex/_generated/api";
 import { Doc } from "@/convex/_generated/dataModel";
-import { cn } from "@/lib/utils";
 
 import AddTaskDrawerDialog from "../components/tasks/add-task-drawer-dialog";
-import TaskList from "../components/tasks/task-list";
+import HierarchicalTaskList from "../components/tasks/hierarchical-task-list";
 
-function orderTasks(tasks: Doc<"tasks">[]) {
+interface TaskWithSubtasks extends Doc<"tasks"> {
+  subtasks: TaskWithSubtasks[];
+}
+
+function orderTasks(tasks: TaskWithSubtasks[]) {
   // Order tasks first by deadline, then by created timestamp
   const orderedTasks = tasks.sort((a, b) => {
     if (!a.due && !b.due) {
@@ -32,24 +35,23 @@ function orderTasks(tasks: Doc<"tasks">[]) {
 }
 
 export default function TasksPage() {
-  const incompleteTasks = useQuery(api.tasks.incompleteTasks) ?? [];
-  const orderedIncompleteTasks = orderTasks(incompleteTasks) ?? [];
+  const hierarchicalTasks = useQuery(api.tasks.getTasksWithSubtasks) ?? [];
   // const completedTodayTasks = useQuery(api.tasks.completedTodayTasks) ?? [];
   // const totalTasks = useQuery(api.tasks.totalCompletedTodayTasks) ?? 0;
 
-  if (
-    incompleteTasks === undefined
-    // || completedTodayTasks === undefined
-  ) {
-    <p>Loading...</p>;
+  if (hierarchicalTasks === undefined) {
+    return <p>Loading...</p>;
   }
+
+  // Order tasks by due date and creation time
+  const orderedTasks = orderTasks(hierarchicalTasks);
 
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 relative">
         <div className="absolute inset-0 overflow-auto px-2">
           <h1 className="text-base font-semibold md:text-2xl">Inbox</h1>
-          <TaskList tasks={orderedIncompleteTasks} />
+          <HierarchicalTaskList tasks={orderedTasks} />
           <div className="fixed bottom-6 right-6 z-10">
             <AddTaskDrawerDialog />
           </div>

@@ -1,4 +1,3 @@
-import React from "react";
 import { useMutation } from "convex/react";
 
 import { api } from "@/convex/_generated/api";
@@ -25,7 +24,7 @@ export default function TaskList({ items }: { items: Array<Doc<"tasks">> }) {
       });
     }
   };
-  return items.map((task: Doc<"tasks">, idx: number) => (
+  return items.map((task: Doc<"tasks">) => (
     <Task
       key={task._id}
       data={task}
