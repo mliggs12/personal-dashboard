@@ -36,7 +36,7 @@ export function SimplePromptForm({
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault()
       if (!disabled && input.trim()) {
-        onSubmit(e as any)
+        onSubmit(e as React.FormEvent)
       }
     }
   }

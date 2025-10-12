@@ -1,12 +1,11 @@
 "use client";
 
-import { useCallback,useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
-import { ChevronDown, Loader2, Menu,MessageSquare, Plus, Send } from "lucide-react";
+import { ChevronDown, Loader2, Menu, MessageSquare, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -49,6 +48,7 @@ export default function AiChatPage() {
   // Load conversation messages
   useEffect(() => {
     if (currentConversation?.messages) {
+      // eslint-disable-next-line
       setMessages(currentConversation.messages.map(msg => ({
         id: msg._id,
         role: msg.role as 'user' | 'assistant',

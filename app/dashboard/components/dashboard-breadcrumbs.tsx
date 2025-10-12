@@ -122,7 +122,7 @@ export default function DashboardBreadcrumbs() {
   const isFocusBlockPage = section === "Focus Blocks" && segments.length > 3;
   const isIntentionPage = section === "Intentions" && segments.length > 3;
   const contentId = (isNotePage || isFocusBlockPage || isIntentionPage)
-    ? (segments[segments.length - 1] as Id<any>)
+    ? (segments[segments.length - 1] as Id<"notes" | "focusBlocks" | "intentions">)
     : undefined;
 
   const note = useQuery(

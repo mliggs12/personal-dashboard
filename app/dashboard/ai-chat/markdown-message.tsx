@@ -19,7 +19,7 @@ export function MarkdownMessage({ content }: MarkdownMessageProps) {
         rehypePlugins={[rehypeRaw, rehypeHighlight]}
         components={{
           // Customize code blocks with copy functionality
-          code: ({ node, inline, children, ...props }) => {
+          code: ({ inline, children, ...props }: { inline?: boolean; children?: React.ReactNode }) => {
             return !inline ? (
               <code {...props}>
                 {children}
@@ -36,7 +36,7 @@ export function MarkdownMessage({ content }: MarkdownMessageProps) {
             );
           },
           // Style links
-          a: ({ node, children, ...props }) => (
+          a: ({ children, ...props }) => (
             <a 
               style={{
                 color: 'hsl(var(--primary))',
@@ -51,28 +51,28 @@ export function MarkdownMessage({ content }: MarkdownMessageProps) {
             </a>
           ),
           // Style lists
-          ul: ({ node, children, ...props }) => (
+          ul: ({ children, ...props }) => (
             <ul style={{ marginTop: '0.5rem', marginBottom: '0.5rem', marginLeft: '1rem', listStyleType: 'disc' }} {...props}>
               {children}
             </ul>
           ),
-          ol: ({ node, children, ...props }) => (
+          ol: ({ children, ...props }) => (
             <ol style={{ marginTop: '0.5rem', marginBottom: '0.5rem', marginLeft: '1rem', listStyleType: 'decimal' }} {...props}>
               {children}
             </ol>
           ),
           // Style headings
-          h1: ({ node, children, ...props }) => (
+          h1: ({ children, ...props }) => (
             <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginTop: '1rem', marginBottom: '0.5rem' }} {...props}>{children}</h1>
           ),
-          h2: ({ node, children, ...props }) => (
+          h2: ({ children, ...props }) => (
             <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginTop: '0.75rem', marginBottom: '0.5rem' }} {...props}>{children}</h2>
           ),
-          h3: ({ node, children, ...props }) => (
+          h3: ({ children, ...props }) => (
             <h3 style={{ fontSize: '1.125rem', fontWeight: '600', marginTop: '0.5rem', marginBottom: '0.25rem' }} {...props}>{children}</h3>
           ),
           // Style blockquotes
-          blockquote: ({ node, children, ...props }) => (
+          blockquote: ({ children, ...props }) => (
             <blockquote style={{ 
               borderLeft: '4px solid hsl(var(--primary) / 0.3)',
               paddingLeft: '1rem',
@@ -85,14 +85,14 @@ export function MarkdownMessage({ content }: MarkdownMessageProps) {
             </blockquote>
           ),
           // Style tables
-          table: ({ node, children, ...props }) => (
+          table: ({ children, ...props }) => (
             <div style={{ overflowX: 'auto', marginTop: '1rem', marginBottom: '1rem' }}>
               <table style={{ minWidth: '100%', borderCollapse: 'collapse' }} {...props}>
                 {children}
               </table>
             </div>
           ),
-          th: ({ node, children, ...props }) => (
+          th: ({ children, ...props }) => (
             <th style={{ 
               padding: '0.5rem 0.75rem',
               textAlign: 'left',
@@ -103,7 +103,7 @@ export function MarkdownMessage({ content }: MarkdownMessageProps) {
               {children}
             </th>
           ),
-          td: ({ node, children, ...props }) => (
+          td: ({ children, ...props }) => (
             <td style={{ 
               padding: '0.5rem 0.75rem',
               fontSize: '0.875rem',
@@ -113,13 +113,13 @@ export function MarkdownMessage({ content }: MarkdownMessageProps) {
             </td>
           ),
           // Style paragraphs
-          p: ({ node, children, ...props }) => (
+          p: ({ children, ...props }) => (
             <p style={{ marginBottom: '0.5rem' }} {...props}>
               {children}
             </p>
           ),
           // Style pre (code block container) with copy button
-          pre: ({ node, children, ...props }) => (
+          pre: ({ children, ...props }) => (
             <CodeBlock>
               {children}
             </CodeBlock>

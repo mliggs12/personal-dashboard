@@ -1,5 +1,6 @@
 "use client";
-import { useEffect,useState } from "react";
+
+import { useEffect, useState } from "react";
 
 import {
   sendNotification,
@@ -27,13 +28,6 @@ function PushNotificationManager() {
   );
   const [message, setMessage] = useState("");
 
-  useEffect(() => {
-    if ("serviceWorker" in navigator && "PushManager" in window) {
-      setIsSupported(true);
-      registerServiceWorker();
-    }
-  }, []);
-
   async function registerServiceWorker() {
     const registration = await navigator.serviceWorker.register("/sw.js", {
       scope: "/",
@@ -42,6 +36,14 @@ function PushNotificationManager() {
     const sub = await registration.pushManager.getSubscription();
     setSubscription(sub);
   }
+
+  useEffect(() => {
+    if ("serviceWorker" in navigator && "PushManager" in window) {
+      // eslint-disable-next-line
+      setIsSupported(true);
+      registerServiceWorker();
+    }
+  }, []);
 
   async function subscribeToPush() {
     const registration = await navigator.serviceWorker.ready;
@@ -103,10 +105,12 @@ function InstallPrompt() {
   const [isStandalone, setIsStandalone] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line
     setIsIOS(
-      /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream,
+      /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as Window & { MSStream?: unknown }).MSStream,
     );
 
+     
     setIsStandalone(window.matchMedia("(display-mode: standalone)").matches);
   }, []);
 

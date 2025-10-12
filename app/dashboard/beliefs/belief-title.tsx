@@ -1,15 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { useMutation } from "convex/react";
 
 import { Input } from "@/components/ui/input";
-import { api } from "@/convex/_generated/api";
 import { Doc } from "@/convex/_generated/dataModel";
 
 export default function BeliefTitle({ belief }: { belief: Doc<"beliefs"> }) {
   const [title, setTitle] = useState(belief.title);
   const [isEditing, setIsEditing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const update = useMutation(api.beliefs.update);
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newTitle = e.target.value;

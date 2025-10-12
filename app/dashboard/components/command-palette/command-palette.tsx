@@ -1,11 +1,11 @@
 "use client";
 
-import { useMutation, useQuery } from "convex/react";
-import { Book, HeartPulse, Home, ListTodo, StickyNote, Target } from "lucide-react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 import * as React from "react";
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useMutation, useQuery } from "convex/react";
+import { Book, Droplets, HeartPulse, Home, ListTodo, StickyNote, Target } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -21,7 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
+import { useToast } from "@/hooks/use-toast";
 
 export default function CommandPalette() {
   const router = useRouter();
@@ -29,21 +29,33 @@ export default function CommandPalette() {
   const [open, setOpen] = React.useState(false);
   const [searchText, setSearchText] = useState("");
   const [showInboxInput, setShowInboxInput] = useState(false);
-  const [inboxText, setInboxText] = useState("")
+  const [showWaterInput, setShowWaterInput] = useState(false);
+  const [inboxText, setInboxText] = useState("");
+  const [waterAmount, setWaterAmount] = useState("16");
+
+  const { toast } = useToast();
 
   const searchResults = useQuery(api.notes.search, { query: searchText }) || [];
 
-  const addInboxRecord = useMutation(api.inboxRecords.create)
+  const addInboxRecord = useMutation(api.inboxRecords.create);
+  const addWaterEntry = useMutation(api.waterLogEntries.create);
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
-      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+      if (e.key === "k" && (e.metaKey || e.ctrlKey) && !open) {
         e.preventDefault();
-        if (open) {
+        setOpen(true);
+      } else if (e.key === "k" && (e.metaKey || e.ctrlKey) && open) {
+        e.preventDefault();
+        setOpen(false);
+      } else if (e.key === "i" && (e.metaKey || e.ctrlKey) && open) {
+        e.preventDefault();
           setShowInboxInput((show) => !show);
-        } else {
-          setOpen(true);
-        }
+          setShowWaterInput(false); // Close water input when toggling inbox
+      } else if (e.key === "l" && (e.metaKey || e.ctrlKey) && open) {
+        e.preventDefault();
+        setShowWaterInput((show) => !show);
+        setShowInboxInput(false); // Close inbox input when toggling water
       }
     };
 
@@ -61,13 +73,45 @@ export default function CommandPalette() {
     await addInboxRecord({ content });
     setInboxText("");
     setOpen(false);
-    setShowInboxInput(false)
-    // TODO: Add toast
+    setShowInboxInput(false);
+    toast({
+      title: "Added to inbox",
+      duration: 1500,
+    });
+  }
+
+  async function handleWaterAdd(amount: string) {
+    const numericAmount = parseFloat(amount);
+    if (isNaN(numericAmount) || numericAmount <= 0) {
+      toast({
+        title: "Invalid amount",
+        description: "Please enter a valid amount greater than 0",
+        variant: "destructive",
+        duration: 2000,
+      });
+      return;
+    }
+
+    await addWaterEntry({ amount: numericAmount });
+    setWaterAmount("16");
+    setOpen(false);
+    setShowWaterInput(false);
+    toast({
+      title: "Water logged",
+      description: `${numericAmount} oz added`,
+      duration: 1500,
+    });
   }
 
   const handleInboxInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       handleInboxAdd(inboxText);
+    }
+  };
+
+  const handleWaterInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleWaterAdd(waterAmount);
     }
   };
 
@@ -87,6 +131,7 @@ export default function CommandPalette() {
           setOpen(isOpen);
           if (!isOpen) {
             setShowInboxInput(false);
+            setShowWaterInput(false);
           }
         }}
       >
@@ -103,6 +148,23 @@ export default function CommandPalette() {
               onKeyDown={handleInboxInputKeyDown}
               autoFocus
             />
+          </div>
+        ) : showWaterInput ? (
+          <div className="p-4 space-y-2">
+            <Label htmlFor="water">Log Water Intake</Label>
+            <Input
+              type="number"
+              id="water"
+              placeholder="Amount in oz..."
+              className="w-full p-2 border rounded"
+              value={waterAmount}
+              onChange={(e) => setWaterAmount(e.target.value)}
+              onKeyDown={handleWaterInputKeyDown}
+              autoFocus
+              min="0"
+              step="0.5"
+            />
+            <p className="text-sm text-muted-foreground">Enter amount in ounces (e.g., 16)</p>
           </div>
         ) : (
           <>
@@ -166,7 +228,15 @@ export default function CommandPalette() {
                   <span>Add to Inbox</span>
                   <div className="space-x-1">
                     <kbd>⌘</kbd>
-                    <kbd>K</kbd>
+                    <kbd>I</kbd>
+                  </div>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => setShowWaterInput(true)}>
+                  <Droplets className="w-4 h-4 mr-1" />
+                  <span>Log Water</span>
+                  <div className="space-x-1">
+                    <kbd>⌘</kbd>
+                    <kbd>L</kbd>
                   </div>
                 </Button>
               </div>

@@ -192,7 +192,7 @@ export async function POST(req: Request) {
               }
             } catch (parseError) {
               // Skip malformed JSON lines
-              console.warn('[AI Chat] Skipped malformed JSON:', line.substring(0, 100));
+              console.warn('[AI Chat] Skipped malformed JSON:', line.substring(0, 100), parseError);
             }
           }
         } catch (error) {
