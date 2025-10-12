@@ -58,7 +58,7 @@ export default function CreateFocusBlockInput({ intention }: CreateFocusBlockInp
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to create focus block.",
+        description: error instanceof Error ? error.message : "Failed to create focus block.",
         variant: "destructive",
         duration: 5000,
       });

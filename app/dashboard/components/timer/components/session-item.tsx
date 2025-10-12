@@ -3,7 +3,7 @@
 import dayjs from "dayjs";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Doc, Id } from "@/convex/_generated/dataModel";
+import { Doc } from "@/convex/_generated/dataModel";
 import { formatDurationVerbose } from "@/lib/utils";
 
 export default function SessionItem({ session }: { session: Doc<"sessions"> }) {

@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useMutation, useQuery } from "convex/react";
 
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { api } from "@/convex/_generated/api";
 import { Doc } from "@/convex/_generated/dataModel";
@@ -27,6 +26,8 @@ export function FocusBlock({ focusBlock, statements }: FocusBlockProps) {
   // Initialize end statement input when focusBlock changes
   useEffect(() => {
     if (focusBlock?.endStatement) {
+       
+      // eslint-disable-next-line
       setEndStatement(focusBlock.endStatement);
     } else {
       setEndStatement("");

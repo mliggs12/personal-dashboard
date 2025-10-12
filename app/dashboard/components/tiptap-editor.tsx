@@ -1,5 +1,3 @@
-import "@/app/styles.scss";
-
 import Code from "@tiptap/extension-code";
 import CodeBlock from "@tiptap/extension-code-block";
 import Document from '@tiptap/extension-document';
@@ -11,6 +9,8 @@ import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 
 import { cn } from "@/lib/utils";
+
+import "@/app/styles.scss";
 
 interface TiptapEditorProps {
   initialContent: string;

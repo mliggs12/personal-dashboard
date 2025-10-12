@@ -13,9 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
   DialogContent,
-  DialogDescription,
   DialogFooter,
-  DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -37,7 +35,7 @@ import { cn } from "@/lib/utils";
 import TiptapEditor from "../tiptap-editor";
 
 export default function EditTaskDialog({ data }: { data: Doc<"tasks"> }) {
-  const { name, updated, notes, status, priority, due, recurringTaskId, _id } =
+  const { name, notes, status, priority, due, recurringTaskId, _id } =
     data;
   const recurringTask = useQuery(api.recurringTasks.get, {
     recurringTaskId: recurringTaskId as Id<"recurringTasks">,
@@ -64,15 +62,18 @@ export default function EditTaskDialog({ data }: { data: Doc<"tasks"> }) {
   const [calendarDate, setCalendarDate] = useState<Date | undefined>(
     taskDue ? dayjs(due).toDate() : undefined,
   );
+  // eslint-disable-next-line
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (recurringTask) {
+      // eslint-disable-next-line
       setRecurFrequency(
         frequencies.find(
           (frequencyInfo) => frequencyInfo.value === recurringTask.frequency,
         ),
       );
+       
       setRecurType(recurringTask.type);
     }
   }, [recurringTask]);
@@ -93,7 +94,7 @@ export default function EditTaskDialog({ data }: { data: Doc<"tasks"> }) {
         updateTask({ taskId: _id, notes }).then(() => setIsSaving(false));
       }, 2000);
     },
-    [_id, updateTask],
+    [_id, updateTask, setIsSaving],
   );
 
   useEffect(() => {
@@ -104,6 +105,7 @@ export default function EditTaskDialog({ data }: { data: Doc<"tasks"> }) {
     };
   }, []);
 
+  // eslint-disable-next-line
   const handleDeleteTask = (e: any) => {
     e.preventDefault();
     const deletedId = remove({ taskId: _id });
