@@ -2,10 +2,12 @@ import NotesTable from "./components/notes-table";
 
 interface NotesLayoutProps {
   children: React.ReactNode;
+  note: React.ReactNode;
 }
 
 export default function NotesLayout({
   children,
+  note,
 }: NotesLayoutProps) {
   return (
     <div className="flex h-full px-4">
@@ -19,6 +21,7 @@ export default function NotesLayout({
       {/* Main Content */}
       <div className="flex-1 h-full overflow-y-auto">
         {children}
+        {note}
       </div>
 
     </div>
