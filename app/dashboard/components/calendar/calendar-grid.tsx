@@ -3,6 +3,7 @@ import { useQuery } from "convex/react";
 import dayjs from "dayjs";
 
 import { api } from "@/convex/_generated/api";
+import { Doc } from "@/convex/_generated/dataModel";
 import { getUserTimezone } from "@/lib/timezone.utils";
 import { cn } from "@/lib/utils";
 import { Event } from "@/types";
@@ -15,6 +16,7 @@ interface CalendarGridProps {
 }
 
 export default function CalendarGrid({ events = [] }: CalendarGridProps) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [date, setDate] = useState<Date>(new Date());
 
   const daySessions = useQuery(api.sessions.getDaySessions, {
@@ -97,7 +99,7 @@ export default function CalendarGrid({ events = [] }: CalendarGridProps) {
             
             {/* Focus Sessions */}
             {daySessions
-              .filter((session: any) => {
+              .filter((session: Doc<"sessions">) => {
                 const sessionStart = dayjs(session.start);
                 const sessionEnd = dayjs(session.start).add(session.duration, 'seconds');
                 
@@ -108,7 +110,7 @@ export default function CalendarGrid({ events = [] }: CalendarGridProps) {
                 
                 return sessionStart.isBefore(hourEnd) && sessionEnd.isAfter(hourStart);
               })
-              .map((session: any) => (
+              .map((session: Doc<"sessions">) => (
                 <CalendarItem 
                   key={session._id} 
                   duration={session.duration} 
