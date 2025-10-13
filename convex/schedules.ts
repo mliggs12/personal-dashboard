@@ -54,10 +54,8 @@ export const byDate = query({
 export const getOrCreateByDate = mutation({
   args: {
     date: v.string(),
-    length: v.optional(v.number()),
-    isTemplate: v.optional(v.boolean()),
   },
-  async handler(ctx, { date, length, isTemplate }) {
+  async handler(ctx, { date }) {
     const user = await getCurrentUserOrThrow(ctx);
 
     let schedule = await ctx.db
@@ -68,8 +66,8 @@ export const getOrCreateByDate = mutation({
     if (!schedule) {
       const id = await ctx.db.insert("schedules", {
         date,
-        length: length ?? 16.5,
-        isTemplate: isTemplate ?? false,
+        length: 16.5,
+        isTemplate: false,
         updated: Date.now(),
         userId: user._id,
       });
@@ -130,7 +128,8 @@ export const deleteSchedule = mutation({
   },
 });
 
-export const templateSchedules = query({
+export const getTemplates = query({
+  args: {},
   async handler(ctx) {
     const user = await getCurrentUserOrThrow(ctx);
 
@@ -139,5 +138,24 @@ export const templateSchedules = query({
       .withIndex("by_user", (q) => q.eq("userId", user._id))
       .filter((q) => q.eq(q.field("isTemplate"), true))
       .collect();
+  },
+});
+
+export const createTemplate = mutation({
+  args: {
+    name: v.string(),
+    description: v.optional(v.string()),
+  },
+  async handler(ctx, { name, description }) {
+    const user = await getCurrentUserOrThrow(ctx);
+
+    return await ctx.db.insert("schedules", {
+      name,
+      description: description ?? "",
+      length: 16.5,
+      isTemplate: true,
+      updated: Date.now(),
+      userId: user._id,
+    });
   },
 });

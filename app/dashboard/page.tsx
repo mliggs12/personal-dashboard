@@ -1,22 +1,29 @@
 "use client";
 
+import CalendarScheduleView from "./components/calendar/calendar-schedule-view";
 import DashboardBanner from "./components/dashboard-banner";
 import Scratchpad from "./components/scratch-pad/scratch-pad";
 import TasksCard from "./components/tasks/tasks-card";
-// import Timer from "./components/timer/timer";
+import Timer from "./components/timer/timer";
 
 export default function DashboardPage() {
 
   return (
-    <div className="h-full flex flex-col flex-1 md:max-w-[2160px] mx-auto p-4 pt-0 gap-4">
+    <div className="h-full flex flex-col flex-1 overflow-y-auto overflow-x-hidden w-full">
       <DashboardBanner />
-      {/* <div className="grid md:grid-cols-2 h-full gap-4 md:px-4"> */}
-      <div className="grid md:grid-cols-2 h-3/4 gap-4">
-        <TasksCard />
-        <Scratchpad />
-        {/* <Timer /> */}
-        {/* <CalendarScheduleView /> */}
-        {/* <InboxWidget /> */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-1 md:p-4 w-full">
+        <div className="flex justify-center">
+          <TasksCard />
+        </div>
+        <div className="flex justify-center">
+          <Scratchpad />
+        </div>
+        <div className="flex justify-center">
+          <Timer />
+        </div>
+        <div className="flex justify-center">
+          <CalendarScheduleView />
+        </div>
       </div>
     </div>
   );

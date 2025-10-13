@@ -65,7 +65,7 @@ export default function ScratchPad() {
   }
 
   return (
-    <div className="hidden sm:block max-w-[600px]">
+    <div className="w-full max-w-[600px]">
       <div className="flex items-center justify-between mb-1">
         <h2 className="prose dark:prose-invert text-lg font-semibold">Scratch Pad</h2>
         <Popover>

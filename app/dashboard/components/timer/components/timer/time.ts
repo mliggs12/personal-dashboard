@@ -23,3 +23,22 @@ export function formatTime(seconds: number): string {
   const secs = seconds % 60;
   return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 }
+
+export function formatSecondsVerbose(seconds: number): string {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+
+  let result = "";
+  if (hours > 0) {
+    result += `${hours} hour${hours > 1 ? "s" : ""} `;
+  }
+  if (minutes > 0) {
+    result += `${minutes} minute${minutes > 1 ? "s" : ""} `;
+  }
+  if (secs > 0 || result === "") {
+    result += `${secs} second${secs !== 1 ? "s" : ""}`;
+  }
+
+  return result.trim();
+}

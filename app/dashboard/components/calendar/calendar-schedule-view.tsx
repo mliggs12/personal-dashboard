@@ -10,6 +10,7 @@ import CalendarGrid from "./calendar-grid";
 
 export default function CalendarScheduleView() {
   const [events, setEvents] = useState<Event[]>([])
+  const [error, setError] = useState<string | null>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -18,8 +19,10 @@ export default function CalendarScheduleView() {
         const userEvents: Event[] = await getUserEvents();
         console.log(userEvents)
         setEvents(userEvents);
+        setError(null);
       } catch (error) {
         console.error("Error fetching events:", error)
+        setError("Unable to load calendar events. Please try again later.");
       }
     }
     fetchEvents()
@@ -42,8 +45,24 @@ export default function CalendarScheduleView() {
     }
   }, [events]); // Re-run when events are loaded
 
+  if (error) {
+    return (
+      <Card className="w-full flex flex-col h-[700px] max-w-[600px]">
+        <CardHeader className="py-4">
+          <CardTitle>Calendar</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col items-center justify-center h-full p-4">
+          <div className="text-center text-muted-foreground">
+            <p className="text-lg mb-2">⚠️</p>
+            <p>{error}</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <Card className="hidden sm:flex flex-col h-[900px] w-full max-w-[600px]">
+    <Card className="w-full flex flex-col h-[700px] max-w-[600px]">
       <CardHeader className="py-4">
         <CardTitle>Calendar</CardTitle>
       </CardHeader>

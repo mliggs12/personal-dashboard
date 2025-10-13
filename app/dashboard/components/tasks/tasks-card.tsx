@@ -36,8 +36,8 @@ export default function TasksCard() {
   if (status === "backlog" && backlogTasks) tasks = backlogTasks
 
   return (
-    <Card className="relative max-h-[570px] sm:max-h-[467px]">
-      <CardHeader className="p-3">
+    <Card className="w-full max-w-[600px] relative max-h-[570px] sm:max-h-[467px]">
+      <CardHeader className="p-3 pr-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-6">
             <CardTitle>My tasks</CardTitle>

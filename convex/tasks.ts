@@ -419,3 +419,50 @@ export const search = query({
       .collect();
   },
 });
+
+export const getSubtasks = query({
+  args: { parentTaskId: v.id("tasks") },
+  async handler(ctx, { parentTaskId }) {
+    const user = await getCurrentUserOrThrow(ctx);
+
+    return await ctx.db
+      .query("tasks")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .filter((q) => q.eq(q.field("parentTaskId"), parentTaskId))
+      .collect();
+  },
+});
+
+export const getTasksWithSubtasks = query({
+  async handler(ctx) {
+    const user = await getCurrentUserOrThrow(ctx);
+
+    const allTasks = await ctx.db
+      .query("tasks")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .filter((q) => q.eq(q.field("completed"), undefined))
+      .collect();
+
+    // Group tasks by parent-child relationships
+    const taskMap = new Map();
+    const rootTasks = [];
+
+    // First pass: create task map and identify root tasks
+    for (const task of allTasks) {
+      taskMap.set(task._id, { ...task, subtasks: [] });
+      if (!task.parentTaskId) {
+        rootTasks.push(task._id);
+      }
+    }
+
+    // Second pass: build hierarchy
+    for (const task of allTasks) {
+      if (task.parentTaskId && taskMap.has(task.parentTaskId)) {
+        taskMap.get(task.parentTaskId).subtasks.push(taskMap.get(task._id));
+      }
+    }
+
+    // Return only root tasks with their subtasks nested
+    return rootTasks.map(id => taskMap.get(id)).filter(Boolean);
+  },
+});

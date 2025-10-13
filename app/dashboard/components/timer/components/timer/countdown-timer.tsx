@@ -398,7 +398,8 @@ export function CountdownTimer({
         <div className="countdown-timer-container flex flex-col items-center p-4 border rounded-lg space-y-4">
           <Clock seconds={state.currentTime} />
           <div className="flex gap-2">
-            <Button onClick={handleStart} disabled={state.status === "running"}>
+            {/* <Button onClick={handleStart} disabled={state.status === "running"}> */}
+            <Button onClick={handleStart} disabled>
               {state.status === "running" ? "Running" : state.status === "paused" ? "Resume" : "Start"}
             </Button>
             {state.status === "running" && (

@@ -64,6 +64,7 @@ export default function IntentionSelect({
             onChange={(e) => setSearchText(e.target.value)}
             placeholder="Intention"
             className="w-full text-gray-900 dark:text-gray-100"
+            disabled
           />
           {searchText.length >= 1 && (
             <div className="flex flex-col items-center justify-center h-full">

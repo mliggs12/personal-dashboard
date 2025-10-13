@@ -1,175 +1,30 @@
 import { v } from "convex/values";
 
-import { api, internal } from "./_generated/api";
-import { Id } from "./_generated/dataModel";
-import { internalMutation, mutation, query, QueryCtx } from "./_generated/server";
+import { Doc } from "./_generated/dataModel";
+import { mutation, MutationCtx, query, QueryCtx } from "./_generated/server";
 import { getCurrentUserOrThrow } from "./users";
 
-export const start = mutation({
+export const create = mutation({
   args: {
-    duration: v.number(),  // s
-    intentionId: v.optional(v.string())
+    duration: v.number(),
   },
   async handler(ctx, { duration }) {
-    const now = Math.floor(Date.now() / 1000)
+    const user = await getCurrentUserOrThrow(ctx);
 
-    const timer = await getCurrentTimer(ctx)
-
-    const timerData = {
+    await ctx.db.insert("timers", {
       duration,
-      startedAt: now,
-      pausedAt: undefined,
-      totalPauseTime: 0,
-      isActive: true,
-      isPaused: false,
-    };
-
-    if (timer) {
-      await ctx.db.replace(timer._id, { ...timerData, userId: timer.userId });
-    } else {
-      const user = await getCurrentUserOrThrow(ctx)
-      await ctx.db.insert("timers", { ...timerData, userId: user._id });
-    }
-  }
-});
-
-export const pause = mutation({
-  args: {},
-  async handler(ctx) {
-    const timer = await getCurrentTimer(ctx)
-
-    if (!timer || !timer.isActive || timer.isPaused) {
-      throw new Error("No active timer to pause");
-    }
-
-    const now = Date.now()
-
-    await ctx.db.patch(timer._id, {
-      isPaused: true,
-      pausedAt: now,
+      startTime: undefined,
+      status: "idle",
+      timerType: undefined,
+      intentionId: undefined,
+      pausedTime: undefined,
+      lastPauseStart: undefined,
+      userId: user._id,
     });
-  },
-});
-
-export const resume = mutation({
-  args: {},
-  async handler(ctx) {
-    const timer = await getCurrentTimer(ctx)
-
-    if (!timer || !timer.isActive || !timer.isPaused || !timer.pausedAt) {
-      throw new Error("No paused timer to resume");
-    }
-
-    const now = Date.now()
-    const pauseDuration = now - timer.pausedAt;
-    const newTotalPauseTime = timer.totalPauseTime + pauseDuration
-
-    const elapsedTime = now - timer.startedAt - newTotalPauseTime;
-    const remainingTime = Math.max(timer.duration - elapsedTime, 0);
-
-    const scheduledFunctionId = await ctx.scheduler.runAfter(
-      remainingTime,
-      internal.timers.complete,
-      {}
-    )
-
-    await ctx.db.patch(timer._id, {
-      isPaused: false,
-      pausedAt: undefined,
-      totalPauseTime: newTotalPauseTime,
-    });
-  },
-});
-
-export const stop = mutation({
-  args: { intentionId: v.optional(v.string()) },
-  handler: async (ctx, { intentionId }) => {
-    await finishTimerLogic(ctx, intentionId, true);
-  },
-});
-
-// Scheduled function
-export const complete = internalMutation({
-  args: {
-    intentionId: v.optional(v.string()),
-    wasStopped: v.optional(v.boolean())
-  },
-  async handler(ctx, { intentionId, wasStopped }) {
-    await finishTimerLogic(ctx, intentionId, wasStopped)
   }
 });
 
-export async function finishTimerLogic(ctx: any, intentionId?: string, wasStopped?: boolean) {
-  const timer = await getCurrentTimer(ctx)
-
-  if (!timer) return
-
-  const now = Date.now()
-  let actualDuration = now - timer.startedAt - timer.totalPauseTime
-
-  if (wasStopped) {
-    const currentPauseTime = timer.isPaused && timer.pausedAt
-      ? now - timer.pausedAt
-      : 0;
-    actualDuration = now - timer.startedAt - timer.totalPauseTime - currentPauseTime
-  }
-
-  await ctx.db.insert("sessions", {
-    start: timer.startedAt,
-    end: now,
-    duration: actualDuration,
-    intentionId: intentionId as Id<"intentions"> ?? undefined,
-    updated: now,
-    userId: timer.userId,
-  });
-
-  await ctx.db.patch(timer._id, {
-    isActive: false,
-    isPaused: false,
-    pausedAt: undefined,
-    totalPauseTime: 0,
-    scheduledFunctionId: undefined
-  })
-}
-
-export const getTimerState = query({
-  args: {},
-  async handler(ctx) {
-    const timer = await getCurrentTimer(ctx)
-
-    if (!timer || !timer.isActive) {
-      return { duration: 0, isActive: false, isPaused: false, timeLeft: 0 };
-    }
-
-    const now = Date.now();
-
-    if (timer.isPaused && timer.pausedAt) {
-      const elapsedBeforePause = timer.pausedAt - timer.startedAt - timer.totalPauseTime;
-      const timeLeft = Math.max(timer.duration - elapsedBeforePause, 0);
-
-      return {
-        duration: timer.duration,
-        startedAt: timer.startedAt,
-        isActive: true,
-        isPaused: true,
-        timeLeft,
-      };
-    }
-
-    const elapsed = now - timer.startedAt - timer.totalPauseTime;
-    const timeLeft = Math.max(timer.duration - elapsed, 0);
-
-    return {
-      duration: timer.duration,
-      startedAt: timer.startedAt,
-      isActive: true,
-      isPaused: false,
-      timeLeft,
-    };
-  },
-});
-
-async function getCurrentTimer(ctx: QueryCtx) {
+async function getTimer(ctx: QueryCtx) {
   const user = await getCurrentUserOrThrow(ctx)
 
   return await ctx.db
@@ -177,3 +32,122 @@ async function getCurrentTimer(ctx: QueryCtx) {
     .withIndex("by_user", (q) => q.eq("userId", user._id))
     .first();
 }
+
+export const getActiveTimer = query({
+  args: {},
+  async handler(ctx) {
+    return await getTimer(ctx);
+  },
+});
+
+export async function getOrCreateTimer(ctx: MutationCtx, duration?: number): Promise<Doc<"timers"> | null> {
+  const user = await getCurrentUserOrThrow(ctx);
+
+  let timer = await ctx.db
+    .query("timers")
+    .withIndex("by_user", (q) => q.eq("userId", user._id))
+    .first();
+
+  if (!timer) {
+    await ctx.db.insert("timers", {
+      duration: duration ?? (5 * 60),
+      startTime: undefined,
+      status: "idle",
+      timerType: undefined,
+      intentionId: undefined,
+      pausedTime: undefined,
+      lastPauseStart: undefined,
+      userId: user._id,
+    });
+
+    timer = await ctx.db
+      .query("timers")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .first();
+  }
+
+  return timer;
+}
+
+export const startTimer = mutation({
+  args: {
+    duration: v.number(),
+    startTime: v.string(),
+    timerType: v.optional(v.union(v.literal("session"), v.literal("tithe"))),
+    intentionId: v.optional(v.id("intentions"))
+  },
+  async handler(ctx, { duration, startTime, timerType, intentionId }) {
+    const timer = await getOrCreateTimer(ctx, duration);
+    if (!timer) {
+      console.error("Timer not found");
+      return;
+    }
+
+    await ctx.db.patch(timer._id, {
+      duration,
+      startTime,
+      status: "running",
+      timerType,
+      intentionId,
+      pausedTime: 0, // Reset pause tracking on start
+      lastPauseStart: undefined,
+    });
+  },
+});
+
+export const pauseTimer = mutation({
+  args: {
+    pauseStartTime: v.string(),
+  },
+  async handler(ctx, { pauseStartTime }) {
+    const timer = await getTimer(ctx);
+    if (!timer) {
+      throw new Error("Timer not found");
+    }
+
+    await ctx.db.patch(timer._id, {
+      status: "paused",
+      lastPauseStart: pauseStartTime,
+    });
+  },
+});
+
+export const resumeTimer = mutation({
+  args: {
+    additionalPausedTime: v.number(),
+  },
+  async handler(ctx, { additionalPausedTime }) {
+    const timer = await getTimer(ctx);
+    if (!timer) {
+      throw new Error("Timer not found");
+    }
+
+    const currentPausedTime = timer.pausedTime ?? 0;
+
+    await ctx.db.patch(timer._id, {
+      status: "running",
+      pausedTime: currentPausedTime + additionalPausedTime,
+      lastPauseStart: undefined,
+    });
+  },
+});
+
+export const finishTimer = mutation({
+  args: {},
+  async handler(ctx) {
+    const timer = await getTimer(ctx);
+    if (!timer) {
+      console.warn("Timer not found when trying to finish");
+      return;
+    }
+
+    await ctx.db.patch(timer._id, {
+      startTime: undefined,
+      status: "idle",
+      timerType: undefined,
+      intentionId: undefined,
+      pausedTime: undefined,
+      lastPauseStart: undefined,
+    });
+  },
+});

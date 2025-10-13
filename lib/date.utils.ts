@@ -25,6 +25,10 @@ export function timestampToTime(timestamp: number) {
   return dayjs(timestamp).format("LT"); // "2:00 PM"
 }
 
+export function timestampToTimeShort(timestamp: number) {
+  return dayjs(timestamp).format("h:mm"); // "2:00"
+}
+
 export function calculateDuration(end: number, start: number) {
   const timeEnd = dayjs(end);
   const timeStart = dayjs(start);

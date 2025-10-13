@@ -40,7 +40,7 @@ export default function Timer() {
   const duration = timerType === "session" ? 25 * 60 : 5 * 60;
 
   return (
-    <Card className="h-[500px] max-w-[500px]">
+    <Card className="w-full h-[525px] max-w-[600px] flex flex-col justify-between">
       <CardHeader className="flex items-center">
         <CardTitle className="text-3xl">What&apos;s your focus?</CardTitle>
         <TypeSelect value={timerType} onValueChange={setTimerType} />
