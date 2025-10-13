@@ -37,6 +37,7 @@ export const dailyEntries = query({
 
     const dayStart = dayjs(timestamp).tz(userTimezone).startOf("day").toISOString();
     const dayEnd = dayjs(timestamp).tz(userTimezone).endOf("day").toISOString();
+    console.log("Fetching water log entries for user:", user._id, "from", dayStart, "to", dayEnd);
 
     const entries = await ctx.db
       .query("waterLogEntries")
