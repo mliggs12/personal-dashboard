@@ -18,7 +18,7 @@ import { Doc } from "@/convex/_generated/dataModel";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
-import { useNotesSidebar } from "../layout";
+import { useNotesSidebar } from "../context/notes-sidebar-context";
 
 dayjs.extend(relativeTime);
 

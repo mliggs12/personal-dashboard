@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 import TiptapEditor from "../../components/tiptap-editor";
 import MoreActionsButton from "../components/more-actions-button";
 import NoteTitle from "../components/note-title";
-import { useNotesSidebar } from "../layout";
+import { useNotesSidebar } from "../context/notes-sidebar-context";
 
 export default function NotePage() {
   const { id } = useParams<{ id: Id<"notes"> }>();

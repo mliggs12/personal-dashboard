@@ -5,7 +5,7 @@ import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-import { useNotesSidebar } from "./layout";
+import { useNotesSidebar } from "./context/notes-sidebar-context";
 
 export default function NotesPage() {
   const isMobile = useIsMobile();

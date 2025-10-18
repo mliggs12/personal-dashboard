@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation } from "convex/react";
 import { PanelLeft, PanelLeftClose, Plus } from "lucide-react";
@@ -13,28 +13,11 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
 import NotesTable from "./components/notes-table";
+import { NotesSidebarContext } from "./context/notes-sidebar-context";
 
 interface NotesLayoutProps {
   children: React.ReactNode;
   note: React.ReactNode;
-}
-
-interface NotesSidebarContextType {
-  isCollapsed: boolean;
-  toggleSidebar: () => void;
-  isMobile: boolean;
-  mobileMenuOpen: boolean;
-  setMobileMenuOpen: (open: boolean) => void;
-}
-
-const NotesSidebarContext = createContext<NotesSidebarContextType | null>(null);
-
-export function useNotesSidebar() {
-  const context = useContext(NotesSidebarContext);
-  if (!context) {
-    throw new Error("useNotesSidebar must be used within NotesLayout");
-  }
-  return context;
 }
 
 export default function NotesLayout({
