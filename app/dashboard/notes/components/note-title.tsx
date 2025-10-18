@@ -25,7 +25,7 @@ export default function NoteTitle({
     editorProps: {
       attributes: {
         class:
-          "prose dark:prose-invert prose-2xl font-bold border-none bg-background ring-offset-background focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none",
+          "prose dark:prose-invert prose-2xl font-bold border-none bg-background ring-offset-background focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none pb-2",
       },
     },
     onUpdate: ({ editor }) => {

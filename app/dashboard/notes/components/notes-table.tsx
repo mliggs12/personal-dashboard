@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useQuery } from "convex/react";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -15,15 +15,32 @@ import {
 } from "@/components/ui/table";
 import { api } from "@/convex/_generated/api";
 import { Doc } from "@/convex/_generated/dataModel";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
+
+import { useNotesSidebar } from "../layout";
 
 dayjs.extend(relativeTime);
 
 export default function NotesTable() {
   const router = useRouter();
+  const pathname = usePathname();
+  const isMobile = useIsMobile();
+  const { setMobileMenuOpen } = useNotesSidebar();
   const notes = useQuery(api.notes.list);
 
+  // Extract current note ID from pathname
+  const currentNoteId = pathname?.split('/').pop();
+
+  const handleNoteClick = (noteId: string) => {
+    router.push(`/dashboard/notes/${noteId}`);
+    if (isMobile) {
+      setMobileMenuOpen(false);
+    }
+  };
+
   if (notes === undefined) {
-    return <div>Loading...</div>;
+    return <div className="p-4">Loading...</div>;
   }
 
   // Sort notes by updated date
@@ -32,33 +49,46 @@ export default function NotesTable() {
   );
 
   return (
-    <Table className="flex flex-col h-full">
-      <TableHeader className="hidden md:table-header-group">
-        <TableRow>
-          <TableHead>Title</TableHead>
-          <TableHead>Updated</TableHead>
-          <TableHead>Created</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody className="h-full overflow-y-scroll">
-        {sortedNotes.map((note) => (
-          <TableRow
-            key={note._id}
-            onClick={() => router.push(`/dashboard/notes/${note._id}`)}
-            className="cursor-pointer"
-          >
-            <TableCell className="max-w-[150px] truncate">
-              {note.title}
-            </TableCell>
-            <TableCell className="w-[100px] text-nowrap">
-              {note.updated !== undefined ? dayjs(note.updated).fromNow() : "-"}
-            </TableCell>
-            <TableCell className="w-[100px] text-nowrap">
-              {dayjs(note._creationTime).format("MM/DD/YYYY")}
-            </TableCell>
+    <div className="h-full overflow-y-auto">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className={isMobile ? "w-[60%]" : "w-[260px]"}>Title</TableHead>
+            <TableHead className={isMobile ? "w-[40%]" : "w-[120px]"}>Updated</TableHead>
+            {!isMobile && <TableHead className="w-[110px]">Created</TableHead>}
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+        <TableBody>
+          {sortedNotes.map((note) => {
+            const isActive = note._id === currentNoteId;
+            return (
+              <TableRow
+                key={note._id}
+                onClick={() => handleNoteClick(note._id)}
+                className={cn(
+                  "cursor-pointer",
+                  isActive && "bg-accent"
+                )}
+              >
+                <TableCell className={cn(
+                  isMobile ? "truncate max-w-[200px]" : "w-[260px] truncate max-w-[260px]",
+                  isActive && "font-semibold"
+                )}>
+                  {note.title}
+                </TableCell>
+                <TableCell className={isMobile ? "text-xs text-nowrap" : "w-[120px] text-nowrap"}>
+                  {note.updated !== undefined ? dayjs(note.updated).fromNow() : "-"}
+                </TableCell>
+                {!isMobile && (
+                  <TableCell className="w-[110px] text-nowrap">
+                    {dayjs(note._creationTime).format("MM/DD/YYYY")}
+                  </TableCell>
+                )}
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+    </div>
   );
 }
