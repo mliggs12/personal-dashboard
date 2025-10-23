@@ -62,6 +62,7 @@ export default function EditTaskDialog({ data }: { data: Doc<"tasks"> }) {
   const [calendarDate, setCalendarDate] = useState<Date | undefined>(
     taskDue ? dayjs(due).toDate() : undefined,
   );
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   // eslint-disable-next-line
   const [isSaving, setIsSaving] = useState(false);
 
@@ -117,26 +118,31 @@ export default function EditTaskDialog({ data }: { data: Doc<"tasks"> }) {
     }
   };
 
-  const handleDueChange = () => {
-    if (calendarDate === undefined && due !== undefined) {
+  const handleDueChange = (selectedDate: Date | undefined) => {
+    setCalendarDate(selectedDate);
+    setIsCalendarOpen(false);
+    
+    if (selectedDate === undefined) {
+      // Use empty string to indicate clearing the date
       updateTask({
         taskId: _id,
-        due: calendarDate,
+        due: "",
       });
-      setTaskDue(calendarDate);
+      setTaskDue(undefined);
       toast({
-        title: "Due date updated",
+        title: "Due date cleared",
         duration: 3000,
       });
     } else if (
-      calendarDate &&
-      dayjs(calendarDate).format("YYYY/MM/DD") !== due
+      selectedDate &&
+      dayjs(selectedDate).format("YYYY/MM/DD") !== due
     ) {
+      const formattedDate = dayjs(selectedDate).format("YYYY/MM/DD");
       updateTask({
         taskId: _id,
-        due: dayjs(calendarDate).format("YYYY/MM/DD"),
+        due: formattedDate,
       });
-      setTaskDue(dayjs(calendarDate).format("YYYY/MM/DD"));
+      setTaskDue(formattedDate);
       toast({
         title: "Due date updated",
         duration: 3000,
@@ -201,7 +207,7 @@ export default function EditTaskDialog({ data }: { data: Doc<"tasks"> }) {
       <div className="flex flex-col gap-1 w-full md:w-1/2 border-b-2 md:border-none space-y-2 pb-4">
         <div>
           <Label className="flex items-start text-lg">Due date</Label>
-          <Popover>
+          <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
             <PopoverTrigger asChild>
               <Button
                 size="sm"
@@ -220,15 +226,14 @@ export default function EditTaskDialog({ data }: { data: Doc<"tasks"> }) {
               </Button>
             </PopoverTrigger>
             <PopoverContent
-              className="w-auto p-0"
+              className="w-auto p-0 z-[100] pointer-events-auto"
               align="start"
-              onFocusOutside={() => handleDueChange()}
+              onOpenAutoFocus={(e) => e.preventDefault()}
             >
               <Calendar
                 mode="single"
                 selected={calendarDate}
-                onSelect={setCalendarDate}
-                initialFocus
+                onSelect={handleDueChange}
               />
             </PopoverContent>
           </Popover>
