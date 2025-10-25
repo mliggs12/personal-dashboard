@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { Row } from "@tanstack/react-table";
 import { useMutation } from "convex/react";
@@ -16,7 +17,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,6 +40,7 @@ export function DataTableRowActions<TData>({
 }: DataTableRowActionsProps<TData>) {
   const task = row.original as Doc<"tasks">;
   const { toast } = useToast();
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   
   const createTask = useMutation(api.tasks.create);
   const completeTask = useMutation(api.tasks.completeTask);
@@ -126,7 +128,7 @@ export function DataTableRowActions<TData>({
   };
 
   return (
-    <Dialog>
+    <>
       <AlertDialog>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -139,9 +141,9 @@ export function DataTableRowActions<TData>({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-[160px]">
-            <DialogTrigger asChild>
-              <DropdownMenuItem>Edit</DropdownMenuItem>
-            </DialogTrigger>
+            <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
+              Edit
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={handleDuplicate}>
               Make a copy
             </DropdownMenuItem>
@@ -157,10 +159,6 @@ export function DataTableRowActions<TData>({
             </AlertDialogTrigger>
           </DropdownMenuContent>
         </DropdownMenu>
-
-        <DialogContent className="flex flex-col md:flex-row w-full md:max-w-4xl h-full md:h-auto p-4">
-          <EditTaskDialog data={task} />
-        </DialogContent>
 
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -181,7 +179,13 @@ export function DataTableRowActions<TData>({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </Dialog>
+
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="flex flex-col md:flex-row w-full md:max-w-4xl h-full md:h-auto p-4">
+          <EditTaskDialog data={task} />
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
