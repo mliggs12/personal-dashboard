@@ -158,7 +158,9 @@ export function DataTableRowActions<TData>({
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <EditTaskDialog data={task} />
+        <DialogContent className="flex flex-col md:flex-row w-full md:max-w-4xl h-full md:h-auto p-4">
+          <EditTaskDialog data={task} />
+        </DialogContent>
 
         <AlertDialogContent>
           <AlertDialogHeader>

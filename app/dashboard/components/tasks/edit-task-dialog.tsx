@@ -43,6 +43,8 @@ export default function EditTaskDialog({ data }: { data: Doc<"tasks"> }) {
   const remove = useMutation(api.tasks.remove);
   const updateTask = useMutation(api.tasks.update);
   const updateRecurringTask = useMutation(api.recurringTasks.update);
+  const removeRecurringFromTask = useMutation(api.tasks.removeRecurringFromTask);
+  const convertTaskToRecurring = useMutation(api.tasks.convertTaskToRecurring);
 
   const { toast } = useToast();
 
@@ -173,14 +175,56 @@ export default function EditTaskDialog({ data }: { data: Doc<"tasks"> }) {
     );
   };
 
-  const handleFrequencyChange = (frequency: string) => {
-    updateRecurringTask({
-      recurringTaskId: recurringTaskId as Id<"recurringTasks">,
-      frequency: frequency as "daily" | "3-day" | "weekly" | "monthly",
-    });
-    setRecurFrequency(
-      frequencies.find((frequencyInfo) => frequencyInfo.value === frequency),
-    );
+  const handleFrequencyChange = async (frequency: string) => {
+    try {
+      // Case 1: User selected "none" - remove recurring
+      if (frequency === "none" && recurringTaskId) {
+        await removeRecurringFromTask({ taskId: _id });
+        setRecurFrequency(undefined);
+        toast({
+          title: "Recurring removed",
+          description: "This task is no longer part of a recurring series.",
+          duration: 3000,
+        });
+      }
+      // Case 2: User selected frequency but task is not recurring yet - convert to recurring
+      else if (frequency !== "none" && !recurringTaskId) {
+        await convertTaskToRecurring({
+          taskId: _id,
+          frequency: frequency as "daily" | "3-day" | "weekly" | "monthly",
+          type: recurType || "whenDone", // Default to whenDone if not set
+        });
+        setRecurFrequency(
+          frequencies.find((frequencyInfo) => frequencyInfo.value === frequency),
+        );
+        toast({
+          title: "Recurring task created",
+          description: "This task is now a recurring task.",
+          duration: 3000,
+        });
+      }
+      // Case 3: User changed frequency on existing recurring task - update recurring task
+      else if (frequency !== "none" && recurringTaskId) {
+        await updateRecurringTask({
+          recurringTaskId: recurringTaskId as Id<"recurringTasks">,
+          frequency: frequency as "daily" | "3-day" | "weekly" | "monthly",
+        });
+        setRecurFrequency(
+          frequencies.find((frequencyInfo) => frequencyInfo.value === frequency),
+        );
+        toast({
+          title: "Frequency updated",
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update recurring settings.",
+        variant: "destructive",
+        duration: 3000,
+      });
+    }
   };
 
   const handleTypeChange = (type: "onSchedule" | "whenDone") => {
@@ -199,7 +243,7 @@ export default function EditTaskDialog({ data }: { data: Doc<"tasks"> }) {
     );
 
   return (
-    <DialogContent className="flex flex-col md:flex-row w-full md:max-w-4xl h-full md:h-auto p-4">
+    <div className="flex flex-col md:flex-row w-full md:max-w-4xl h-full md:h-auto p-4">
       <div className="flex flex-col gap-2 w-full md:w-4/6">
         <DialogTitle className="text-xl text-left">{name}</DialogTitle>
         <TiptapEditor initialContent={notes} onChange={handleChange} />
@@ -292,12 +336,12 @@ export default function EditTaskDialog({ data }: { data: Doc<"tasks"> }) {
             </SelectContent>
           </Select>
         </div>
-        <div className={cn("hidden", recurringTaskId && "grid")}>
+        <div className="grid">
           <Label className="flex items-start text-lg">Recurring</Label>
           <div className="flex justify-between">
             <Select
               onValueChange={handleFrequencyChange}
-              defaultValue={recurFrequency?.value}
+              defaultValue={recurFrequency?.value || "none"}
             >
               <SelectPrimitive.Trigger className="w-fit h-8 gap-2 border-none hover:bg-secondary focus:ring-0 focus:ring-offset-0">
                 <SelectPrimitive.Value placeholder="Select a frequency" />
@@ -358,6 +402,6 @@ export default function EditTaskDialog({ data }: { data: Doc<"tasks"> }) {
           </Button>
         </form>
       </DialogFooter>
-    </DialogContent>
+    </div>
   );
 }
