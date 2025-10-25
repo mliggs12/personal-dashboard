@@ -1,143 +1,45 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useMutation, useQuery } from "convex/react";
-import dayjs from "dayjs";
+import { useQuery } from "convex/react";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DataTable } from "@/components/ui/data-table";
 import { api } from "@/convex/_generated/api";
-import { cn } from "@/lib/utils";
+import { useTableState } from "@/hooks/use-table-state";
 
-import CreateIntentionDialog from "../components/create-intention-dialog";
-import IntentionsTable from "../components/intentions-table";
-import { useIntentions } from "../hooks/use-intentions";
-
-type TabType = { readonly value: string; readonly label: string };
-
-const TABS: TabType[] = [
-  { value: "tithe", label: "Tithe" },
-  { value: "draft", label: "Draft" },
-  { value: "allow", label: "Allow" },
-  { value: "done", label: "Done" },
-  { value: "all", label: "All" },
-];
-
-const MOBILE_TABS = ["tithe", "all"];
+import { columns } from "./components/columns";
+import { DataTablePagination } from "./components/data-table-pagination";
+import { DataTableToolbar } from "./components/data-table-toolbar";
 
 export default function IntentionsPage() {
-  const [selectedTab, setSelectedTab] = useState(TABS[0].value);
-  const { intentions, error } = useIntentions(selectedTab);
-
-  const allowIntentions = useQuery(api.intentions.getByStatus, {
-    status: "allow",
+  const intentions = useQuery(api.intentions.list) ?? [];
+  const { savedState, onStateChange } = useTableState("intentions", {
+    defaultFilters: [{ id: "status", value: ["tithe"] }],
   });
-  const update = useMutation(api.intentions.update);
 
-  useEffect(() => {
-    if (allowIntentions && allowIntentions.length > 0) {
-      const today = dayjs().startOf("day");
-
-      const titheIntentions = allowIntentions.filter((intention) => {
-        const updatedDate = dayjs(intention.updated).startOf("day");
-        const daysDifference = today.diff(updatedDate, "days");
-        return daysDifference > 3;
-      });
-
-      titheIntentions.forEach((intention) =>
-        update({
-          id: intention._id,
-          status: "tithe",
-        }),
-      );
-    }
-  }, [allowIntentions, update]);
-
-  return (
-    <div className="flex flex-col h-full">
-      <Tabs
-        value={selectedTab}
-        onValueChange={(value) => setSelectedTab(value)}
-      >
-        <div className="flex justify-between items-center mb-2">
-          <TabsList>
-            {TABS.map((tab, index) => (
-              <TabsTrigger
-                key={index}
-                value={tab.value}
-                className={cn("w-[75px] text-base", {
-                  hidden: !MOBILE_TABS.includes(tab.value) && true,
-                  "sm:inline-flex": !MOBILE_TABS.includes(tab.value),
-                })}
-              >
-                {tab.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-          <CreateIntentionDialog />
-        </div>
-
-        <Card>
-          <CardHeader className="pb-0">
-            <CardTitle>Intentions</CardTitle>
-            <CardDescription>
-              Manage your intentions to tithe and view their progress.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {TABS.map((tab, index) => (
-              <TabsContent
-                key={index}
-                value={tab.value}
-              >
-                <IntentionsContent
-                  intentions={intentions}
-                  error={error}
-                  selectedTab={selectedTab}
-                />
-              </TabsContent>
-            ))}
-          </CardContent>
-        </Card>
-      </Tabs>
-    </div>
-  );
-}
-
-function IntentionsContent({
-  intentions,
-  error,
-  selectedTab,
-}: {
-  // eslint-disable-next-line
-  intentions: any;
-  // eslint-disable-next-line
-  error: any;
-  // eslint-disable-next-line
-  selectedTab: any;
-}) {
-  if (error) return <div>Error: {error.message}</div>;
-  if (!intentions || intentions.length === 0) {
+  // Show loading state while savedState is being fetched
+  if (intentions === undefined || savedState === undefined) {
     return (
-      <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed shadow-sm">
-        <div className="flex flex-col items-center gap-1 text-center">
-          <h3 className="text-2xl font-bold tracking-tight">
-            No intentions here
-          </h3>
-        </div>
+      <div className="flex h-full items-center justify-center">
+        <p>Loading...</p>
       </div>
     );
   }
+
   return (
-    <IntentionsTable
-      intentions={intentions}
-      selectedTab={selectedTab}
-    />
+    <div className="flex h-full flex-col space-y-2 px-4">
+      <div className="flex items-center justify-between space-y-2">
+        <div>
+          <h2 className="text-lg md:text-2xl font-semibold">Intentions</h2>
+        </div>
+      </div>
+      <DataTable
+        data={intentions}
+        columns={columns}
+        toolbar={(table) => <DataTableToolbar table={table} />}
+        pagination={(table) => <DataTablePagination table={table} />}
+        savedState={savedState}
+        onStateChange={onStateChange}
+      />
+    </div>
   );
 }

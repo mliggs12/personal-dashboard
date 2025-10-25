@@ -13,7 +13,11 @@ import {
 
 import CreateIntentionForm from "./create-intention-form";
 
-export default function CreateIntentionDialog() {
+interface CreateIntentionDialogProps {
+  children?: React.ReactNode;
+}
+
+export default function CreateIntentionDialog({ children }: CreateIntentionDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -22,15 +26,17 @@ export default function CreateIntentionDialog() {
       open={isOpen}
     >
       <DialogTrigger asChild>
-        <Button
-          className="h-10 gap-1 text-base"
-          size="lg"
-        >
-          <PlusCircleIcon className="w-4 h-4" />
-          <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-            New Intention
-          </span>
-        </Button>
+        {children || (
+          <Button
+            className="h-10 gap-1 text-base"
+            size="lg"
+          >
+            <PlusCircleIcon className="w-4 h-4" />
+            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+              New Intention
+            </span>
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>

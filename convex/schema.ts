@@ -95,6 +95,7 @@ export default defineSchema({
     emotionId: v.optional(v.id("emotions")),
     notes: v.optional(v.string()),
     updated: v.optional(v.number()),
+    allowedAt: v.optional(v.number()), // Timestamp when status was changed to "allow"
     userId: v.optional(v.id("users")),
   })
     .index("by_user", ["userId"])
@@ -350,4 +351,18 @@ export default defineSchema({
     duration: v.optional(v.number()), // Generation time in milliseconds
     tokens: v.optional(v.number()), // Token count (for future usage tracking)
   }).index("by_conversation", ["conversationId"]),
+
+  tableStates: defineTable({
+    userId: v.id("users"),
+    tableId: v.string(),
+    state: v.object({
+      columnFilters: v.optional(v.any()),
+      columnVisibility: v.optional(v.any()),
+      sorting: v.optional(v.any()),
+      pagination: v.optional(v.object({
+        pageSize: v.number(),
+      })),
+    }),
+    updated: v.number(),
+  }).index("by_user_table", ["userId", "tableId"]),
 });
