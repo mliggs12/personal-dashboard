@@ -243,7 +243,7 @@ export default function EditTaskDialog({ data }: { data: Doc<"tasks"> }) {
     );
 
   return (
-    <div className="flex flex-col md:flex-row w-full md:max-w-4xl h-full md:h-auto p-4">
+    <DialogContent className="flex flex-col md:flex-row w-full md:max-w-4xl h-full md:h-auto p-4">
       <div className="flex flex-col gap-2 w-full md:w-4/6">
         <DialogTitle className="text-xl text-left">{name}</DialogTitle>
         <TiptapEditor initialContent={notes} onChange={handleChange} />
@@ -402,6 +402,6 @@ export default function EditTaskDialog({ data }: { data: Doc<"tasks"> }) {
           </Button>
         </form>
       </DialogFooter>
-    </div>
+    </DialogContent>
   );
 }
