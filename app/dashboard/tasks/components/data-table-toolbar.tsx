@@ -7,7 +7,7 @@ import { PlusIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-import AddTaskDrawerDialog from "../../components/tasks/add-task-drawer-dialog";
+import AddTaskDrawerDialog from "../../../components/tasks/add-task-drawer-dialog";
 import { priorities, statuses } from "../data/data";
 
 import { DataTableFacetedFilter } from "./data-table-faceted-filter";

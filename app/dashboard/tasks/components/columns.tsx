@@ -7,9 +7,9 @@ import { Repeat } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Doc } from "@/convex/_generated/dataModel";
 
-import { TaskDueDatePicker } from "../../components/tasks/task-due-date-picker";
-import { TaskPrioritySelect } from "../../components/tasks/task-priority-select";
-import { TaskStatusSelect } from "../../components/tasks/task-status-select";
+import { TaskDueDatePicker } from "../../../components/tasks/task-due-date-picker";
+import { TaskPrioritySelect } from "../../../components/tasks/task-priority-select";
+import { TaskStatusSelect } from "../../../components/tasks/task-status-select";
 
 import { DataTableColumnHeader } from "./data-table-column-header";
 import { DataTableRowActions } from "./data-table-row-actions";
