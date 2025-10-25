@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { api } from "@/convex/_generated/api";
 
-import CreateIntentionDialog from "../../../components/create-intention-dialog";
+import CreateIntentionDialog from "../../components/create-intention-dialog";
 import { statuses } from "../data/data";
 
 import { DataTableFacetedFilter } from "./data-table-faceted-filter";
