@@ -28,7 +28,7 @@ import { api } from "@/convex/_generated/api";
 import { Doc } from "@/convex/_generated/dataModel";
 import { useToast } from "@/hooks/use-toast";
 
-import EditTaskDialog from "../../../components/tasks/edit-task-dialog";
+import EditTaskDialog from "../../components/tasks/edit-task-dialog";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
