@@ -235,7 +235,6 @@ export default defineSchema({
       v.literal("3-day"),
       v.literal("weekly"),
       v.literal("monthly"),
-      v.literal("daysAfter"),
     ),
     type: v.union(v.literal("onSchedule"), v.literal("whenDone")),
     userId: v.id("users"),

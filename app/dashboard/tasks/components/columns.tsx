@@ -101,7 +101,7 @@ export const columns: ColumnDef<Doc<"tasks">>[] = [
       if (!dateA) return 1;
       if (!dateB) return -1;
       
-      return dayjs(dateA, "YYYY/MM/DD").diff(dayjs(dateB, "YYYY/MM/DD"));
+      return dayjs(dateA, "YYYY-MM-DD").diff(dayjs(dateB, "YYYY-MM-DD"));
     },
   },
   {

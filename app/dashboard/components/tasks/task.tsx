@@ -22,7 +22,7 @@ dayjs.extend(isYesterday);
 dayjs.extend(relativeTime);
 
 function displayDueDate(dueDateString: string) {
-  const dueDate = dayjs(dueDateString, "YYYY/MM/DD");
+  const dueDate = dayjs(dueDateString, "YYYY-MM-DD");
   const today = dayjs().startOf("day");
 
   if (dueDate.isToday()) {
@@ -102,7 +102,7 @@ export default function Task({
                     <p
                       className={cn(
                         "w-[70px] text-xs text-right text-muted-foreground text-nowrap",
-                        dayjs(due).isBefore(dayjs().startOf("day")) &&
+                        dayjs(due, "YYYY-MM-DD").isBefore(dayjs().startOf("day")) &&
                         "text-destructive",
                       )}
                     >

@@ -30,7 +30,6 @@ export const update = mutation({
         v.literal("3-day"),
         v.literal("weekly"),
         v.literal("monthly"),
-        v.literal("daysAfter"),
       ),
     ),
     type: v.optional(v.union(v.literal("onSchedule"), v.literal("whenDone"))),
@@ -76,7 +75,7 @@ export const recurringTasksWithStats = query({
           .collect();
 
         const count = instances.length ?? 0;
-        const lastRecurrence = instances[0]._creationTime;
+        const lastRecurrence = instances.length > 0 ? instances[0]._creationTime : undefined;
 
         return {
           ...recurringTask,

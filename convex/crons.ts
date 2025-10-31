@@ -15,5 +15,13 @@ crons.hourly(
   internal.intentions.updateReadyToTitheIntentions
 );
 
+// Run hourly to check if it's 6am local time (America/Denver)
+// Generates recurring task instances for "onSchedule" type tasks based on their frequency
+crons.hourly(
+  "generate recurring task instances",
+  { minuteUTC: 0 },
+  internal.tasks.generateRecurringTaskInstances
+);
+
 export default crons;
 

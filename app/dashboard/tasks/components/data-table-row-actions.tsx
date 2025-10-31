@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { Row } from "@tanstack/react-table";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 
 import {
   AlertDialog,
@@ -26,7 +26,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { api } from "@/convex/_generated/api";
-import { Doc } from "@/convex/_generated/dataModel";
+import { Doc, Id } from "@/convex/_generated/dataModel";
 import { useToast } from "@/hooks/use-toast";
 
 import EditTaskDialog from "../../components/tasks/edit-task-dialog";
@@ -41,15 +41,18 @@ export function DataTableRowActions<TData>({
   const task = row.original as Doc<"tasks">;
   const { toast } = useToast();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   
   const createTask = useMutation(api.tasks.create);
   const completeTask = useMutation(api.tasks.completeTask);
   const unCompleteTask = useMutation(api.tasks.unCompleteTask);
   const removeTask = useMutation(api.tasks.remove);
+  const subtasks = useQuery(api.tasks.getSubtasks, { parentTaskId: task._id });
 
   const handleDuplicate = async () => {
     try {
-      await createTask({
+      // Create the main task
+      const newTaskId = await createTask({
         name: `${task.name} (copy)`,
         status: task.status,
         priority: task.priority,
@@ -59,9 +62,41 @@ export function DataTableRowActions<TData>({
         parentTaskId: task.parentTaskId,
       });
       
+      // Duplicate subtasks if they exist
+      if (subtasks && subtasks.length > 0 && newTaskId) {
+        // Recursively duplicate all subtasks
+        const duplicateSubtasks = async (parentId: string, newParentId: string) => {
+          // Get all direct subtasks of the current parent
+          const directSubtasks = subtasks.filter(
+            (st) => st.parentTaskId?.toString() === parentId
+          );
+          
+          for (const subtask of directSubtasks) {
+            const newSubtaskId = await createTask({
+              name: `${subtask.name} (copy)`,
+              status: subtask.status,
+              priority: subtask.priority,
+              notes: subtask.notes,
+              due: subtask.due,
+              intentionId: subtask.intentionId,
+              parentTaskId: newParentId as Id<"tasks">,
+            });
+            
+            // Recursively duplicate nested subtasks
+            if (newSubtaskId) {
+              await duplicateSubtasks(subtask._id, newSubtaskId);
+            }
+          }
+        };
+        
+        await duplicateSubtasks(task._id, newTaskId);
+      }
+      
       toast({
         title: "Task duplicated",
-        description: "The task has been successfully duplicated.",
+        description: subtasks && subtasks.length > 0 
+          ? `Task and ${subtasks.length} subtask(s) duplicated successfully.`
+          : "The task has been successfully duplicated.",
         duration: 3000,
       });
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -127,10 +162,18 @@ export function DataTableRowActions<TData>({
     }
   };
 
+  const handleDialogOpenChange = (open: boolean) => {
+    setIsEditDialogOpen(open);
+    // Ensure dropdown is closed when dialog opens/closes
+    if (!open) {
+      setIsDropdownOpen(false);
+    }
+  };
+
   return (
     <>
-      <AlertDialog>
-        <DropdownMenu>
+      <Dialog open={isEditDialogOpen} onOpenChange={handleDialogOpenChange}>
+        <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
@@ -141,7 +184,12 @@ export function DataTableRowActions<TData>({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-[160px]">
-            <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
+            <DropdownMenuItem 
+              onClick={() => {
+                setIsDropdownOpen(false);
+                setIsEditDialogOpen(true);
+              }}
+            >
               Edit
             </DropdownMenuItem>
             <DropdownMenuItem onClick={handleDuplicate}>
@@ -152,37 +200,34 @@ export function DataTableRowActions<TData>({
               {task.completed !== undefined ? "Mark as todo" : "Mark as done"}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <AlertDialogTrigger asChild>
-              <DropdownMenuItem className="text-destructive">
-                Delete
-              </DropdownMenuItem>
-            </AlertDialogTrigger>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <DropdownMenuItem className="text-destructive">
+                  Delete
+                </DropdownMenuItem>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete the
+                    task &quot;{task.name}&quot;.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </DropdownMenuContent>
         </DropdownMenu>
-
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              task &quot;{task.name}&quot;.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <EditTaskDialog data={task} />
+        <EditTaskDialog 
+          data={task} 
+          onDeleteComplete={() => setIsEditDialogOpen(false)}
+        />
       </Dialog>
+
     </>
   );
 }

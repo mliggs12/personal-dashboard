@@ -78,7 +78,7 @@ export default function AddTaskInline({
     await createTask({
       name,
       priority: priority as "low" | "normal" | "high",
-      due: due ? dayjs(due).format("YYYY/MM/DD") : undefined,
+      due: due ? dayjs(due).format("YYYY-MM-DD") : undefined,
       notes,
       status: "todo",
       intentionId: intentionId as Id<"intentions">,

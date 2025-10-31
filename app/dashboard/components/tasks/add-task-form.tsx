@@ -48,7 +48,7 @@ const formSchema = z
     notes: z.string().optional(),
     due: z.date().optional(),
     frequency: z
-      .enum(["daily", "3-day", "weekly", "monthly", "daysAfter"])
+      .enum(["daily", "3-day", "weekly", "monthly"])
       .optional(),
     type: z.enum(["onSchedule", "whenDone"]).optional(),
   })
@@ -98,7 +98,7 @@ export function AddTaskForm({ className }: React.ComponentProps<"form">) {
   async function onSubmit(data: z.infer<typeof formSchema>) {
     const { name, status, priority, notes, due, frequency, type } = data;
 
-    const dueDate = dayjs(due).format("YYYY/MM/DD");
+    const dueDate = dayjs(due).format("YYYY-MM-DD");
 
     if (frequency && due && type) {
       const recurringTaskId = await createRecurringTask(
@@ -322,9 +322,6 @@ export function AddTaskForm({ className }: React.ComponentProps<"form">) {
                           <SelectItem value="3-day">3-Day</SelectItem>
                           <SelectItem value="weekly">Weekly</SelectItem>
                           <SelectItem value="monthly">Monthly</SelectItem>
-                          <SelectItem value="daysAfter">
-                            Days after...
-                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </FormItem>

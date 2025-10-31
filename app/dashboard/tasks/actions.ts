@@ -1,12 +1,10 @@
 "use server";
 
 import { auth } from "@clerk/nextjs/server";
-import { fetchMutation, fetchQuery } from "convex/nextjs";
-import dayjs from "dayjs";
+import { fetchMutation } from "convex/nextjs";
 
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { nextDueDate } from "@/lib/tasks.utils";
 
 export async function createTask(
   name: string,
@@ -60,8 +58,7 @@ export async function createRecurringTask(
       | "daily"
       | "3-day"
       | "weekly"
-      | "monthly"
-      | "daysAfter",
+      | "monthly",
     type: type as "onSchedule" | "whenDone",
     userId: userId,
   });
@@ -73,40 +70,9 @@ export async function deleteTask(taskId: string) {
   await fetchMutation(api.tasks.remove, { taskId: taskId as Id<"tasks"> });
 }
 
-export async function completeTask(
-  taskId: Id<"tasks">,
-  todayTimestamp: number,
+export async function completeTask( 
+  taskId: string,
 ) {
-  const { userId } = await auth();
-  if (!userId) {
-    throw new Error(
-      "Unauthenticated call to server action `createRecurringTask`",
-    );
-  }
-
-  const task = await fetchQuery(api.tasks.get, { taskId });
-  if (task === null) return null;
-
-  if (task.recurringTaskId !== undefined) {
-    const recurringTask = await fetchQuery(api.recurringTasks.get, {
-      recurringTaskId: task.recurringTaskId,
-    });
-
-    await fetchMutation(api.tasks.create, {
-      name: task.name,
-      status: "todo",
-      priority: "normal",
-      notes: task.notes,
-      due:
-        recurringTask?.type === "whenDone"
-          ? await nextDueDate(recurringTask!.frequency, todayTimestamp)
-          : await nextDueDate(
-              recurringTask!.frequency,
-              dayjs(task?.due, "YYYY/MM/DD").valueOf(),
-            ),
-      recurringTaskId: task.recurringTaskId,
-      userId,
-    });
-  }
-  return await fetchMutation(api.tasks.completeTask, { taskId });
+  // Backend completeTask mutation already handles recurring task creation
+  return await fetchMutation(api.tasks.completeTask, { taskId: taskId as Id<"tasks"> });
 }

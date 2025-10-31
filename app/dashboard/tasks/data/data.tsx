@@ -13,6 +13,7 @@ import {
   CalendarCheck,
   CalendarClock,
   CalendarDays,
+  X,
 } from "lucide-react";
 
 export const labels = [
@@ -82,6 +83,11 @@ export const priorities = [
 ];
 
 export const frequencies = [
+  {
+    label: "None",
+    value: "none",
+    icon: <X className="w-4 h-4 text-muted-foreground" />,
+  },
   {
     label: "Daily",
     value: "daily",

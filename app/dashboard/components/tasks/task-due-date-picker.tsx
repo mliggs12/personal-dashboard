@@ -26,7 +26,7 @@ interface TaskDueDatePickerProps {
 export function TaskDueDatePicker({ task, onSuccess }: TaskDueDatePickerProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const [calendarDate, setCalendarDate] = React.useState<Date | undefined>(
-    task.due ? dayjs(task.due, "YYYY/MM/DD").toDate() : undefined
+    task.due ? dayjs(task.due, "YYYY-MM-DD").toDate() : undefined
   );
 
   const updateTask = useMutation(api.tasks.update);
@@ -47,7 +47,7 @@ export function TaskDueDatePicker({ task, onSuccess }: TaskDueDatePickerProps) {
           duration: 2000,
         });
       } else {
-        const formattedDate = dayjs(selectedDate).format("YYYY/MM/DD");
+        const formattedDate = dayjs(selectedDate).format("YYYY-MM-DD");
         await updateTask({
           taskId: task._id,
           due: formattedDate,
@@ -102,7 +102,7 @@ export function TaskDueDatePicker({ task, onSuccess }: TaskDueDatePickerProps) {
     );
   }
 
-  const dueDate = dayjs(task.due, "YYYY/MM/DD");
+  const dueDate = dayjs(task.due, "YYYY-MM-DD");
   const isOverdue = dueDate.isBefore(dayjs(), "day");
   const isToday = dueDate.isSame(dayjs(), "day");
 

@@ -34,7 +34,13 @@ import { cn } from "@/lib/utils";
 
 import TiptapEditor from "../tiptap-editor";
 
-export default function EditTaskDialog({ data }: { data: Doc<"tasks"> }) {
+export default function EditTaskDialog({ 
+  data,
+  onDeleteComplete,
+}: { 
+  data: Doc<"tasks">;
+  onDeleteComplete?: () => void;
+}) {
   const { name, notes, status, priority, due, recurringTaskId, _id } =
     data;
   const recurringTask = useQuery(api.recurringTasks.get, {
@@ -62,7 +68,7 @@ export default function EditTaskDialog({ data }: { data: Doc<"tasks"> }) {
     "onSchedule" | "whenDone" | undefined
   >(undefined);
   const [calendarDate, setCalendarDate] = useState<Date | undefined>(
-    taskDue ? dayjs(due).toDate() : undefined,
+    taskDue ? dayjs(due, "YYYY-MM-DD").toDate() : undefined,
   );
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   // eslint-disable-next-line
@@ -108,13 +114,22 @@ export default function EditTaskDialog({ data }: { data: Doc<"tasks"> }) {
     };
   }, []);
 
-  // eslint-disable-next-line
-  const handleDeleteTask = (e: any) => {
+  const handleDeleteTask = async (e: React.FormEvent) => {
     e.preventDefault();
-    const deletedId = remove({ taskId: _id });
-    if (deletedId !== undefined) {
+    try {
+      await remove({ taskId: _id });
       toast({
-        title: "🗑️ Successfully deleted",
+        title: "Task deleted",
+        description: "The task has been successfully deleted.",
+        duration: 3000,
+      });
+      // Close dialog after successful deletion
+      onDeleteComplete?.();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: `Failed to delete task: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        variant: "destructive",
         duration: 3000,
       });
     }
@@ -135,20 +150,22 @@ export default function EditTaskDialog({ data }: { data: Doc<"tasks"> }) {
         title: "Due date cleared",
         duration: 3000,
       });
-    } else if (
-      selectedDate &&
-      dayjs(selectedDate).format("YYYY/MM/DD") !== due
-    ) {
-      const formattedDate = dayjs(selectedDate).format("YYYY/MM/DD");
-      updateTask({
-        taskId: _id,
-        due: formattedDate,
-      });
-      setTaskDue(formattedDate);
-      toast({
-        title: "Due date updated",
-        duration: 3000,
-      });
+    } else if (selectedDate) {
+      const formattedDate = dayjs(selectedDate).format("YYYY-MM-DD");
+      // Normalize both dates for comparison (due is already YYYY-MM-DD from backend)
+      const normalizedDue = due ? dayjs(due, "YYYY-MM-DD").format("YYYY-MM-DD") : undefined;
+      
+      if (formattedDate !== normalizedDue) {
+        updateTask({
+          taskId: _id,
+          due: formattedDate,
+        });
+        setTaskDue(formattedDate);
+        toast({
+          title: "Due date updated",
+          duration: 3000,
+        });
+      }
     }
   };
 
@@ -220,19 +237,42 @@ export default function EditTaskDialog({ data }: { data: Doc<"tasks"> }) {
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to update recurring settings.",
+        description: `${error instanceof Error ? error.message : 'Unknown error'}`,
         variant: "destructive",
         duration: 3000,
       });
     }
   };
 
-  const handleTypeChange = (type: "onSchedule" | "whenDone") => {
-    updateRecurringTask({
-      recurringTaskId: recurringTaskId as Id<"recurringTasks">,
-      type: type as "onSchedule" | "whenDone",
-    });
-    setRecurType(type);
+  const handleTypeChange = async (type: "onSchedule" | "whenDone") => {
+    if (!recurringTaskId) {
+      toast({
+        title: "Error",
+        description: "This task is not a recurring task.",
+        variant: "destructive",
+        duration: 3000,
+      });
+      return;
+    }
+
+    try {
+      await updateRecurringTask({
+        recurringTaskId: recurringTaskId as Id<"recurringTasks">,
+        type: type as "onSchedule" | "whenDone",
+      });
+      setRecurType(type);
+      toast({
+        title: "Recurring type updated",
+        duration: 2000,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: `Failed to update recurring type: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        variant: "destructive",
+        duration: 3000,
+      });
+    }
   };
 
   if (notes === undefined)
