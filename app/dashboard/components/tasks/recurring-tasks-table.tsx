@@ -17,7 +17,7 @@ dayjs.extend(localizedFormat);
 
 interface TaskStats {
   count: number;
-  lastRecurrence: number;
+  lastRecurrence: number | undefined;
 }
 
 interface RecurringTaskWithStats extends Doc<"recurringTasks"> {
@@ -84,7 +84,9 @@ export default function RecurringTasksTable({
               {task.stats.count}
             </TableCell>
             <TableCell className="pl-2 pr-10 capitalize">
-              {dayjs(task.stats.lastRecurrence).format("l LT")}
+              {task.stats.lastRecurrence
+                ? dayjs(task.stats.lastRecurrence).format("l LT")
+                : "Never"}
             </TableCell>
           </TableRow>
         ))}
