@@ -19,17 +19,13 @@ dayjs.extend(utc);
 export default function TaskList({ tasks }: { tasks: Doc<"tasks">[] }) {
   const { toast } = useToast();
 
-  const localTimezone = dayjs.tz.guess();
-
-  const todayStart = dayjs().tz(localTimezone).startOf("day").valueOf();
-
   const unCompleteTask = useMutation(api.tasks.unCompleteTask);
 
   const handleOnChangeTask = (task: Doc<"tasks">) => {
     if (task.completed !== undefined) {
       unCompleteTask({ taskId: task._id });
     } else {
-      completeTask(task._id, todayStart);
+      completeTask(task._id);
       toast({
         title: "Task completed",
         description: "Appreciate yourself for completing the task!",
