@@ -67,6 +67,7 @@ const formSchema = z
 
 export function AddTaskForm({ className }: React.ComponentProps<"form">) {
   const [showRecurring, setShowRecurring] = useState(false);
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const createTask = useMutation(api.tasks.create);
   const { toast } = useToast();
 
@@ -195,7 +196,7 @@ export function AddTaskForm({ className }: React.ComponentProps<"form">) {
               name="due"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <Popover>
+                  <Popover open={isDatePickerOpen} onOpenChange={setIsDatePickerOpen}>
                     <PopoverTrigger asChild>
                       <FormControl>
                         <Button
@@ -215,13 +216,17 @@ export function AddTaskForm({ className }: React.ComponentProps<"form">) {
                       </FormControl>
                     </PopoverTrigger>
                     <PopoverContent
-                      className="w-auto p-0"
+                      className="w-auto p-0 z-[100] pointer-events-auto"
                       align="start"
+                      onOpenAutoFocus={(e) => e.preventDefault()}
                     >
                       <Calendar
                         mode="single"
                         selected={field.value}
-                        onSelect={field.onChange}
+                        onSelect={(date) => {
+                          field.onChange(date);
+                          setIsDatePickerOpen(false);
+                        }}
                         initialFocus
                       />
                     </PopoverContent>
