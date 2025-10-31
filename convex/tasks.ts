@@ -230,41 +230,22 @@ export const todayTasks = query({
     const user = await getCurrentUserOrThrow(ctx);
 
     // Get all tasks that are overdue or due today (due <= today)
-    // Status should be todo or in_progress (not done, not archived)
-    const tasks = await ctx.db
+    // Status should be todo or in_progress, not completed
+    const allTasks = await ctx.db
       .query("tasks")
-      .withIndex("by_user_status_due", (q) =>
-        q
-          .eq("userId", user._id)
-          .eq("status", "todo"),
-      )
+      .withIndex("by_user_due", (q) => q.eq("userId", user._id))
       .filter((q) =>
         q.and(
           q.neq(q.field("due"), undefined),
           q.lte(q.field("due"), date),
-          q.eq(q.field("completed"), undefined)
+          q.eq(q.field("completed"), undefined),
+          q.or(
+            q.eq(q.field("status"), "todo"),
+            q.eq(q.field("status"), "in_progress")
+          )
         )
       )
       .collect();
-
-    // Also get in_progress tasks
-    const inProgressTasks = await ctx.db
-      .query("tasks")
-      .withIndex("by_user_status_due", (q) =>
-        q
-          .eq("userId", user._id)
-          .eq("status", "in_progress"),
-      )
-      .filter((q) =>
-        q.and(
-          q.neq(q.field("due"), undefined),
-          q.lte(q.field("due"), date),
-          q.eq(q.field("completed"), undefined)
-        )
-      )
-      .collect();
-
-    const allTasks = [...tasks, ...inProgressTasks];
 
     // Sort by due date ascending (earliest first)
     return allTasks.sort((a, b) => {

@@ -24,7 +24,7 @@ import TaskList from "./task-list";
 export default function TasksCard() {
   const [status, setStatus] = useState<"today" | "deadline" | "backlog">("today")
 
-  const today = dayjs().endOf("day").format("YYYY-MM-DD")
+  const today = dayjs().format("YYYY-MM-DD")
 
   const todayTasks = useQuery(api.tasks.todayTasks, { date: today })
   const deadlineTasks = useQuery(api.tasks.deadlineTasks, { date: today })
