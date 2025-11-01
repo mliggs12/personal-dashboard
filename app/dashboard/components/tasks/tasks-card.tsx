@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useQuery } from "convex/react";
 import { ArrowUpRight } from "lucide-react";
@@ -24,7 +24,7 @@ import TaskList from "./task-list";
 
 export default function TasksCard() {
   const [status, setStatus] = useState<"today" | "deadline" | "backlog">("today");
-  const { isClient, today, timezone } = useClientDate();
+  const { isClient, today } = useClientDate();
 
   // Only make queries after client hydration
   const todayTasks = useQuery(
@@ -36,39 +36,6 @@ export default function TasksCard() {
     isClient && today ? { date: today } : "skip"
   );
   const backlogTasks = useQuery(api.tasks.backlogTasks);
-
-  // Debug logging
-  React.useEffect(() => {
-    if (isClient && today) {
-      console.log("[TasksCard] Query parameters:", {
-        today,
-        timezone,
-        todayTasksCount: todayTasks?.length ?? "undefined",
-        deadlineTasksCount: deadlineTasks?.length ?? "undefined",
-        backlogTasksCount: backlogTasks?.length ?? "undefined",
-      });
-      
-      // Log sample tasks to see their due dates
-      if (todayTasks && todayTasks.length > 0) {
-        console.log("[TasksCard] Sample todayTasks:", todayTasks.slice(0, 3).map(t => ({
-          name: t.name,
-          due: t.due,
-          status: t.status,
-          completed: t.completed,
-        })));
-      }
-      
-      if (deadlineTasks && deadlineTasks.length > 0) {
-        console.log("[TasksCard] Sample deadlineTasks:", deadlineTasks.slice(0, 3).map(t => ({
-          name: t.name,
-          due: t.due,
-          status: t.status,
-          completed: t.completed,
-          isTodayOrOverdue: t.due ? t.due <= today : false,
-        })));
-      }
-    }
-  }, [isClient, today, timezone, todayTasks, deadlineTasks, backlogTasks]);
 
   const tasks = useMemo(() => {
     let result: Doc<"tasks">[] = [];

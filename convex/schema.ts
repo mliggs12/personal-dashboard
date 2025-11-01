@@ -200,7 +200,7 @@ export default defineSchema({
       v.union(v.literal("low"), v.literal("normal"), v.literal("high")),
     ),
     notes: v.optional(v.string()),
-    due: v.optional(v.string()), // YYYY-MM-DD
+    due: v.optional(v.string()), // YYYY-MM-DD format (legacy YYYY/MM/DD format also supported in queries)
     completed: v.optional(v.number()),
     updated: v.optional(v.number()),
     recurringTaskId: v.optional(v.id("recurringTasks")),

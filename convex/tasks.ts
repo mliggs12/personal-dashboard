@@ -13,6 +13,19 @@ dayjs.extend(timezone);
 dayjs.extend(utc);
 const TIMEZONE = "America/Denver";
 
+/**
+ * Normalizes a date string to YYYY-MM-DD format.
+ * Handles both legacy YYYY/MM/DD format and current YYYY-MM-DD format.
+ * 
+ * @param date - Date string in YYYY-MM-DD or YYYY/MM/DD format
+ * @returns Normalized date string in YYYY-MM-DD format, or undefined if date is undefined/invalid
+ */
+function normalizeDateString(date: string | undefined): string | undefined {
+  if (!date) return undefined;
+  const parsed = dayjs(date, ["YYYY-MM-DD", "YYYY/MM/DD"]);
+  return parsed.isValid() ? parsed.format("YYYY-MM-DD") : date;
+}
+
 export const list = query({
   args: { paginationOpts: paginationOptsValidator },
   async handler(ctx, { paginationOpts }) {
@@ -229,12 +242,8 @@ export const todayTasks = query({
   async handler(ctx, { date }) {
     const user = await getCurrentUserOrThrow(ctx);
 
-    console.log("[todayTasks] Query called with date:", date, "userId:", user._id);
-
-    // Normalize the input date to YYYY-MM-DD format
-    const normalizedDate = dayjs(date, ["YYYY-MM-DD", "YYYY/MM/DD"]).isValid()
-      ? dayjs(date, ["YYYY-MM-DD", "YYYY/MM/DD"]).format("YYYY-MM-DD")
-      : date;
+    // Normalize the input date to YYYY-MM-DD format (handles legacy YYYY/MM/DD format)
+    const normalizedDate = normalizeDateString(date) ?? date;
 
     // Get all tasks with due dates (we'll filter in memory to handle legacy YYYY/MM/DD format)
     const allTasksWithDue = await ctx.db
@@ -256,46 +265,24 @@ export const todayTasks = query({
     const allTasks = allTasksWithDue.filter((task) => {
       if (!task.due) return false;
       
-      // Normalize task due date to YYYY-MM-DD format
-      const normalizedTaskDue = dayjs(task.due, ["YYYY-MM-DD", "YYYY/MM/DD"]).isValid()
-        ? dayjs(task.due, ["YYYY-MM-DD", "YYYY/MM/DD"]).format("YYYY-MM-DD")
-        : task.due;
+      const normalizedTaskDue = normalizeDateString(task.due);
+      if (!normalizedTaskDue) return false;
       
       // Compare normalized dates
       return normalizedTaskDue <= normalizedDate;
     });
 
-    console.log("[todayTasks] Found", allTasks.length, "tasks. Sample:", allTasks.slice(0, 5).map(t => {
-      const normalizedDue = t.due && dayjs(t.due, ["YYYY-MM-DD", "YYYY/MM/DD"]).isValid()
-        ? dayjs(t.due, ["YYYY-MM-DD", "YYYY/MM/DD"]).format("YYYY-MM-DD")
-        : t.due;
-      return {
-        name: t.name,
-        due: t.due,
-        normalizedDue,
-        status: t.status,
-        completed: t.completed,
-        dueCompare: normalizedDue ? `${normalizedDue} <= ${normalizedDate} = ${normalizedDue <= normalizedDate}` : "no due",
-      };
-    }));
-
     // Sort by due date ascending (earliest first) using normalized dates
-    const sorted = allTasks.sort((a, b) => {
+    return allTasks.sort((a, b) => {
       if (!a.due && !b.due) return 0;
       if (!a.due) return 1;
       if (!b.due) return -1;
       
-      const normalizedA = dayjs(a.due, ["YYYY-MM-DD", "YYYY/MM/DD"]).isValid()
-        ? dayjs(a.due, ["YYYY-MM-DD", "YYYY/MM/DD"]).format("YYYY-MM-DD")
-        : a.due;
-      const normalizedB = dayjs(b.due, ["YYYY-MM-DD", "YYYY/MM/DD"]).isValid()
-        ? dayjs(b.due, ["YYYY-MM-DD", "YYYY/MM/DD"]).format("YYYY-MM-DD")
-        : b.due;
+      const normalizedA = normalizeDateString(a.due) ?? a.due;
+      const normalizedB = normalizeDateString(b.due) ?? b.due;
       
       return normalizedA.localeCompare(normalizedB);
     });
-
-    return sorted;
   },
 });
 
@@ -345,12 +332,8 @@ export const deadlineTasks = query({
   async handler(ctx, { date }) {
     const user = await getCurrentUserOrThrow(ctx);
 
-    console.log("[deadlineTasks] Query called with date:", date, "userId:", user._id);
-
-    // Normalize the input date to YYYY-MM-DD format
-    const normalizedDate = dayjs(date, ["YYYY-MM-DD", "YYYY/MM/DD"]).isValid()
-      ? dayjs(date, ["YYYY-MM-DD", "YYYY/MM/DD"]).format("YYYY-MM-DD")
-      : date;
+    // Normalize the input date to YYYY-MM-DD format (handles legacy YYYY/MM/DD format)
+    const normalizedDate = normalizeDateString(date) ?? date;
 
     // Get all tasks with due dates (we'll filter in memory to handle legacy YYYY/MM/DD format)
     const allTasksWithDue = await ctx.db
@@ -365,34 +348,15 @@ export const deadlineTasks = query({
       .collect();
 
     // Normalize and filter tasks in memory to handle both YYYY-MM-DD and YYYY/MM/DD formats
-    const tasks = allTasksWithDue.filter((task) => {
+    return allTasksWithDue.filter((task) => {
       if (!task.due) return false;
       
-      // Normalize task due date to YYYY-MM-DD format
-      const normalizedTaskDue = dayjs(task.due, ["YYYY-MM-DD", "YYYY/MM/DD"]).isValid()
-        ? dayjs(task.due, ["YYYY-MM-DD", "YYYY/MM/DD"]).format("YYYY-MM-DD")
-        : task.due;
+      const normalizedTaskDue = normalizeDateString(task.due);
+      if (!normalizedTaskDue) return false;
       
       // Compare normalized dates (due > today)
       return normalizedTaskDue > normalizedDate;
     });
-
-    console.log("[deadlineTasks] Found", tasks.length, "tasks. Sample:", tasks.slice(0, 5).map(t => {
-      const normalizedDue = t.due && dayjs(t.due, ["YYYY-MM-DD", "YYYY/MM/DD"]).isValid()
-        ? dayjs(t.due, ["YYYY-MM-DD", "YYYY/MM/DD"]).format("YYYY-MM-DD")
-        : t.due;
-      return {
-        name: t.name,
-        due: t.due,
-        normalizedDue,
-        status: t.status,
-        completed: t.completed,
-        dueCompare: normalizedDue ? `${normalizedDue} > ${normalizedDate} = ${normalizedDue > normalizedDate}` : "no due",
-        shouldBeInToday: normalizedDue ? normalizedDue <= normalizedDate : false,
-      };
-    }));
-
-    return tasks;
   },
 });
 
@@ -646,14 +610,7 @@ export const convertTaskToRecurring = mutation({
     if (task === null) throw new Error("Could not find task");
 
     // Normalize due date to YYYY-MM-DD format (handle legacy YYYY/MM/DD format)
-    let normalizedDue: string;
-    if (task.due) {
-      // Parse and reformat to ensure YYYY-MM-DD format
-      const parsed = dayjs(task.due, ["YYYY-MM-DD", "YYYY/MM/DD"]);
-      normalizedDue = parsed.isValid() ? parsed.format("YYYY-MM-DD") : dayjs().format("YYYY-MM-DD");
-    } else {
-      normalizedDue = dayjs().format("YYYY-MM-DD");
-    }
+    const normalizedDue = normalizeDateString(task.due) ?? dayjs().format("YYYY-MM-DD");
 
     // Create a new recurring task based on the current task
     const recurringTaskId = await ctx.db.insert("recurringTasks", {
