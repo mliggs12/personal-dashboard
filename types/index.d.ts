@@ -27,3 +27,10 @@ export type Note = Doc<"notes">;
 
 // Inbox
 export type InboxRecord = Doc<"inboxRecords">;
+
+// Plan
+export interface Template {
+  id: string
+  name: string
+  description: string
+}

@@ -43,7 +43,7 @@ export default function AddTaskDrawerDialog({ children }: AddTaskDrawerDialogPro
           )}
         </DrawerTrigger>
         <DrawerContent>
-          <AddTaskForm />
+          <AddTaskForm onSuccess={() => setOpen(false)} />
           <DrawerFooter className="my-0">
             <DrawerClose asChild>
               <Button variant="outline">Cancel</Button>
@@ -70,7 +70,7 @@ export default function AddTaskDrawerDialog({ children }: AddTaskDrawerDialogPro
         )}
       </DialogTrigger>
       <DialogContent className="w-[875px] max-h-[80vh] p-8 overflow-y-auto fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 border-2 bg-background rounded-xl">
-        <AddTaskForm />
+        <AddTaskForm onSuccess={() => setOpen(false)} />
       </DialogContent>
     </Dialog>
   );

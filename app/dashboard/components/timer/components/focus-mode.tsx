@@ -84,35 +84,35 @@ export default function FocusMode({
 
       {/* Control Symbols */}
       <div className="flex gap-8 mb-8">
-        {onPause && (
+        {onStop && (
+          <button
+            onClick={onStop}
+            className="w-16 h-16 flex items-center justify-center text-white/70 hover:text-white transition-colors"
+            title={timerType === 'tithe' ? 'Finish Session' : 'Stop Session'}
+          >
+            {/* Stop symbol (square) */}
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M6 6h12v12H6z"/>
+            </svg>
+          </button>
+        )}
+        {onPause && timerType !== "tithe" && (
           <button
             onClick={onPause}
-            className="w-12 h-12 flex items-center justify-center text-white/70 hover:text-white transition-colors"
+            className="w-16 h-16 flex items-center justify-center text-white/70 hover:text-white transition-colors"
             title={isPaused ? 'Resume' : 'Pause'}
           >
             {isPaused ? (
               // Play symbol (triangle)
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M8 5v14l11-7z"/>
               </svg>
             ) : (
               // Pause symbol (two bars)
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
               </svg>
             )}
-          </button>
-        )}
-        {onStop && (
-          <button
-            onClick={onStop}
-            className="w-12 h-12 flex items-center justify-center text-white/70 hover:text-white transition-colors"
-            title={timerType === 'tithe' ? 'Finish Session' : 'Stop Session'}
-          >
-            {/* Stop symbol (square) */}
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M6 6h12v12H6z"/>
-            </svg>
           </button>
         )}
       </div>

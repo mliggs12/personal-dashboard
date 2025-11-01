@@ -2,9 +2,19 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import dayjs from "dayjs";
 
-import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { api } from "@/convex/_generated/api";
 import { Doc, Id } from "@/convex/_generated/dataModel";
+import { useToast } from "@/hooks/use-toast";
 
 import { useAudio } from "../../hooks/use-audio";
 import FocusMode from "../focus-mode";
@@ -22,6 +32,7 @@ interface TimerState {
   focusModeActive: boolean;
   pausedTime: number; // Total time spent paused (in seconds)
   lastPauseStart: string | null; // When the current pause started
+  showCancelDialog: boolean; // Controls the cancel confirmation dialog
 }
 
 interface CountdownTimerProps {
@@ -47,6 +58,7 @@ export function CountdownTimer({
     focusModeActive: false,
     pausedTime: 0,
     lastPauseStart: null,
+    showCancelDialog: false,
   });
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -59,6 +71,7 @@ export function CountdownTimer({
   const finishTimer = useMutation(api.timers.finishTimer);
 
   const { play: playAlarmSound } = useAudio("/sound/airplane_chime.mp3");
+  const { toast } = useToast();
 
   // Update local state when duration prop changes and timer is idle
   useEffect(() => {
@@ -70,6 +83,7 @@ export function CountdownTimer({
         currentTime: timerType === "tithe" ? 0 : duration,
         pausedTime: 0,
         lastPauseStart: null,
+        showCancelDialog: false,
       }));
       // Reset the finished flag when timer type or duration changes
       hasFinishedRef.current = false;
@@ -100,12 +114,6 @@ export function CountdownTimer({
     });
   };
 
-  const handleTitheStop = (): void => {
-    if (timerType === "tithe" && state.status === "running") {
-      handleFinish();
-    }
-  };
-
   const handlePause = (): void => {
     setState((prevState) => {
       const now = dayjs().toISOString();
@@ -124,7 +132,7 @@ export function CountdownTimer({
           status: "running",
           pausedTime: prevState.pausedTime + pauseDuration,
           lastPauseStart: null,
-          focusModeActive: timerType === "tithe" ? true : true, // Resume focus mode
+          focusModeActive: timerType === "tithe" ? true : prevState.focusModeActive, // Preserve focus mode state for session
         };
       } else {
         // Pausing: record when pause started
@@ -177,6 +185,7 @@ export function CountdownTimer({
         focusModeActive: false,
         pausedTime: 0,
         lastPauseStart: null,
+        showCancelDialog: false,
       });
       
       // Then save the session and finish timer (async operations)
@@ -194,35 +203,11 @@ export function CountdownTimer({
       // Small delay to ensure local state is set before Convex update
       setTimeout(() => finishTimer(), 100);
     } else {
-      // For session mode, confirm cancellation
-      const confirmed = window.confirm(
-        "Are you sure you want to stop this session? Your progress will be lost."
-      );
-      
-      if (confirmed) {
-        // Set flag to prevent state restoration
-        hasFinishedRef.current = true;
-        
-        // First, clear the timer interval to stop any running timer
-        if (timerRef.current) {
-          clearInterval(timerRef.current);
-          timerRef.current = null;
-        }
-        
-        // Reset to clean idle state immediately
-        setState({
-          duration,
-          startTime: null,
-          currentTime: duration,
-          status: "idle",
-          focusModeActive: false,
-          pausedTime: 0,
-          lastPauseStart: null,
-        });
-        
-        // Then finish timer (async operation) with small delay
-        setTimeout(() => finishTimer(), 100);
-      }
+      // For session mode, show confirmation dialog
+      setState((prevState) => ({
+        ...prevState,
+        showCancelDialog: true,
+      }));
     }
   };
 
@@ -237,6 +222,46 @@ export function CountdownTimer({
     setState((prevState) => ({
       ...prevState,
       focusModeActive: false,
+    }));
+  };
+
+  const handleCancelSession = (): void => {
+    // Set flag to prevent state restoration
+    hasFinishedRef.current = true;
+    
+    // First, clear the timer interval to stop any running timer
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    
+    // Reset to clean idle state immediately
+    setState({
+      duration,
+      startTime: null,
+      currentTime: duration,
+      status: "idle",
+      focusModeActive: false,
+      pausedTime: 0,
+      lastPauseStart: null,
+      showCancelDialog: false,
+    });
+    
+    // Show cancellation toast
+    toast({
+      title: "Session Cancelled",
+      description: "Your session has been cancelled and no data was saved.",
+      variant: "destructive",
+    });
+    
+    // Then finish timer (async operation) with small delay
+    setTimeout(() => finishTimer(), 100);
+  };
+
+  const handleCancelDialogClose = (): void => {
+    setState((prevState) => ({
+      ...prevState,
+      showCancelDialog: false,
     }));
   };
 
@@ -305,6 +330,7 @@ export function CountdownTimer({
               focusModeActive: false,
               pausedTime: 0,
               lastPauseStart: null,
+              showCancelDialog: false,
             };
           }
           
@@ -360,6 +386,7 @@ export function CountdownTimer({
           focusModeActive: timerStore.status === "running", // Resume focus mode if timer was running
           pausedTime: timerStore.pausedTime ?? 0, // Restore pause tracking from Convex
           lastPauseStart: timerStore.lastPauseStart ?? null, // Restore pause start time
+          showCancelDialog: false,
         });
       }
     }
@@ -395,32 +422,93 @@ export function CountdownTimer({
       />
       
       {!state.focusModeActive && (
-        <div className="countdown-timer-container flex flex-col items-center p-4 border rounded-lg space-y-4">
-          <Clock seconds={state.currentTime} />
-          <div className="flex gap-2">
-            {/* <Button onClick={handleStart} disabled={state.status === "running"}> */}
-            <Button onClick={handleStart} disabled>
-              {state.status === "running" ? "Running" : state.status === "paused" ? "Resume" : "Start"}
-            </Button>
-            {state.status === "running" && (
-              <Button onClick={handlePause} variant="outline">
-                Pause
-              </Button>
-            )}
-            {timerType === "tithe" && state.status === "running" && (
-              <Button onClick={handleTitheStop} variant="outline">
-                Stop
-              </Button>
-            )}
-            {/* Focus button for active timers not in focus mode */}
+        <div className="countdown-timer-container flex flex-col items-center p-4 border rounded-lg space-y-4 relative">
+          {/* Reserved space for focus button in top right corner */}
+          <div className="absolute top-2 right-2 w-10 h-10">
             {(state.status === "running" || state.status === "paused") && (
-              <Button onClick={handleEnterFocusMode} variant="secondary">
-                Focus
-              </Button>
+              <button
+                onClick={handleEnterFocusMode}
+                className="w-full h-full flex items-center justify-center text-foreground/60 hover:text-foreground transition-colors"
+                title="Enter Focus Mode"
+              >
+                {/* Focus symbol (eye) */}
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                </svg>
+              </button>
+            )}
+          </div>
+          <Clock seconds={state.currentTime} />
+          <div className="flex gap-8">
+            {state.status === "idle" ? (
+              <button
+                onClick={handleStart}
+                className="w-16 h-16 flex items-center justify-center text-foreground/70 hover:text-foreground transition-colors"
+                title="Start Timer"
+              >
+                {/* Play symbol (triangle) */}
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              </button>
+            ) : (
+              <button
+                onClick={handleStop}
+                className="w-16 h-16 flex items-center justify-center text-foreground/70 hover:text-foreground transition-colors"
+                title="Stop Timer"
+              >
+                {/* Stop symbol (square) */}
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M6 6h12v12H6z"/>
+                </svg>
+              </button>
+            )}
+            {state.status === "running" && timerType !== "tithe" && (
+              <button
+                onClick={handlePause}
+                className="w-16 h-16 flex items-center justify-center text-foreground/70 hover:text-foreground transition-colors"
+                title="Pause Timer"
+              >
+                {/* Pause symbol (two bars) */}
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                </svg>
+              </button>
+            )}
+            {state.status === "paused" && timerType !== "tithe" && (
+              <button
+                onClick={handlePause}
+                className="w-16 h-16 flex items-center justify-center text-foreground/70 hover:text-foreground transition-colors"
+                title="Resume Timer"
+              >
+                {/* Play symbol (triangle) */}
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              </button>
             )}
           </div>
         </div>
       )}
+      
+      <AlertDialog open={state.showCancelDialog} onOpenChange={handleCancelDialogClose}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancel Session?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to stop this session? Your progress will be lost.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleCancelDialogClose}>
+              Continue Session
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleCancelSession} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Cancel Session
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

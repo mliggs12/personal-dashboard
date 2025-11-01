@@ -65,7 +65,11 @@ const formSchema = z
     },
   );
 
-export function AddTaskForm({ className }: React.ComponentProps<"form">) {
+interface AddTaskFormProps extends React.ComponentProps<"form"> {
+  onSuccess?: () => void;
+}
+
+export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
   const [showRecurring, setShowRecurring] = useState(false);
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const createTask = useMutation(api.tasks.create);
@@ -143,6 +147,7 @@ export function AddTaskForm({ className }: React.ComponentProps<"form">) {
       duration: 3000,
     });
     form.reset();
+    onSuccess?.();
   }
 
   return (

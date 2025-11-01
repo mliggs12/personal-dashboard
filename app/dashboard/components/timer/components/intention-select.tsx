@@ -25,8 +25,6 @@ export default function IntentionSelect({
     selectedIntentionId ? { id: selectedIntentionId as Id<"intentions"> } : "skip"
   )
 
-
-
   const handleClick = async () => {
     const id = await createIntention({ title: searchText });
     setSelectedIntentionId(id);
@@ -38,15 +36,10 @@ export default function IntentionSelect({
   };
 
   return (
-    <div>
-      <div className="mb-4 text-center text-5xl">
+    <div className="py-2">
+      <div className="mb-4 text-center text-3xl">
         {selectedIntentionId ? (
-          <h2 className="flex items-center justify-center gap-3">
-            {intention?.emotionId && (
-              <div 
-                className="w-4 h-4 rounded-full flex-shrink-0"
-              />
-            )}
+          <h2>
             <Link href={`dashboard/creativity/intentions/${selectedIntentionId}`}>
               {intention ? intention.title : "Loading..."}
             </Link>
@@ -63,8 +56,7 @@ export default function IntentionSelect({
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
             placeholder="Intention"
-            className="w-full text-gray-900 dark:text-gray-100"
-            disabled
+            className="w-full text-secondary-foreground"
           />
           {searchText.length >= 1 && (
             <div className="flex flex-col items-center justify-center h-full">

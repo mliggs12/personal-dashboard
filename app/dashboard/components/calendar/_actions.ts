@@ -19,11 +19,12 @@ interface GoogleCalendarResponse {
 
 async function getOauthToken(userId: string): Promise<string> {
   const client = await clerkClient();
+  console.log(userId);
   const clerkResponse = await client.users.getUserOauthAccessToken(
     userId,
-    "oauth_google",
+    "google",
   );
-  
+
   if (!clerkResponse.data || clerkResponse.data.length === 0) {
     throw new Error("No OAuth token found for Google Calendar");
   }
