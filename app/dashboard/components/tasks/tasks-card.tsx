@@ -70,6 +70,16 @@ export default function TasksCard() {
   useEffect(() => {
     if (deadlineTasks !== undefined) {
       console.log("[TasksCard] deadlineTasks query result - Date param:", today, "- Count:", deadlineTasks.length, "- Tasks:", deadlineTasks.map(t => ({ id: t._id, name: t.name, due: t.due, status: t.status })));
+      // Log detailed comparison to help debug why tasks aren't in todayTasks
+      const sampleTasks = deadlineTasks.slice(0, 3);
+      console.log("[TasksCard] deadlineTasks sample analysis:", sampleTasks.map(t => ({
+        name: t.name,
+        due: t.due,
+        dueType: typeof t.due,
+        dueCompare: t.due ? `${t.due} <= ${today}: ${t.due <= today}` : 'no due date',
+        status: t.status,
+        completed: t.completed
+      })));
     }
   }, [deadlineTasks, today]);
 
