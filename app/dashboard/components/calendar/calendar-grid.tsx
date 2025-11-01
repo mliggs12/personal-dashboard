@@ -4,7 +4,7 @@ import dayjs from "dayjs";
 
 import { api } from "@/convex/_generated/api";
 import { Doc } from "@/convex/_generated/dataModel";
-import { getUserTimezone } from "@/lib/timezone.utils";
+import { getUserTimezone } from "@/lib/date.utils";
 import { cn } from "@/lib/utils";
 import { Event } from "@/types";
 
