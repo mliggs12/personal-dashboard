@@ -11,11 +11,12 @@ import { DataTablePagination } from "./components/data-table-pagination";
 import { DataTableToolbar } from "./components/data-table-toolbar";
 
 export default function TasksPage() {
-  const tasks = useQuery(api.tasks.getTasksWithSubtasks) ?? [];
+  const tasksQuery = useQuery(api.tasks.getTasksWithSubtasks);
+  const tasks = tasksQuery ?? [];
   const { savedState, onStateChange } = useTableState("tasks");
 
   // Show loading state while savedState is being fetched
-  if (tasks === undefined || savedState === undefined) {
+  if (tasksQuery === undefined || savedState === undefined) {
     return (
       <div className="flex h-full items-center justify-center">
         <p>Loading...</p>

@@ -41,14 +41,36 @@ export function useTableState(
   
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Merge saved state with defaults
+  // Merge saved state with defaults and migrate old column ids
   const mergedState = useMemo(() => {
     if (savedState === undefined) return undefined;
     
+    // Migrate old column id _creationTime to created (for tasks table)
+    const migrateColumnId = (obj: any): any => {
+      if (!obj || typeof obj !== 'object') return obj;
+      
+      if (Array.isArray(obj)) {
+        return obj.map(item => {
+          if (typeof item === 'object' && item !== null && item.id === '_creationTime') {
+            return { ...item, id: 'created' };
+          }
+          return migrateColumnId(item);
+        });
+      }
+      
+      const migrated: any = {};
+      for (const [key, value] of Object.entries(obj)) {
+        // Migrate _creationTime key to created
+        const newKey = key === '_creationTime' ? 'created' : key;
+        migrated[newKey] = migrateColumnId(value);
+      }
+      return migrated;
+    };
+    
     return {
       columnFilters: savedState?.columnFilters ?? defaultFilters,
-      columnVisibility: savedState?.columnVisibility ?? defaultVisibility,
-      sorting: savedState?.sorting ?? defaultSorting,
+      columnVisibility: migrateColumnId(savedState?.columnVisibility ?? defaultVisibility),
+      sorting: migrateColumnId(savedState?.sorting ?? defaultSorting),
       pagination: savedState?.pagination ?? { pageSize: defaultPageSize },
     };
   }, [savedState, defaultFilters, defaultVisibility, defaultSorting, defaultPageSize]);

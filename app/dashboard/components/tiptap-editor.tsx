@@ -1,6 +1,5 @@
 import Code from "@tiptap/extension-code";
 import CodeBlock from "@tiptap/extension-code-block";
-import Document from '@tiptap/extension-document';
 import Link from "@tiptap/extension-link";
 import TaskItem from "@tiptap/extension-task-item";
 import TaskList from "@tiptap/extension-task-list";
@@ -18,10 +17,6 @@ interface TiptapEditorProps {
   className?: string;
 }
 
-const CustomTaskItem = TaskItem.extend({
-  content: 'inline*',
-})
-
 export default function TiptapEditor({
   initialContent,
   onChange,
@@ -29,9 +24,9 @@ export default function TiptapEditor({
 }: TiptapEditorProps) {
   const editor = useEditor({
     extensions: [
+      StarterKit,
       Code,
       CodeBlock,
-      Document,
       Link.configure({
         defaultProtocol: "https",
         HTMLAttributes: {
@@ -39,11 +34,17 @@ export default function TiptapEditor({
             "no-underline hover:cursor-pointer hover:text-primary hover:underline hover:underline-offset-4",
         },
       }),
-      StarterKit,
       Typography,
-      TaskList,
-      CustomTaskItem.configure({
+      TaskList.configure({
+        HTMLAttributes: {
+          class: "task-list",
+        },
+      }),
+      TaskItem.configure({
         nested: true,
+        HTMLAttributes: {
+          class: "task-item",
+        },
       }),
     ],
     autofocus: "end",

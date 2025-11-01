@@ -675,13 +675,52 @@ export const getTasksWithSubtasks = query({
       .filter((q) => q.eq(q.field("completed"), undefined))
       .collect();
 
+    // Collect all unique recurring task IDs
+    const recurringTaskIds = new Set(
+      allTasks
+        .map((task) => task.recurringTaskId)
+        .filter((id): id is NonNullable<typeof id> => id !== undefined)
+    );
+
+    // Fetch all recurring tasks in batch
+    const recurringTasks = await Promise.all(
+      Array.from(recurringTaskIds).map((id) => ctx.db.get(id))
+    );
+
+    // Create lookup map: recurringTaskId -> _creationTime
+    const recurringTaskCreationTimeMap = new Map();
+    for (const recurringTask of recurringTasks) {
+      if (recurringTask) {
+        recurringTaskCreationTimeMap.set(recurringTask._id, recurringTask._creationTime);
+      }
+    }
+
+    // Helper function to enrich a task with parent creation time
+    const enrichTask = (task: any) => {
+      const enriched = { ...task };
+      if (task.recurringTaskId && recurringTaskCreationTimeMap.has(task.recurringTaskId)) {
+        enriched.parentCreationTime = recurringTaskCreationTimeMap.get(task.recurringTaskId);
+      }
+      return enriched;
+    };
+
+    // Helper function to recursively enrich subtasks
+    const enrichTaskWithSubtasks = (task: any): any => {
+      const enriched = enrichTask(task);
+      if (task.subtasks && task.subtasks.length > 0) {
+        enriched.subtasks = task.subtasks.map(enrichTaskWithSubtasks);
+      }
+      return enriched;
+    };
+
     // Group tasks by parent-child relationships
     const taskMap = new Map();
     const rootTasks = [];
 
     // First pass: create task map and identify root tasks
     for (const task of allTasks) {
-      taskMap.set(task._id, { ...task, subtasks: [] });
+      const enriched = enrichTask(task);
+      taskMap.set(task._id, { ...enriched, subtasks: [] });
       if (!task.parentTaskId) {
         rootTasks.push(task._id);
       }
@@ -694,8 +733,8 @@ export const getTasksWithSubtasks = query({
       }
     }
 
-    // Return only root tasks with their subtasks nested
-    return rootTasks.map(id => taskMap.get(id)).filter(Boolean);
+    // Return only root tasks with their subtasks nested, all enriched
+    return rootTasks.map(id => enrichTaskWithSubtasks(taskMap.get(id))).filter(Boolean);
   },
 });
 

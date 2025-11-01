@@ -12,12 +12,13 @@ import { TaskPrioritySelect } from "../../components/tasks/task-priority-select"
 import { TaskStatusSelect } from "../../components/tasks/task-status-select";
 
 import { DataTableColumnHeader } from "./data-table-column-header";
+import { DataTableCreatedCell } from "./data-table-created-cell";
 import { DataTableRowActions } from "./data-table-row-actions";
 
 export const columns: ColumnDef<Doc<"tasks">>[] = [
-  {
-    id: "select",
-    header: ({ table }) => (
+    {
+      id: "select",
+      header: ({ table }) => (
       <Checkbox
         checked={
           table.getIsAllPageRowsSelected() ||
@@ -102,6 +103,31 @@ export const columns: ColumnDef<Doc<"tasks">>[] = [
       if (!dateB) return -1;
       
       return dayjs(dateA, "YYYY-MM-DD").diff(dayjs(dateB, "YYYY-MM-DD"));
+    },
+  },
+  {
+    id: "created",
+    accessorFn: (row) => {
+      // Use parent recurring task's creation time if available, otherwise use task's own creation time
+      const task = row as Doc<"tasks"> & { parentCreationTime?: number };
+      return task.parentCreationTime ?? task._creationTime;
+    },
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Created" />
+    ),
+    cell: ({ row }) => {
+      const task = row.original;
+      return <DataTableCreatedCell task={task} />;
+    },
+    sortingFn: (rowA, rowB) => {
+      const dateA = rowA.getValue("created") as number | undefined;
+      const dateB = rowB.getValue("created") as number | undefined;
+      
+      if (!dateA && !dateB) return 0;
+      if (!dateA) return 1;
+      if (!dateB) return -1;
+      
+      return dateA - dateB;
     },
   },
   {
