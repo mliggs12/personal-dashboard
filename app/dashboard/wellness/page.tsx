@@ -15,7 +15,7 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { api } from "@/convex/_generated/api";
-import { getUserTimezone } from "@/lib/timezone.utils";
+import { getUserTimezone } from "@/lib/date.utils";
 
 import { DatePicker } from "./components/date-picker";
 import WaterDailyProgressChart from "./components/water-daily-progress-chart";

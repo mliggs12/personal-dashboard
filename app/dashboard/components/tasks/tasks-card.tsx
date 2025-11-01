@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/card";
 import { api } from "@/convex/_generated/api";
 import { Doc } from "@/convex/_generated/dataModel";
+import { getUserTimezone } from "@/lib/date.utils";
 
 import AddTaskDrawerDialog from "./add-task-drawer-dialog";
 import StatusDropdown from "./status-dropdown";
@@ -23,8 +24,9 @@ import TaskList from "./task-list";
 
 export default function TasksCard() {
   const [status, setStatus] = useState<"today" | "deadline" | "backlog">("today")
-
-  const today = dayjs().format("YYYY-MM-DD")
+  
+  // Gets client timezone after hydration, uses fallback during SSR
+  const today = dayjs().tz(getUserTimezone()).format("YYYY-MM-DD")
 
   const todayTasks = useQuery(api.tasks.todayTasks, { date: today })
   const deadlineTasks = useQuery(api.tasks.deadlineTasks, { date: today })
