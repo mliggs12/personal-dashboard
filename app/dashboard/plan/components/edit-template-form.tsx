@@ -3,10 +3,10 @@ import { useMutation } from "convex/react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
@@ -27,7 +27,8 @@ interface EditTemplateFormProps {
 export function EditTemplateForm({ template, className }: EditTemplateFormProps) {
   const { toast } = useToast();
 
-  const update = useMutation(api.schedules.update);
+  // const updateTemplate = useMutation(api.schedules.updateTemplate);
+  const updateSchedule = useMutation(api.schedules.updateSchedule);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -40,8 +41,7 @@ export function EditTemplateForm({ template, className }: EditTemplateFormProps)
   function onSubmit(data: z.infer<typeof formSchema>) {
     const { name, description } = data;
 
-    // TODO: Implement template update mutation
-    // update({ scheduleId: template.id, name, description });
+    updateSchedule({ scheduleId: template.id as Id<"schedules">, name, length: 16.5, start: 0, date: undefined, isTemplate: true });
 
     toast({
       title: "Template updated",

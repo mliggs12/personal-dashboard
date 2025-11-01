@@ -8,8 +8,8 @@ import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetT
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 
-import { CloseModalButton } from "../../../components/close-modal-button";
-import { EditTemplateForm } from "../../../components/edit-template-form";
+import { CloseModalButton } from "../../../../components/close-modal-button";
+import { EditTemplateForm } from "../../../../components/edit-template-form";
 
 export default function InterceptedEditPage() {
   const { id } = useParams<{ id: string }>();
