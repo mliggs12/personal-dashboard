@@ -1,25 +1,28 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { useParams } from "next/navigation"
-import { useQuery } from "convex/react"
-import { ArrowLeft } from "lucide-react"
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { useQuery } from "convex/react";
+import { ArrowLeft } from "lucide-react";
 
-import { Button } from "@/components/ui/button"
-import { api } from "@/convex/_generated/api"
-import { Id } from "@/convex/_generated/dataModel"
+import { Button } from "@/components/ui/button";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 
-import { EditTemplateForm } from "../../components/edit-template-form"
+import { EditTemplateForm } from "../../components/edit-template-form";
 
 export default function EditTemplatePage() {
-  const { id } = useParams<{ id: string }>()
-  const template = useQuery(api.schedules.get, { scheduleId: id as Id<"schedules"> })
+  const { id } = useParams<{ id: string }>();
+  const template = useQuery(
+    api.schedules.get,
+    id ? { scheduleId: id as Id<"schedules"> } : "skip"
+  );
 
   return (
     <div className="container mx-auto py-6 max-w-2xl">
       <div className="mb-6">
         <Link
-          href="/templates"
+          href="/dashboard/plan/templates"
           className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
@@ -46,7 +49,7 @@ export default function EditTemplatePage() {
           <Button type="submit" form="edit-template-form">
             Save Changes
           </Button>
-          <Link href="/templates">
+          <Link href="/dashboard/plan/templates">
             <Button variant="outline">
               Cancel
             </Button>
@@ -54,5 +57,5 @@ export default function EditTemplatePage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

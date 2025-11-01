@@ -14,9 +14,9 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 
 export default function TemplatesPage() {
-  const templates = useQuery(api.schedules.getTemplates)
+  const templates = useQuery(api.schedules.getTemplates);
 
-  if (templates === undefined) return <div>Loading...</div>
+  if (templates === undefined) return <div>Loading...</div>;
 
   return (
     <section className="h-full flex flex-col">
@@ -30,7 +30,7 @@ export default function TemplatesPage() {
         {templates.map((template) => (
           <Link
             key={template._id}
-            href={`/templates/${template._id}/edit`}
+            href={`/dashboard/plan/templates/${template._id}/edit`}
             className="p-4 rounded-lg border hover:bg-muted transition-colors"
           >
             <div className="flex items-center justify-between">

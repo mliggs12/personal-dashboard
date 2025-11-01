@@ -1,19 +1,22 @@
-"use client"
+"use client";
 
-import { useParams } from 'next/navigation'
-import { useQuery } from 'convex/react'
+import { useParams } from "next/navigation";
+import { useQuery } from "convex/react";
 
-import { Button } from '@/components/ui/button'
-import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet'
-import { api } from '@/convex/_generated/api'
-import { Id } from '@/convex/_generated/dataModel'
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 
-import { CloseModalButton } from '../../../components/close-modal-button'
-import { EditTemplateForm } from '../../../components/edit-template-form'
+import { CloseModalButton } from "../../../components/close-modal-button";
+import { EditTemplateForm } from "../../../components/edit-template-form";
 
 export default function InterceptedEditPage() {
-  const { id } = useParams<{ id: string }>()
-  const template = useQuery(api.schedules.get, { scheduleId: id as Id<"schedules"> })
+  const { id } = useParams<{ id: string }>();
+  const template = useQuery(
+    api.schedules.get,
+    id ? { scheduleId: id as Id<"schedules"> } : "skip"
+  );
 
   return (
     <Sheet defaultOpen>
@@ -48,5 +51,5 @@ export default function InterceptedEditPage() {
         </SheetFooter>
       </SheetContent>
     </Sheet>
-  )
+  );
 }
