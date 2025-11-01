@@ -231,15 +231,18 @@ export const todayTasks = query({
 
     console.log("[todayTasks] Query called with date:", date, "userId:", user._id);
 
-    // Get all tasks that are overdue or due today (due <= today)
-    // Status should be todo or in_progress, not completed
-    const allTasks = await ctx.db
+    // Normalize the input date to YYYY-MM-DD format
+    const normalizedDate = dayjs(date, ["YYYY-MM-DD", "YYYY/MM/DD"]).isValid()
+      ? dayjs(date, ["YYYY-MM-DD", "YYYY/MM/DD"]).format("YYYY-MM-DD")
+      : date;
+
+    // Get all tasks with due dates (we'll filter in memory to handle legacy YYYY/MM/DD format)
+    const allTasksWithDue = await ctx.db
       .query("tasks")
       .withIndex("by_user_due", (q) => q.eq("userId", user._id))
       .filter((q) =>
         q.and(
           q.neq(q.field("due"), undefined),
-          q.lte(q.field("due"), date),
           q.eq(q.field("completed"), undefined),
           q.or(
             q.eq(q.field("status"), "todo"),
@@ -249,20 +252,47 @@ export const todayTasks = query({
       )
       .collect();
 
-    console.log("[todayTasks] Found", allTasks.length, "tasks. Sample:", allTasks.slice(0, 5).map(t => ({
-      name: t.name,
-      due: t.due,
-      status: t.status,
-      completed: t.completed,
-      dueCompare: t.due ? `${t.due} <= ${date} = ${t.due <= date}` : "no due",
-    })));
+    // Normalize and filter tasks in memory to handle both YYYY-MM-DD and YYYY/MM/DD formats
+    const allTasks = allTasksWithDue.filter((task) => {
+      if (!task.due) return false;
+      
+      // Normalize task due date to YYYY-MM-DD format
+      const normalizedTaskDue = dayjs(task.due, ["YYYY-MM-DD", "YYYY/MM/DD"]).isValid()
+        ? dayjs(task.due, ["YYYY-MM-DD", "YYYY/MM/DD"]).format("YYYY-MM-DD")
+        : task.due;
+      
+      // Compare normalized dates
+      return normalizedTaskDue <= normalizedDate;
+    });
 
-    // Sort by due date ascending (earliest first)
+    console.log("[todayTasks] Found", allTasks.length, "tasks. Sample:", allTasks.slice(0, 5).map(t => {
+      const normalizedDue = t.due && dayjs(t.due, ["YYYY-MM-DD", "YYYY/MM/DD"]).isValid()
+        ? dayjs(t.due, ["YYYY-MM-DD", "YYYY/MM/DD"]).format("YYYY-MM-DD")
+        : t.due;
+      return {
+        name: t.name,
+        due: t.due,
+        normalizedDue,
+        status: t.status,
+        completed: t.completed,
+        dueCompare: normalizedDue ? `${normalizedDue} <= ${normalizedDate} = ${normalizedDue <= normalizedDate}` : "no due",
+      };
+    }));
+
+    // Sort by due date ascending (earliest first) using normalized dates
     const sorted = allTasks.sort((a, b) => {
       if (!a.due && !b.due) return 0;
       if (!a.due) return 1;
       if (!b.due) return -1;
-      return a.due.localeCompare(b.due);
+      
+      const normalizedA = dayjs(a.due, ["YYYY-MM-DD", "YYYY/MM/DD"]).isValid()
+        ? dayjs(a.due, ["YYYY-MM-DD", "YYYY/MM/DD"]).format("YYYY-MM-DD")
+        : a.due;
+      const normalizedB = dayjs(b.due, ["YYYY-MM-DD", "YYYY/MM/DD"]).isValid()
+        ? dayjs(b.due, ["YYYY-MM-DD", "YYYY/MM/DD"]).format("YYYY-MM-DD")
+        : b.due;
+      
+      return normalizedA.localeCompare(normalizedB);
     });
 
     return sorted;
@@ -317,28 +347,50 @@ export const deadlineTasks = query({
 
     console.log("[deadlineTasks] Query called with date:", date, "userId:", user._id);
 
-    // Get all tasks with a due date that are NOT overdue or due today (due > today)
-    // Exclude completed, archived tasks
-    const tasks = await ctx.db
+    // Normalize the input date to YYYY-MM-DD format
+    const normalizedDate = dayjs(date, ["YYYY-MM-DD", "YYYY/MM/DD"]).isValid()
+      ? dayjs(date, ["YYYY-MM-DD", "YYYY/MM/DD"]).format("YYYY-MM-DD")
+      : date;
+
+    // Get all tasks with due dates (we'll filter in memory to handle legacy YYYY/MM/DD format)
+    const allTasksWithDue = await ctx.db
       .query("tasks")
       .withIndex("by_user_due", (q) => q.eq("userId", user._id))
       .filter((q) =>
         q.and(
           q.neq(q.field("status"), "archived"),
           q.neq(q.field("due"), undefined),
-          q.eq(q.field("completed"), undefined),
-          q.gt(q.field("due"), date)
+          q.eq(q.field("completed"), undefined)
         ))
       .collect();
 
-    console.log("[deadlineTasks] Found", tasks.length, "tasks. Sample:", tasks.slice(0, 5).map(t => ({
-      name: t.name,
-      due: t.due,
-      status: t.status,
-      completed: t.completed,
-      dueCompare: t.due ? `${t.due} > ${date} = ${t.due > date}` : "no due",
-      shouldBeInToday: t.due ? t.due <= date : false,
-    })));
+    // Normalize and filter tasks in memory to handle both YYYY-MM-DD and YYYY/MM/DD formats
+    const tasks = allTasksWithDue.filter((task) => {
+      if (!task.due) return false;
+      
+      // Normalize task due date to YYYY-MM-DD format
+      const normalizedTaskDue = dayjs(task.due, ["YYYY-MM-DD", "YYYY/MM/DD"]).isValid()
+        ? dayjs(task.due, ["YYYY-MM-DD", "YYYY/MM/DD"]).format("YYYY-MM-DD")
+        : task.due;
+      
+      // Compare normalized dates (due > today)
+      return normalizedTaskDue > normalizedDate;
+    });
+
+    console.log("[deadlineTasks] Found", tasks.length, "tasks. Sample:", tasks.slice(0, 5).map(t => {
+      const normalizedDue = t.due && dayjs(t.due, ["YYYY-MM-DD", "YYYY/MM/DD"]).isValid()
+        ? dayjs(t.due, ["YYYY-MM-DD", "YYYY/MM/DD"]).format("YYYY-MM-DD")
+        : t.due;
+      return {
+        name: t.name,
+        due: t.due,
+        normalizedDue,
+        status: t.status,
+        completed: t.completed,
+        dueCompare: normalizedDue ? `${normalizedDue} > ${normalizedDate} = ${normalizedDue > normalizedDate}` : "no due",
+        shouldBeInToday: normalizedDue ? normalizedDue <= normalizedDate : false,
+      };
+    }));
 
     return tasks;
   },
