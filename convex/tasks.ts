@@ -266,7 +266,9 @@ export const todayTasks = query({
         .query("tasks")
         .withIndex("by_user_due", (q) => q.eq("userId", user._id))
         .collect();
-      const tasksWithDueDates = allUserTasks.filter(t => t.due && !t.completed && (t.status === "todo" || t.status === "in_progress"));
+      const tasksWithDueDates = allUserTasks.filter((t): t is typeof t & { due: string } => 
+        !!t.due && !t.completed && (t.status === "todo" || t.status === "in_progress")
+      );
       console.log("[todayTasks] DEBUG - All eligible tasks with due dates:", tasksWithDueDates.slice(0, 10).map(t => ({
         name: t.name,
         due: t.due,
@@ -345,7 +347,9 @@ export const deadlineTasks = query({
     console.log("[deadlineTasks] Query result - Date param:", date, "- Task count:", tasks.length, "- Sample tasks (first 5):", tasks.slice(0, 5).map(t => ({ id: t._id, name: t.name, due: t.due, status: t.status })));
     
     // Debug: Check if any of these tasks should actually be in todayTasks
-    const tasksThatShouldBeToday = tasks.filter(t => t.due && t.due <= date);
+    const tasksThatShouldBeToday = tasks.filter((t): t is typeof t & { due: string } => 
+      !!t.due && t.due <= date
+    );
     if (tasksThatShouldBeToday.length > 0) {
       console.log("[deadlineTasks] WARNING: Found tasks that should be in todayTasks:", tasksThatShouldBeToday.map(t => ({ id: t._id, name: t.name, due: t.due, status: t.status, dueCompare: `${t.due} <= ${date}: ${t.due <= date}` })));
     }
