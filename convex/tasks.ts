@@ -229,6 +229,8 @@ export const todayTasks = query({
   async handler(ctx, { date }) {
     const user = await getCurrentUserOrThrow(ctx);
 
+    console.log("[todayTasks] Query called with date:", date, "userId:", user._id);
+
     // Get all tasks that are overdue or due today (due <= today)
     // Status should be todo or in_progress, not completed
     const allTasks = await ctx.db
@@ -247,13 +249,23 @@ export const todayTasks = query({
       )
       .collect();
 
+    console.log("[todayTasks] Found", allTasks.length, "tasks. Sample:", allTasks.slice(0, 5).map(t => ({
+      name: t.name,
+      due: t.due,
+      status: t.status,
+      completed: t.completed,
+      dueCompare: t.due ? `${t.due} <= ${date} = ${t.due <= date}` : "no due",
+    })));
+
     // Sort by due date ascending (earliest first)
-    return allTasks.sort((a, b) => {
+    const sorted = allTasks.sort((a, b) => {
       if (!a.due && !b.due) return 0;
       if (!a.due) return 1;
       if (!b.due) return -1;
       return a.due.localeCompare(b.due);
     });
+
+    return sorted;
   },
 });
 
@@ -303,9 +315,11 @@ export const deadlineTasks = query({
   async handler(ctx, { date }) {
     const user = await getCurrentUserOrThrow(ctx);
 
+    console.log("[deadlineTasks] Query called with date:", date, "userId:", user._id);
+
     // Get all tasks with a due date that are NOT overdue or due today (due > today)
     // Exclude completed, archived tasks
-    return await ctx.db
+    const tasks = await ctx.db
       .query("tasks")
       .withIndex("by_user_due", (q) => q.eq("userId", user._id))
       .filter((q) =>
@@ -316,6 +330,17 @@ export const deadlineTasks = query({
           q.gt(q.field("due"), date)
         ))
       .collect();
+
+    console.log("[deadlineTasks] Found", tasks.length, "tasks. Sample:", tasks.slice(0, 5).map(t => ({
+      name: t.name,
+      due: t.due,
+      status: t.status,
+      completed: t.completed,
+      dueCompare: t.due ? `${t.due} > ${date} = ${t.due > date}` : "no due",
+      shouldBeInToday: t.due ? t.due <= date : false,
+    })));
+
+    return tasks;
   },
 });
 
