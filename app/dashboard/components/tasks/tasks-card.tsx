@@ -36,10 +36,15 @@ export default function TasksCard() {
   // Recalculate date after client hydration when timezone is available
   // This synchronizes state with the client environment (browser timezone)
   useEffect(() => {
-    console.log("[TasksCard] useEffect executing - Component mounted/hydrated - Timestamp:", new Date().toISOString());
+    const nowUTC = new Date();
     const timezone = getUserTimezone();
-    const clientToday = dayjs().tz(timezone).format("YYYY-MM-DD");
-    console.log("[TasksCard] Date calculation - Timezone:", timezone, "- Client today:", clientToday, "- Current state (today):", today);
+    const nowInTimezone = dayjs().tz(timezone);
+    const clientToday = nowInTimezone.format("YYYY-MM-DD");
+    
+    console.log("[TasksCard] useEffect executing - Component mounted/hydrated");
+    console.log("[TasksCard] Time calculation - UTC:", nowUTC.toISOString(), "- Local timezone:", timezone);
+    console.log("[TasksCard] Time calculation - Local date/time:", nowInTimezone.format("YYYY-MM-DD HH:mm:ss z"), "- Local date:", clientToday);
+    console.log("[TasksCard] Date calculation - Current state (today):", today, "- New calculated date:", clientToday);
     
     // Use startTransition to mark this as a non-urgent update
     startTransition(() => {
@@ -71,14 +76,20 @@ export default function TasksCard() {
     if (deadlineTasks !== undefined) {
       console.log("[TasksCard] deadlineTasks query result - Date param:", today, "- Count:", deadlineTasks.length, "- Tasks:", deadlineTasks.map(t => ({ id: t._id, name: t.name, due: t.due, status: t.status })));
       // Log detailed comparison to help debug why tasks aren't in todayTasks
-      const sampleTasks = deadlineTasks.slice(0, 3);
-      console.log("[TasksCard] deadlineTasks sample analysis:", sampleTasks.map(t => ({
+      const sampleTasks = deadlineTasks.slice(0, 5);
+      console.log("[TasksCard] deadlineTasks sample analysis - Today date:", today);
+      console.log("[TasksCard] Sample tasks:", sampleTasks.map(t => ({
         name: t.name,
         due: t.due,
         dueType: typeof t.due,
-        dueCompare: t.due ? `${t.due} <= ${today}: ${t.due <= today}` : 'no due date',
+        comparison: t.due ? {
+          stringCompare: `${t.due} <= ${today}`,
+          result: t.due <= today,
+          shouldBeInToday: t.due <= today && (t.status === "todo" || t.status === "in_progress") && !t.completed
+        } : 'no due date',
         status: t.status,
-        completed: t.completed
+        completed: t.completed,
+        eligibleForToday: !t.completed && (t.status === "todo" || t.status === "in_progress")
       })));
     }
   }, [deadlineTasks, today]);
