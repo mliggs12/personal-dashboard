@@ -1,10 +1,12 @@
+"use client";
+
 import { useMemo, useState } from "react";
 import { useQuery } from "convex/react";
 import dayjs from "dayjs";
 
 import { api } from "@/convex/_generated/api";
 import { Doc } from "@/convex/_generated/dataModel";
-import { getUserTimezone } from "@/lib/date.utils";
+import { useClientDate } from "@/hooks/useClientDate";
 import { cn } from "@/lib/utils";
 import { Event } from "@/types";
 
@@ -18,14 +20,22 @@ interface CalendarGridProps {
 export default function CalendarGrid({ events = [] }: CalendarGridProps) {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [date, setDate] = useState<Date>(new Date());
+  const { isClient, timezone } = useClientDate();
 
-  const daySessions = useQuery(api.sessions.getDaySessions, {
-    timestamp: dayjs(date).toISOString(),
-    userTimezone: getUserTimezone(),
-  });
+  const daySessions = useQuery(
+    api.sessions.getDaySessions,
+    isClient
+      ? {
+          timestamp: dayjs(date).toISOString(),
+          userTimezone: timezone,
+        }
+      : "skip"
+  );
 
   // Get the current date in user's timezone for proper hour calculations
-  const currentDate = dayjs(date).tz(getUserTimezone());
+  const currentDate = useMemo(() => {
+    return isClient ? dayjs(date).tz(timezone) : dayjs(date).tz("America/Denver");
+  }, [date, isClient, timezone]);
 
   // Memoize the hour boundaries for performance
   const hourBoundaries = useMemo(() => {
@@ -35,7 +45,7 @@ export default function CalendarGrid({ events = [] }: CalendarGridProps) {
     }));
   }, [currentDate]);
 
-  if (daySessions === undefined) {
+  if (!isClient || daySessions === undefined) {
     return <div>Loading...</div>;
   }
 

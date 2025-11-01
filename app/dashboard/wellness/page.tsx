@@ -15,7 +15,7 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { api } from "@/convex/_generated/api";
-import { getUserTimezone } from "@/lib/date.utils";
+import { useClientDate } from "@/hooks/useClientDate";
 
 import { DatePicker } from "./components/date-picker";
 import WaterDailyProgressChart from "./components/water-daily-progress-chart";
@@ -23,12 +23,18 @@ import WaterLogForm from "./components/water-log-form";
 
 export default function WellnessPage() {
   const [open, setOpen] = useState(false);
-  const [date, setDate] = useState<Date>(new Date())
+  const [date, setDate] = useState<Date>(new Date());
+  const { isClient, timezone } = useClientDate();
 
-  const dayData = useQuery(api.waterLogEntries.dailyEntries, {
-    timestamp: dayjs(date).toISOString(),
-    userTimezone: getUserTimezone()
-  });
+  const dayData = useQuery(
+    api.waterLogEntries.dailyEntries,
+    isClient
+      ? {
+          timestamp: dayjs(date).toISOString(),
+          userTimezone: timezone,
+        }
+      : "skip"
+  );
 
   if (dayData === undefined)
     return <div>Loading...</div>;

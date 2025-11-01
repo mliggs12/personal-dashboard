@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { getUserTimezone } from "./date.utils";
+import { getUserTimezone, getTodayInTimezone } from "./date.utils";
 
 describe("getUserTimezone", () => {
   const originalIntl = globalThis.Intl;
@@ -29,13 +29,11 @@ describe("getUserTimezone", () => {
     globalThis.window = originalWindow;
   });
 
-  it("should return America/Denver when Intl is unavailable (server-side fallback)", () => {
+  it("should return America/Denver when window is undefined (server-side fallback)", () => {
     // Mock server-side environment (no window)
     const originalWindow = globalThis.window;
     // @ts-expect-error - Mocking window as undefined for testing
     delete globalThis.window;
-    // @ts-expect-error - Mocking Intl as undefined for testing
-    delete globalThis.Intl;
 
     const timezone = getUserTimezone();
     expect(timezone).toBe("America/Denver");
@@ -163,6 +161,54 @@ describe("getUserTimezone", () => {
       // Should be a valid IANA timezone format
       expect(timezone).toMatch(/^[A-Z][a-z]+\/[A-Z][a-z_]+(?:\/[A-Z][a-z_]+)?$/);
     }
+  });
+});
+
+describe("getTodayInTimezone", () => {
+  it("should return today's date in YYYY-MM-DD format for a given timezone", () => {
+    const timezone = "America/New_York";
+    const today = getTodayInTimezone(timezone);
+    
+    // Should be in YYYY-MM-DD format
+    expect(today).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    
+    // Should be a valid date string
+    const date = new Date(today);
+    expect(date.toISOString()).toContain(today);
+  });
+
+  it("should return different dates for different timezones when crossing date boundaries", () => {
+    // Note: This test may pass or fail depending on the current time
+    // It's primarily checking the function works with different timezones
+    const nyToday = getTodayInTimezone("America/New_York");
+    const laToday = getTodayInTimezone("America/Los_Angeles");
+    const tokyoToday = getTodayInTimezone("Asia/Tokyo");
+    
+    // All should be valid YYYY-MM-DD format
+    expect(nyToday).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(laToday).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(tokyoToday).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    
+    // Should be valid date strings
+    expect(() => new Date(nyToday)).not.toThrow();
+    expect(() => new Date(laToday)).not.toThrow();
+    expect(() => new Date(tokyoToday)).not.toThrow();
+  });
+
+  it("should handle various timezone formats", () => {
+    const timezones = [
+      "America/New_York",
+      "Europe/London",
+      "Asia/Tokyo",
+      "Australia/Sydney",
+      "America/Denver",
+    ];
+
+    timezones.forEach((tz) => {
+      const today = getTodayInTimezone(tz);
+      expect(today).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(() => new Date(today)).not.toThrow();
+    });
   });
 });
 

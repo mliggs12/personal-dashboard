@@ -43,26 +43,37 @@ export function calculateDuration(end: number, start: number) {
 // Timezone Utilities
 
 /**
+ * Gets today's date in the specified timezone as YYYY-MM-DD string.
+ * 
+ * @param timezone - IANA timezone string (e.g., "America/New_York")
+ * @returns Today's date formatted as YYYY-MM-DD
+ * 
+ * @example
+ * const today = getTodayInTimezone("America/New_York"); // "2025-10-31"
+ */
+export function getTodayInTimezone(timezone: string): string {
+  return dayjs().tz(timezone).format("YYYY-MM-DD");
+}
+
+/**
  * Detects the user's timezone using the browser's Intl API.
  * 
- * This function is safe to use in both server and client environments:
- * - On the client: Returns the user's actual timezone (e.g., "America/New_York")
- * - On the server: Returns a default fallback timezone ("America/Denver")
+ * **Client-side only** - This function should only be called in client components
+ * after hydration. Use the `useClientDate` hook for React components.
  * 
  * The timezone is determined using `Intl.DateTimeFormat().resolvedOptions().timeZone`,
  * which is the recommended approach per W3C and MDN best practices.
  * 
  * @returns {string} IANA timezone string (e.g., "America/New_York", "Europe/London")
+ *                  Returns "America/Denver" if Intl API is unavailable
  * 
  * @example
- * // In a client component:
+ * // In a client component (after hydration):
  * const timezone = getUserTimezone(); // "America/New_York"
- * const today = dayjs().tz(timezone).format("YYYY-MM-DD");
+ * const today = getTodayInTimezone(timezone); // "2025-10-31"
  */
 export const getUserTimezone = (): string => {
-  // Use browser's Intl API for more reliable timezone detection
-  // This is the recommended method per MDN and W3C standards
-  // Only available on client side
+  // Client-side only - should not be called during SSR
   if (
     typeof window !== "undefined" &&
     typeof Intl !== "undefined" &&
@@ -70,36 +81,16 @@ export const getUserTimezone = (): string => {
   ) {
     try {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      // Validate that we got a valid timezone string
       if (timezone && typeof timezone === "string") {
-        console.log(
-          "[getUserTimezone] Client timezone detected:",
-          timezone,
-          "- Environment: CLIENT",
-          "- Timestamp:",
-          new Date().toISOString(),
-        );
         return timezone;
       }
     } catch (error) {
-      // Fallback if resolvedOptions() throws (rare edge case)
-      // This can happen with malformed browser implementations
       console.warn(
-        "[getUserTimezone] Failed to detect timezone using Intl API, using fallback:",
+        "[getUserTimezone] Failed to detect timezone, using fallback:",
         error,
       );
     }
   }
-  // Server-side fallback - use a default timezone
-  // This will be replaced when the component hydrates on the client
-  const fallbackTimezone = "America/Denver";
-  console.log(
-    "[getUserTimezone] Using server fallback timezone:",
-    fallbackTimezone,
-    "- Environment:",
-    typeof window === "undefined" ? "SERVER (SSR)" : "CLIENT (Intl unavailable)",
-    "- Timestamp:",
-    new Date().toISOString(),
-  );
-  return fallbackTimezone; // Default timezone for SSR
+  // Fallback timezone if detection fails
+  return "America/Denver";
 };
