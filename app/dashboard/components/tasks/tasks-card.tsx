@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { startTransition,useEffect, useState } from "react";
 import Link from "next/link";
 import { useQuery } from "convex/react";
 import dayjs from "dayjs";
@@ -25,8 +25,22 @@ import TaskList from "./task-list";
 export default function TasksCard() {
   const [status, setStatus] = useState<"today" | "deadline" | "backlog">("today")
   
-  // Gets client timezone after hydration, uses fallback during SSR
-  const today = dayjs().tz(getUserTimezone()).format("YYYY-MM-DD")
+  // Calculate today's date client-side after hydration to ensure correct timezone
+  // Initialize with a safe default (America/Denver timezone for SSR compatibility)
+  const [today, setToday] = useState<string>(() => 
+    dayjs().tz("America/Denver").format("YYYY-MM-DD")
+  )
+
+  // Recalculate date after client hydration when timezone is available
+  // This synchronizes state with the client environment (browser timezone)
+  useEffect(() => {
+    const timezone = getUserTimezone();
+    const clientToday = dayjs().tz(timezone).format("YYYY-MM-DD");
+    // Use startTransition to mark this as a non-urgent update
+    startTransition(() => {
+      setToday((prevToday) => (prevToday !== clientToday ? clientToday : prevToday));
+    });
+  }, []);
 
   const todayTasks = useQuery(api.tasks.todayTasks, { date: today })
   const deadlineTasks = useQuery(api.tasks.deadlineTasks, { date: today })
