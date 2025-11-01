@@ -76,6 +76,8 @@ export const getUserTimezone = (): string => {
           "[getUserTimezone] Client timezone detected:",
           timezone,
           "- Environment: CLIENT",
+          "- Timestamp:",
+          new Date().toISOString(),
         );
         return timezone;
       }
@@ -96,6 +98,8 @@ export const getUserTimezone = (): string => {
     fallbackTimezone,
     "- Environment:",
     typeof window === "undefined" ? "SERVER (SSR)" : "CLIENT (Intl unavailable)",
+    "- Timestamp:",
+    new Date().toISOString(),
   );
   return fallbackTimezone; // Default timezone for SSR
 };

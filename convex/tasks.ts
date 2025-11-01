@@ -229,6 +229,8 @@ export const todayTasks = query({
   async handler(ctx, { date }) {
     const user = await getCurrentUserOrThrow(ctx);
 
+    console.log("[todayTasks] Query called - Date param:", date, "- User ID:", user._id, "- Timestamp:", new Date().toISOString());
+
     // Get all tasks that are overdue or due today (due <= today)
     // Status should be todo or in_progress, not completed
     const allTasks = await ctx.db
@@ -248,12 +250,16 @@ export const todayTasks = query({
       .collect();
 
     // Sort by due date ascending (earliest first)
-    return allTasks.sort((a, b) => {
+    const sortedTasks = allTasks.sort((a, b) => {
       if (!a.due && !b.due) return 0;
       if (!a.due) return 1;
       if (!b.due) return -1;
       return a.due.localeCompare(b.due);
     });
+
+    console.log("[todayTasks] Query result - Date param:", date, "- Task count:", sortedTasks.length, "- Sample tasks (first 5):", sortedTasks.slice(0, 5).map(t => ({ id: t._id, name: t.name, due: t.due, status: t.status })));
+
+    return sortedTasks;
   },
 });
 
@@ -303,9 +309,11 @@ export const deadlineTasks = query({
   async handler(ctx, { date }) {
     const user = await getCurrentUserOrThrow(ctx);
 
+    console.log("[deadlineTasks] Query called - Date param:", date, "- User ID:", user._id, "- Timestamp:", new Date().toISOString());
+
     // Get all tasks with a due date that are NOT overdue or due today (due > today)
     // Exclude completed, archived tasks
-    return await ctx.db
+    const tasks = await ctx.db
       .query("tasks")
       .withIndex("by_user_due", (q) => q.eq("userId", user._id))
       .filter((q) =>
@@ -316,6 +324,10 @@ export const deadlineTasks = query({
           q.gt(q.field("due"), date)
         ))
       .collect();
+
+    console.log("[deadlineTasks] Query result - Date param:", date, "- Task count:", tasks.length, "- Sample tasks (first 5):", tasks.slice(0, 5).map(t => ({ id: t._id, name: t.name, due: t.due, status: t.status })));
+
+    return tasks;
   },
 });
 
