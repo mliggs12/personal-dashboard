@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { getUserTimezone, getTodayInTimezone } from "./date.utils";
+import { getTodayInTimezone,getUserTimezone } from "./date.utils";
 
 describe("getUserTimezone", () => {
   const originalIntl = globalThis.Intl;
