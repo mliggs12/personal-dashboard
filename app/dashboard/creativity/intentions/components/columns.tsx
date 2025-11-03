@@ -6,6 +6,7 @@ import localizedFormat from "dayjs/plugin/localizedFormat";
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { Doc } from "@/convex/_generated/dataModel";
+import { timestampToLongDate } from "@/lib/date.utils";
 
 import { DataTableColumnHeader } from "./data-table-column-header";
 import { DataTableRowActions } from "./data-table-row-actions";
@@ -120,7 +121,7 @@ export const columns: ColumnDef<Doc<"intentions">>[] = [
       const intention = row.original;
       return (
         <span className="text-sm">
-          {dayjs(intention._creationTime).format("MMM DD, LT")}
+          {timestampToLongDate(intention._creationTime)}
         </span>
       );
     },

@@ -17,6 +17,10 @@ export function timestampToShortDate(timestamp: number) {
   return dayjs(timestamp).format("MM/DD");  // "08/16"
 }
 
+export function timestampToLongDate(timestamp: number) {
+  return dayjs(timestamp).format("MM/DD/YYYY"); // "08/16/2018"
+}
+
 export function timestampToDateTime(timestamp: number) {
   return dayjs(timestamp).format("lll"); // "Aug 16, 2018 2:00 PM"
 }
