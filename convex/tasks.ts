@@ -5,7 +5,7 @@ import isToday from "dayjs/plugin/isToday";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
 
-import { Doc } from "./_generated/dataModel";
+import { Doc, Id } from "./_generated/dataModel";
 import { internalMutation, mutation, query } from "./_generated/server";
 import { getCurrentUserOrThrow, userByExternalId } from "./users";
 
@@ -151,7 +151,34 @@ export const createForProject = mutation({
 export const remove = mutation({
   args: { taskId: v.id("tasks") },
   async handler(ctx, { taskId }) {
+    const task = await ctx.db.get(taskId);
+    if (task === null) throw new Error("Could not find task");
+
+    const recurringTaskId = task.recurringTaskId;
+
+    // Delete the task
     await ctx.db.delete(taskId);
+
+    // If this was a recurring task instance, check if we need to clean up the parent recurring task
+    if (recurringTaskId) {
+      // Check if there are any other task instances still using this recurring task
+      const remainingInstances = await ctx.db
+        .query("tasks")
+        .withIndex("by_recurringTaskId", (q) => q.eq("recurringTaskId", recurringTaskId))
+        .collect();
+
+      // If no other instances exist, delete the base recurring task
+      if (remainingInstances.length === 0) {
+        await ctx.db.delete(recurringTaskId);
+        console.log(
+          `Deleted task "${task.name}" (${taskId}) and cleaned up unused recurring task (${recurringTaskId})`
+        );
+      } else {
+        console.log(
+          `Deleted task "${task.name}" (${taskId}). Recurring task (${recurringTaskId}) kept active with ${remainingInstances.length} remaining instances.`
+        );
+      }
+    }
   },
 });
 
@@ -875,6 +902,55 @@ export const generateRecurringTaskInstances = internalMutation({
       `Generated ${generatedCount} recurring task instances at ${localNow.format("YYYY-MM-DD HH:mm:ss z")}`
     );
     return { generatedCount, skipped: false };
+  },
+});
+
+// Cleanup function to remove orphaned recurring tasks that have no associated task instances
+// This is useful for cleaning up recurring tasks that existed before the deletion cleanup logic was implemented
+export const cleanupOrphanedRecurringTasks = mutation({
+  args: {},
+  async handler(ctx) {
+    // Get all recurring tasks
+    const allRecurringTasks = await ctx.db
+      .query("recurringTasks")
+      .collect();
+
+    const orphanedTasks: Array<{ id: Id<"recurringTasks">; name: string }> = [];
+    let deletedCount = 0;
+
+    // Check each recurring task for orphaned status
+    for (const recurringTask of allRecurringTasks) {
+      // Check if there are any task instances still using this recurring task
+      const taskInstances = await ctx.db
+        .query("tasks")
+        .withIndex("by_recurringTaskId", (q) =>
+          q.eq("recurringTaskId", recurringTask._id)
+        )
+        .collect();
+
+      // If no instances exist, this recurring task is orphaned
+      if (taskInstances.length === 0) {
+        orphanedTasks.push({
+          id: recurringTask._id,
+          name: recurringTask.name,
+        });
+        await ctx.db.delete(recurringTask._id);
+        deletedCount++;
+        console.log(
+          `Deleted orphaned recurring task "${recurringTask.name}" (${recurringTask._id}) - no associated task instances found`
+        );
+      }
+    }
+
+    console.log(
+      `Cleanup complete: Found ${allRecurringTasks.length} recurring tasks, deleted ${deletedCount} orphaned task(s)`
+    );
+
+    return {
+      totalRecurringTasks: allRecurringTasks.length,
+      orphanedCount: deletedCount,
+      orphanedTasks,
+    };
   },
 });
 
