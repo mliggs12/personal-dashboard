@@ -5,6 +5,7 @@ import isToday from "dayjs/plugin/isToday";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
 
+import { Doc } from "./_generated/dataModel";
 import { internalMutation, mutation, query } from "./_generated/server";
 import { getCurrentUserOrThrow, userByExternalId } from "./users";
 
@@ -179,7 +180,7 @@ export const completeTask = mutation({
           name: recurringTask.name,
           status: "todo",
           priority: recurringTask.priority,
-          notes: "",
+          notes: task.notes || "",
           due: nextDueDate,
           recurringTaskId: recurringTask._id,
           userId: recurringTask.userId,
@@ -496,7 +497,7 @@ export const update = mutation({
           name: recurringTask.name,
           status: "todo",
           priority: recurringTask.priority,
-          notes: "",
+          notes: task.notes || "",
           due: nextDueDate,
           recurringTaskId: recurringTask._id,
           userId: recurringTask.userId,
@@ -696,19 +697,10 @@ export const getTasksWithSubtasks = query({
     }
 
     // Helper function to enrich a task with parent creation time
-    const enrichTask = (task: any) => {
+    const enrichTask = (task: Doc<"tasks">): Doc<"tasks"> => {
       const enriched = { ...task };
       if (task.recurringTaskId && recurringTaskCreationTimeMap.has(task.recurringTaskId)) {
-        enriched.parentCreationTime = recurringTaskCreationTimeMap.get(task.recurringTaskId);
-      }
-      return enriched;
-    };
-
-    // Helper function to recursively enrich subtasks
-    const enrichTaskWithSubtasks = (task: any): any => {
-      const enriched = enrichTask(task);
-      if (task.subtasks && task.subtasks.length > 0) {
-        enriched.subtasks = task.subtasks.map(enrichTaskWithSubtasks);
+        enriched._creationTime = recurringTaskCreationTimeMap.get(task.recurringTaskId);
       }
       return enriched;
     };
@@ -734,7 +726,7 @@ export const getTasksWithSubtasks = query({
     }
 
     // Return only root tasks with their subtasks nested, all enriched
-    return rootTasks.map(id => enrichTaskWithSubtasks(taskMap.get(id))).filter(Boolean);
+    return rootTasks.map(id => enrichTask(taskMap.get(id))).filter(Boolean);
   },
 });
 
@@ -850,11 +842,20 @@ export const generateRecurringTaskInstances = internalMutation({
       if (!existingTask && shouldGenerateTaskToday(recurringTask, todayLocal)) {
         const nextDueDate = calculateNextDueDate(recurringTask.frequency, todayLocal);
         
+        // Find the most recent task instance to copy notes from
+        const mostRecentTask = await ctx.db
+          .query("tasks")
+          .withIndex("by_recurringTaskId", (q) =>
+            q.eq("recurringTaskId", recurringTask._id)
+          )
+          .order("desc")
+          .first();
+        
         await ctx.db.insert("tasks", {
           name: recurringTask.name,
           status: "todo",
           priority: recurringTask.priority,
-          notes: "",
+          notes: mostRecentTask?.notes || "",
           due: nextDueDate,
           recurringTaskId: recurringTask._id,
           userId: recurringTask.userId,
