@@ -38,7 +38,6 @@ export async function createTask(
 
 export async function createRecurringTask(
   name: string,
-  priority: string,
   due: string,
   frequency: string,
   type: string,
@@ -52,8 +51,7 @@ export async function createRecurringTask(
 
   const recurringTaskId = await fetchMutation(api.tasks.createRecurringTask, {
     name,
-    priority: priority as "low" | "normal" | "high",
-    due,
+    nextRunDate: due,
     frequency: frequency as
       | "daily"
       | "3-day"
