@@ -108,7 +108,6 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
     if (frequency && due && type) {
       const recurringTaskId = await createRecurringTask(
         name,
-        priority,
         dueDate,
         frequency,
         type,
@@ -122,7 +121,6 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
           | "todo"
           | "in_progress"
           | "archived",
-        priority: priority as "low" | "normal" | "high",
         notes,
         due: dueDate,
         recurringTaskId,
