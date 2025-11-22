@@ -6,7 +6,7 @@ import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
 
 import { Doc, Id } from "./_generated/dataModel";
-import { internalMutation, mutation, query } from "./_generated/server";
+import { internalMutation, mutation, MutationCtx, query } from "./_generated/server";
 import { getCurrentUserOrThrow, userByExternalId } from "./users";
 
 dayjs.extend(isToday);
@@ -192,36 +192,11 @@ export const completeTask = mutation({
       completed: Date.now(),
     });
     
-    // If this is a recurring task with "whenDone" type, create the next instance immediately
+    // Handle "whenDone" recurring tasks - create next instance immediately
     if (task?.recurringTaskId) {
       const recurringTask = await ctx.db.get(task.recurringTaskId);
-      
       if (recurringTask?.type === "whenDone" && recurringTask.status === "active") {
-        const daysToAdd = getFrequencyDays(recurringTask.frequency);
-        const now = Date.now();
-        const today = dayjs().tz(TIMEZONE);
-        const nextDueDate = today.add(daysToAdd, "day").format("YYYY-MM-DD");
-        
-        // Create the next task immediately with a future due date
-        const nextTaskId = await ctx.db.insert("tasks", {
-          name: recurringTask.name,
-          status: "todo",
-          priority: recurringTask.priority,
-          notes: task.notes || "",
-          due: nextDueDate,
-          recurringTaskId: recurringTask._id,
-          userId: recurringTask.userId,
-        });
-        
-        // Update the recurring task's due date and timestamp
-        await ctx.db.patch(recurringTask._id, {
-          due: nextDueDate,
-          updated: now,
-        });
-        
-        console.log(
-          `Created next recurring task instance "${recurringTask.name}" (${nextTaskId}) with due date ${nextDueDate}`
-        );
+        await createNextWhenDoneTask(ctx, task, recurringTask);
       }
     }
     
@@ -510,35 +485,11 @@ export const update = mutation({
       updated: now,
     });
 
-    // If task was just marked as done and has a recurring task, create the next instance
+    // Handle "whenDone" recurring tasks - create next instance immediately
     if (wasNotDone && isNowDone && task.recurringTaskId) {
       const recurringTask = await ctx.db.get(task.recurringTaskId);
-      
       if (recurringTask?.type === "whenDone" && recurringTask.status === "active") {
-        const daysToAdd = getFrequencyDays(recurringTask.frequency);
-        const today = dayjs().tz(TIMEZONE);
-        const nextDueDate = today.add(daysToAdd, "day").format("YYYY-MM-DD");
-        
-        // Create the next task immediately with a future due date
-        const nextTaskId = await ctx.db.insert("tasks", {
-          name: recurringTask.name,
-          status: "todo",
-          priority: recurringTask.priority,
-          notes: task.notes || "",
-          due: nextDueDate,
-          recurringTaskId: recurringTask._id,
-          userId: recurringTask.userId,
-        });
-        
-        // Update the recurring task's due date and timestamp
-        await ctx.db.patch(recurringTask._id, {
-          due: nextDueDate,
-          updated: now,
-        });
-        
-        console.log(
-          `Created next recurring task instance "${recurringTask.name}" (${nextTaskId}) with due date ${nextDueDate}`
-        );
+        await createNextWhenDoneTask(ctx, task, recurringTask);
       }
     }
   },
@@ -757,23 +708,13 @@ export const getTasksWithSubtasks = query({
   },
 });
 
-// Helper function: Returns number of days for each frequency type
-function getFrequencyDays(frequency: "daily" | "3-day" | "weekly" | "monthly"): number {
-  switch (frequency) {
-    case "daily":
-      return 1;
-    case "3-day":
-      return 3;
-    case "weekly":
-      return 7;
-    case "monthly":
-      return 30; // Approximate
-    default:
-      return 1;
-  }
-}
+// ============================================================================
+// RECURRING TASKS HELPERS
+// ============================================================================
 
-// Helper function: Calculates the next due date based on frequency
+/**
+ * Calculates the next due date based on frequency from a base date.
+ */
 function calculateNextDueDate(
   frequency: "daily" | "3-day" | "weekly" | "monthly",
   baseDate: dayjs.Dayjs
@@ -792,7 +733,10 @@ function calculateNextDueDate(
   }
 }
 
-// Helper function: Determines if task should be generated based on frequency and last due date
+/**
+ * Determines if an "onSchedule" recurring task should generate a task today.
+ * recurringTask.due represents the NEXT due date that should be generated.
+ */
 function shouldGenerateTaskToday(
   recurringTask: {
     frequency: "daily" | "3-day" | "weekly" | "monthly";
@@ -800,49 +744,75 @@ function shouldGenerateTaskToday(
   },
   today: dayjs.Dayjs
 ): boolean {
-  const lastDue = dayjs(recurringTask.due).tz(TIMEZONE);
+  const nextDue = dayjs(recurringTask.due).tz(TIMEZONE).startOf("day");
+  const todayStart = today.startOf("day");
   
+  // Don't generate if today is before the next due date
+  if (todayStart.isBefore(nextDue)) {
+    return false;
+  }
+  
+  // For weekly/monthly, also require matching day/date pattern
   switch (recurringTask.frequency) {
     case "daily":
-      return true; // Generate every day
     case "3-day":
-      // Generate if it's been 3 or more days since last due date
-      return today.diff(lastDue, "day") >= 3;
+      return true;
     case "weekly":
-      // Generate if it's the same day of week and at least 7 days have passed
-      return today.day() === lastDue.day() && today.diff(lastDue, "day") >= 7;
+      return todayStart.day() === nextDue.day();
     case "monthly":
-      // Generate if it's the same date and at least a month has passed
-      return today.date() === lastDue.date() && today.diff(lastDue, "day") >= 28;
+      return todayStart.date() === nextDue.date();
     default:
       return false;
   }
 }
 
-// Internal mutation: Generates recurring task instances for "onSchedule" type tasks
-// Runs via cron job hourly, but only executes at 6am local time
+/**
+ * Creates the next task instance for a "whenDone" recurring task.
+ * Called immediately when a task is completed.
+ */
+async function createNextWhenDoneTask(
+  ctx: MutationCtx,
+  completedTask: Doc<"tasks">,
+  recurringTask: Doc<"recurringTasks">
+): Promise<void> {
+  const today = dayjs().tz(TIMEZONE);
+  const nextDueDate = calculateNextDueDate(recurringTask.frequency, today);
+  
+  await ctx.db.insert("tasks", {
+    name: recurringTask.name,
+    status: "todo",
+    priority: recurringTask.priority,
+    notes: completedTask.notes || "",
+    due: nextDueDate,
+    recurringTaskId: recurringTask._id,
+    userId: recurringTask.userId,
+  });
+  
+  await ctx.db.patch(recurringTask._id, {
+    due: nextDueDate,
+    updated: Date.now(),
+  });
+  
+  console.log(
+    `Created next "whenDone" task instance "${recurringTask.name}" with due date ${nextDueDate}`
+  );
+}
+
+/**
+ * Internal mutation: Generates recurring task instances for "onSchedule" type tasks.
+ * Runs via cron job hourly, but only executes at 6am local time.
+ */
 export const generateRecurringTaskInstances = internalMutation({
   args: {},
   async handler(ctx) {
-    const now = Date.now();
-    
-    // Check if it's currently 6am in the local timezone
     const localNow = dayjs().tz(TIMEZONE);
-    const currentHour = localNow.hour();
     
-    // Only run between 6am and 7am local time
-    if (currentHour !== 6) {
-      console.log(
-        `Skipping recurring task generation - current hour is ${currentHour}, not 6am (${TIMEZONE})`
-      );
+    // Only run at 6am local time
+    if (localNow.hour() !== 6) {
       return { generatedCount: 0, skipped: true };
     }
     
-    // Get start of today in local timezone
     const todayLocal = localNow.startOf("day");
-    const todayTimestamp = todayLocal.valueOf();
-
-    // Get all active recurring tasks with type "onSchedule"
     const recurringTasks = await ctx.db
       .query("recurringTasks")
       .filter((q) => 
@@ -856,46 +826,64 @@ export const generateRecurringTaskInstances = internalMutation({
     let generatedCount = 0;
 
     for (const recurringTask of recurringTasks) {
-      // Check if a task instance already exists for today
+      if (!shouldGenerateTaskToday(recurringTask, todayLocal)) {
+        continue;
+      }
+      
+      // Determine the due date for the new task
+      // For weekly/monthly: use today if it matches the pattern, otherwise use recurringTask.due
+      // For daily/3-day: use recurringTask.due
+      const nextDueBase = dayjs(recurringTask.due).tz(TIMEZONE).startOf("day");
+      const taskDueDate = 
+        (recurringTask.frequency === "weekly" || recurringTask.frequency === "monthly") &&
+        (todayLocal.isSame(nextDueBase) || todayLocal.isAfter(nextDueBase))
+          ? todayLocal.format("YYYY-MM-DD")
+          : nextDueBase.format("YYYY-MM-DD");
+      
+      // Check if task already exists with this due date
       const existingTask = await ctx.db
         .query("tasks")
         .withIndex("by_recurringTaskId", (q) =>
           q.eq("recurringTaskId", recurringTask._id)
         )
-        .filter((q) => q.gte(q.field("_creationTime"), todayTimestamp))
+        .filter((q) => q.eq(q.field("due"), taskDueDate))
         .first();
       
-      // If no task exists for today and it should be generated, create it
-      if (!existingTask && shouldGenerateTaskToday(recurringTask, todayLocal)) {
-        const nextDueDate = calculateNextDueDate(recurringTask.frequency, todayLocal);
-        
-        // Find the most recent task instance to copy notes from
-        const mostRecentTask = await ctx.db
-          .query("tasks")
-          .withIndex("by_recurringTaskId", (q) =>
-            q.eq("recurringTaskId", recurringTask._id)
-          )
-          .order("desc")
-          .first();
-        
-        await ctx.db.insert("tasks", {
-          name: recurringTask.name,
-          status: "todo",
-          priority: recurringTask.priority,
-          notes: mostRecentTask?.notes || "",
-          due: nextDueDate,
-          recurringTaskId: recurringTask._id,
-          userId: recurringTask.userId,
-        });
-        
-        // Update the recurring task's due date for next calculation
-        await ctx.db.patch(recurringTask._id, {
-          due: nextDueDate,
-          updated: now,
-        });
-        
-        generatedCount++;
+      if (existingTask) {
+        continue;
       }
+      
+      // Find most recent task instance to copy notes from
+      const mostRecentTask = await ctx.db
+        .query("tasks")
+        .withIndex("by_recurringTaskId", (q) =>
+          q.eq("recurringTaskId", recurringTask._id)
+        )
+        .order("desc")
+        .first();
+      
+      // Create the new task instance
+      await ctx.db.insert("tasks", {
+        name: recurringTask.name,
+        status: "todo",
+        priority: recurringTask.priority,
+        notes: mostRecentTask?.notes || "",
+        due: taskDueDate,
+        recurringTaskId: recurringTask._id,
+        userId: recurringTask.userId,
+      });
+      
+      // Update recurring task's next due date
+      const nextDueDate = calculateNextDueDate(
+        recurringTask.frequency,
+        dayjs(taskDueDate).tz(TIMEZONE)
+      );
+      await ctx.db.patch(recurringTask._id, {
+        due: nextDueDate,
+        updated: Date.now(),
+      });
+      
+      generatedCount++;
     }
 
     console.log(
