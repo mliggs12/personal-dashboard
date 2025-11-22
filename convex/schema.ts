@@ -222,14 +222,12 @@ export default defineSchema({
 
   recurringTasks: defineTable({
     name: v.string(),
+    notes: v.optional(v.string()),
     status: v.union(
       v.literal("active"),
       v.literal("paused"),
       v.literal("archived"),
     ),
-    priority: v.union(v.literal("low"), v.literal("normal"), v.literal("high")),
-    due: v.string(),
-    updated: v.number(),
     frequency: v.union(
       v.literal("daily"),
       v.literal("3-day"),
@@ -238,6 +236,8 @@ export default defineSchema({
     ),
     type: v.union(v.literal("onSchedule"), v.literal("whenDone")),
     userId: v.id("users"),
+    nextRunDate: v.string(),
+    updated: v.number(),
   }).index("by_user", ["userId"]),
 
   sleepRecords: defineTable({
@@ -364,4 +364,85 @@ export default defineSchema({
     }),
     updated: v.number(),
   }).index("by_user_table", ["userId", "tableId"]),
+
+  // Basketball Workouts
+  basketballWorkouts: defineTable({
+    date: v.string(), // YYYY-MM-DD
+    duration: v.number(), // minutes
+    skills: v.array(v.string()), // e.g., ["rim attacks", "floaters", "mid-range"]
+    shootingDrills: v.optional(v.object({
+      makes: v.number(),
+      attempts: v.number(),
+      drillType: v.string(),
+    })),
+    energyLevel: v.number(), // 1-10
+    notes: v.optional(v.string()),
+    userId: v.id("users"),
+    updated: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_date", ["userId", "date"]),
+
+  // Galaxy Defense
+  gdStages: defineTable({
+    number: v.number(),
+    difficulty: v.union(v.literal("normal"), v.literal("elite")),
+    enemyIds: v.array(v.id("gdEnemies")),
+    userId: v.id("users"),
+    updated: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_number", ["userId", "number"])
+    .index("by_user_difficulty", ["userId", "difficulty"]),
+
+  gdEnemies: defineTable({
+    name: v.string(),
+    weaknesses: v.array(v.object({
+      type: v.string(),
+      multiplier: v.union(v.literal(0.5), v.literal(1.0)),
+    })),
+    resistances: v.array(v.string()),
+    elite: v.boolean(),
+    feature: v.string(),
+    info: v.string(),
+    image: v.optional(v.string()),
+    stageIds: v.array(v.id("gdStages")),
+    userId: v.id("users"),
+    updated: v.number(),
+  })
+    .index("by_user", ["userId"]),
+
+  // Pulling the String
+  stringPulls: defineTable({
+    title: v.string(),
+    category: v.union(
+      v.literal("pain"),
+      v.literal("belief"),
+      v.literal("decision"),
+      v.literal("experience"),
+    ),
+    layers: v.array(v.object({
+      question: v.string(),
+      answer: v.string(),
+      order: v.number(),
+      isInsight: v.optional(v.boolean()),
+    })),
+    beliefId: v.optional(v.id("beliefs")),
+    intentionId: v.optional(v.id("intentions")),
+    status: v.union(
+      v.literal("active"),
+      v.literal("completed"),
+      v.literal("archived"),
+    ),
+    notes: v.optional(v.string()),
+    archivedAt: v.optional(v.number()),
+    lastEditedLayer: v.optional(v.number()),
+    updated: v.number(),
+    userId: v.id("users"),
+  })
+    .index("by_user", ["userId"])
+    .index("by_category", ["category"])
+    .index("by_belief", ["beliefId"])
+    .index("by_intention", ["intentionId"])
+    .index("by_status", ["status"]),
 });
