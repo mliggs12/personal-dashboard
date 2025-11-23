@@ -101,20 +101,26 @@ export const updateSchedule = mutation({
   args: {
     scheduleId: v.id("schedules"),
     name: v.optional(v.string()),
+    description: v.optional(v.string()),
     date: v.optional(v.string()),
     isTemplate: v.optional(v.boolean()),
     length: v.optional(v.number()),
     start: v.optional(v.number()),
   },
-  async handler(ctx, { scheduleId, name, date, isTemplate, length, start }) {
-    const user = await getCurrentUserOrThrow(ctx);
+  async handler(ctx, { scheduleId, name, description, date, isTemplate, length, start }) {
+    const schedule = await ctx.db.get(scheduleId);
+    if (!schedule) {
+      throw new Error("Schedule not found");
+    }
 
-    return await ctx.db.patch(scheduleId, {
-      date: date,
-      isTemplate: isTemplate,
-      length: length,
-      updated: Date.now(),
-      userId: user._id,
+    await ctx.db.patch(scheduleId, {
+      name: name ?? schedule.name,
+      description: description ?? schedule.description,
+      date: date ?? schedule.date,
+      length: length ?? schedule.length,
+      start: start ?? schedule.start,
+      isTemplate: isTemplate ?? schedule.isTemplate,
+      updated: Date.now()
     });
   },
 });

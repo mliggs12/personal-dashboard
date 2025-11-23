@@ -221,8 +221,8 @@ export default defineSchema({
     }),
 
   recurringTasks: defineTable({
+    userId: v.id("users"),
     name: v.string(),
-    notes: v.optional(v.string()),
     status: v.union(
       v.literal("active"),
       v.literal("paused"),
@@ -235,9 +235,12 @@ export default defineSchema({
       v.literal("monthly"),
     ),
     type: v.union(v.literal("onSchedule"), v.literal("whenDone")),
-    userId: v.id("users"),
     nextRunDate: v.string(),
     updated: v.number(),
+    priority: v.optional(
+      v.union(v.literal("low"), v.literal("normal"), v.literal("high")),
+    ),
+    notes: v.optional(v.string()),
   }).index("by_user", ["userId"]),
 
   sleepRecords: defineTable({

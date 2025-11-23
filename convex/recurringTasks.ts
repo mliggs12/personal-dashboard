@@ -20,10 +20,6 @@ export const update = mutation({
     status: v.optional(
       v.union(v.literal("active"), v.literal("paused"), v.literal("archived")),
     ),
-    priority: v.optional(
-      v.union(v.literal("low"), v.literal("normal"), v.literal("high")),
-    ),
-    due: v.optional(v.string()),
     frequency: v.optional(
       v.union(
         v.literal("daily"),
@@ -33,22 +29,29 @@ export const update = mutation({
       ),
     ),
     type: v.optional(v.union(v.literal("onSchedule"), v.literal("whenDone"))),
+    nextRunDate: v.optional(v.string()),
+    notes: v.optional(v.string()),
+    priority: v.optional(
+      v.union(v.literal("low"), v.literal("normal"), v.literal("high")),
+    ),
   },
   async handler(
     ctx,
-    { recurringTaskId, name, status, priority, due, frequency, type },
+    { recurringTaskId, name, status, frequency, type, nextRunDate, priority, notes },
   ) {
     const recurringTask = await ctx.db.get(recurringTaskId);
-    if (recurringTask === null)
-      throw new Error("Could not find recurring task");
+    if (!recurringTask) {
+      throw new Error("Recurring task not found");
+    }
 
     await ctx.db.patch(recurringTaskId, {
       name: name || recurringTask.name,
       status: status || recurringTask.status,
-      priority: priority || recurringTask.priority,
-      due: due || recurringTask.due,
       frequency: frequency || recurringTask.frequency,
       type: type || recurringTask.type,
+      nextRunDate: nextRunDate || recurringTask.nextRunDate,
+      notes: notes || recurringTask.notes,
+      priority: priority || recurringTask.priority,
       updated: Date.now(),
     });
   },
