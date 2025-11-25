@@ -714,6 +714,17 @@ export const getTasksWithSubtasks = query({
 // ============================================================================
 
 /**
+ * Gets the effective next run date from a recurring task.
+ * Handles backward compatibility: uses nextRunDate if available, otherwise falls back to due.
+ */
+function getNextRunDate(recurringTask: {
+  nextRunDate?: string;
+  due?: string;
+}): string | undefined {
+  return recurringTask.nextRunDate || recurringTask.due;
+}
+
+/**
  * Calculates the next run date based on frequency from a base date.
  */
 function calculateNextRunDate(
@@ -748,6 +759,9 @@ function shouldGenerateTaskToday(
   },
   today: dayjs.Dayjs
 ): boolean {
+  if (!recurringTask.nextRunDate) {
+    return false;
+  }
   const nextRunDate = dayjs(recurringTask.nextRunDate).tz(TIMEZONE).startOf("day");
   const todayStart = today.startOf("day");
   
@@ -829,13 +843,27 @@ export const generateRecurringTaskInstances = internalMutation({
     let generatedCount = 0;
 
     for (const recurringTask of recurringTasks) {
-      // Check if we should generate based on schedule
-      if (!shouldGenerateTaskToday(recurringTask, todayLocal)) {
+      // Get effective next run date (handles backward compatibility with "due" field)
+      const effectiveNextRunDate = getNextRunDate(recurringTask);
+      if (!effectiveNextRunDate) {
         continue;
       }
       
-      // Use the nextRunDate as the task's due date
-      const taskDueDate = dayjs(recurringTask.nextRunDate).tz(TIMEZONE).startOf("day").format("YYYY-MM-DD");
+      // Check if we should generate based on schedule
+      if (
+        !shouldGenerateTaskToday(
+          {
+            frequency: recurringTask.frequency,
+            nextRunDate: effectiveNextRunDate,
+          },
+          todayLocal
+        )
+      ) {
+        continue;
+      }
+      
+      // Use the effective next run date as the task's due date
+      const taskDueDate = dayjs(effectiveNextRunDate).tz(TIMEZONE).startOf("day").format("YYYY-MM-DD");
       
       // Prevent duplicates: check if task already exists with this due date
       const existingTask = await ctx.db
@@ -863,6 +891,7 @@ export const generateRecurringTaskInstances = internalMutation({
       });
       
       // Update recurring task's next run date
+      // Always update to nextRunDate (migrates old tasks from "due" to "nextRunDate")
       const nextRunDate = calculateNextRunDate(
         recurringTask.frequency,
         dayjs(taskDueDate).tz(TIMEZONE)
@@ -923,12 +952,31 @@ export const testGenerateRecurringTasks = mutation({
     let generatedCount = 0;
 
     for (const recurringTask of recurringTasks) {
-      const shouldGenerate = shouldGenerateTaskToday(recurringTask, todayLocal);
+      // Get effective next run date (handles backward compatibility with "due" field)
+      const effectiveNextRunDate = getNextRunDate(recurringTask);
+      if (!effectiveNextRunDate) {
+        results.push({
+          name: recurringTask.name,
+          nextRunDate: recurringTask.nextRunDate || recurringTask.due || "N/A",
+          shouldGenerate: false,
+          taskCreated: false,
+          reason: "No nextRunDate or due date found",
+        });
+        continue;
+      }
+      
+      const shouldGenerate = shouldGenerateTaskToday(
+        {
+          frequency: recurringTask.frequency,
+          nextRunDate: effectiveNextRunDate,
+        },
+        todayLocal
+      );
       
       if (!shouldGenerate) {
-        const nextRunDate = dayjs(recurringTask.nextRunDate).tz(TIMEZONE).startOf("day");
+        const nextRunDate = dayjs(effectiveNextRunDate).tz(TIMEZONE).startOf("day");
         const reason = todayLocal.isBefore(nextRunDate)
-          ? `Today (${todayStr}) is before nextRunDate (${recurringTask.nextRunDate})`
+          ? `Today (${todayStr}) is before nextRunDate (${effectiveNextRunDate})`
           : recurringTask.frequency === "weekly"
           ? `Day of week mismatch: today is ${todayLocal.day()}, nextRunDate is ${nextRunDate.day()}`
           : recurringTask.frequency === "monthly"
@@ -937,7 +985,7 @@ export const testGenerateRecurringTasks = mutation({
         
         results.push({
           name: recurringTask.name,
-          nextRunDate: recurringTask.nextRunDate,
+          nextRunDate: effectiveNextRunDate,
           shouldGenerate: false,
           taskCreated: false,
           reason,
@@ -945,8 +993,8 @@ export const testGenerateRecurringTasks = mutation({
         continue;
       }
       
-      // Use the nextRunDate as the task's due date
-      const taskDueDate = dayjs(recurringTask.nextRunDate).tz(TIMEZONE).startOf("day").format("YYYY-MM-DD");
+      // Use the effective next run date as the task's due date
+      const taskDueDate = dayjs(effectiveNextRunDate).tz(TIMEZONE).startOf("day").format("YYYY-MM-DD");
       
       // Prevent duplicates: check if task already exists with this due date
       const existingTask = await ctx.db
@@ -960,7 +1008,7 @@ export const testGenerateRecurringTasks = mutation({
       if (existingTask) {
         results.push({
           name: recurringTask.name,
-          nextRunDate: recurringTask.nextRunDate,
+          nextRunDate: effectiveNextRunDate,
           shouldGenerate: true,
           taskCreated: false,
           taskDueDate,
@@ -980,6 +1028,7 @@ export const testGenerateRecurringTasks = mutation({
       });
       
       // Update recurring task's next run date
+      // Always update to nextRunDate (migrates old tasks from "due" to "nextRunDate")
       const nextRunDate = calculateNextRunDate(
         recurringTask.frequency,
         dayjs(taskDueDate).tz(TIMEZONE)
@@ -992,7 +1041,7 @@ export const testGenerateRecurringTasks = mutation({
       generatedCount++;
       results.push({
         name: recurringTask.name,
-        nextRunDate: recurringTask.nextRunDate,
+        nextRunDate: effectiveNextRunDate,
         shouldGenerate: true,
         taskCreated: true,
         taskDueDate,

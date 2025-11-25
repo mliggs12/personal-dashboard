@@ -41,7 +41,7 @@ export function EditTemplateForm({ template, className }: EditTemplateFormProps)
   function onSubmit(data: z.infer<typeof formSchema>) {
     const { name, description } = data;
 
-    updateSchedule({ scheduleId: template.id as Id<"schedules">, name, length: 16.5, start: 0, date: undefined, isTemplate: true });
+    updateSchedule({ scheduleId: template.id as Id<"schedules">, name, description, length: 16.5, start: 0, date: undefined, isTemplate: true });
 
     toast({
       title: "Template updated",
