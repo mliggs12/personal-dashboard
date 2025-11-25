@@ -108,9 +108,9 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
     if (frequency && due && type) {
       const recurringTaskId = await createRecurringTask(
         name,
-        dueDate,
         frequency,
         type,
+        notes,
       );
 
       await createTask({
