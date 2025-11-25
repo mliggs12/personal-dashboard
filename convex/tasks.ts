@@ -498,7 +498,6 @@ export const update = mutation({
 export const createRecurringTask = mutation({
   args: {
     name: v.string(),
-    nextRunDate: v.string(),
     frequency: v.union(
       v.literal("daily"),
       v.literal("3-day"),
@@ -509,21 +508,22 @@ export const createRecurringTask = mutation({
     notes: v.optional(v.string()),
     userId: v.optional(v.string()),
   },
-  async handler(ctx, { name, nextRunDate, frequency, type, notes, userId }) {
+  async handler(ctx, { name, frequency, type, notes, userId }) {
     let user;
     if (userId) {
       user = await userByExternalId(ctx, userId);
     } else {
       user = await getCurrentUserOrThrow(ctx);
     }
+    
     const taskId = await ctx.db.insert("recurringTasks", {
       name,
-      notes: notes || "",
       status: "active",
-      nextRunDate,
-      updated: Date.now(),
       frequency,
       type,
+      nextRunDate: calculateNextRunDate(frequency, dayjs().tz(TIMEZONE).startOf("day")),
+      notes: notes || "",
+      updated: Date.now(),
       userId: user!._id,
     });
 
