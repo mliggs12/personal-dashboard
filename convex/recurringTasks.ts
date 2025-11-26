@@ -93,3 +93,31 @@ export const recurringTasksWithStats = query({
     return recurringTasksWithStats;
   },
 });
+
+export const removePriorityFromAll = mutation({
+  async handler(ctx) {
+    // Get all recurringTasks
+    const allRecurringTasks = await ctx.db.query("recurringTasks").collect();
+
+    // Filter to only those that have priority set
+    const tasksWithPriority = allRecurringTasks.filter(
+      (task) => task.priority !== undefined,
+    );
+
+    // Remove priority from each task
+    let updatedCount = 0;
+    for (const task of tasksWithPriority) {
+      await ctx.db.patch(task._id, {
+        priority: undefined,
+        updated: Date.now(),
+      });
+      updatedCount++;
+    }
+
+    return {
+      totalTasks: allRecurringTasks.length,
+      tasksWithPriority: tasksWithPriority.length,
+      updatedCount,
+    };
+  },
+});
