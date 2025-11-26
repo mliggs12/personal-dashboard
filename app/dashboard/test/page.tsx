@@ -5,12 +5,12 @@ import utc from "dayjs/plugin/utc";
 dayjs.extend(timezone);
 dayjs.extend(utc);
 
-const tz = "America/Denver";
-const tzGuess = dayjs.tz.guess();
 
 export default function TestPage() {
-  return (
-    <div className="px-4">
+    const tz = "America/Denver";
+    const tzGuess = dayjs.tz.guess();
+    return (
+        <div className="px-4">
         <p>Dayjs: {dayjs().toISOString()}</p>
         <p>Dayjs: {dayjs().startOf("day").toISOString()}</p>
         <p>new Date(): {new Date().toISOString()}</p>
