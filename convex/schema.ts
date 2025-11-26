@@ -367,24 +367,6 @@ export default defineSchema({
     updated: v.number(),
   }).index("by_user_table", ["userId", "tableId"]),
 
-  // Basketball Workouts
-  basketballWorkouts: defineTable({
-    date: v.string(), // YYYY-MM-DD
-    duration: v.number(), // minutes
-    skills: v.array(v.string()), // e.g., ["rim attacks", "floaters", "mid-range"]
-    shootingDrills: v.optional(v.object({
-      makes: v.number(),
-      attempts: v.number(),
-      drillType: v.string(),
-    })),
-    energyLevel: v.number(), // 1-10
-    notes: v.optional(v.string()),
-    userId: v.id("users"),
-    updated: v.number(),
-  })
-    .index("by_user", ["userId"])
-    .index("by_user_date", ["userId", "date"]),
-
   // Galaxy Defense
   gdStages: defineTable({
     number: v.number(),
