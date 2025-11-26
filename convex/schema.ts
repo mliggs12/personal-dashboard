@@ -236,9 +236,6 @@ export default defineSchema({
     type: v.union(v.literal("onSchedule"), v.literal("whenDone")),
     nextRunDate: v.optional(v.string()),
     due: v.optional(v.string()),
-    priority: v.optional(
-      v.union(v.literal("low"), v.literal("normal"), v.literal("high")),
-    ),
     notes: v.optional(v.string()),
     updated: v.number(),
     userId: v.id("users"),

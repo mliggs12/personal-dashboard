@@ -31,13 +31,10 @@ export const update = mutation({
     type: v.optional(v.union(v.literal("onSchedule"), v.literal("whenDone"))),
     nextRunDate: v.optional(v.string()),
     notes: v.optional(v.string()),
-    priority: v.optional(
-      v.union(v.literal("low"), v.literal("normal"), v.literal("high")),
-    ),
   },
   async handler(
     ctx,
-    { recurringTaskId, name, status, frequency, type, nextRunDate, priority, notes },
+    { recurringTaskId, name, status, frequency, type, nextRunDate, notes },
   ) {
     const recurringTask = await ctx.db.get(recurringTaskId);
     if (!recurringTask) {
@@ -51,7 +48,6 @@ export const update = mutation({
       type: type || recurringTask.type,
       nextRunDate: nextRunDate || recurringTask.nextRunDate,
       notes: notes || recurringTask.notes,
-      priority: priority || recurringTask.priority,
       updated: Date.now(),
     });
   },
@@ -94,30 +90,30 @@ export const recurringTasksWithStats = query({
   },
 });
 
-export const removePriorityFromAll = mutation({
-  async handler(ctx) {
-    // Get all recurringTasks
-    const allRecurringTasks = await ctx.db.query("recurringTasks").collect();
+// export const removePriorityFromAll = mutation({
+//   async handler(ctx) {
+//     // Get all recurringTasks
+//     const allRecurringTasks = await ctx.db.query("recurringTasks").collect();
 
-    // Filter to only those that have priority set
-    const tasksWithPriority = allRecurringTasks.filter(
-      (task) => task.priority !== undefined,
-    );
+//     // Filter to only those that have priority set
+//     const tasksWithPriority = allRecurringTasks.filter(
+//       (task) => task.priority !== undefined,
+//     );
 
-    // Remove priority from each task
-    let updatedCount = 0;
-    for (const task of tasksWithPriority) {
-      await ctx.db.patch(task._id, {
-        priority: undefined,
-        updated: Date.now(),
-      });
-      updatedCount++;
-    }
+//     // Remove priority from each task
+//     let updatedCount = 0;
+//     for (const task of tasksWithPriority) {
+//       await ctx.db.patch(task._id, {
+//         priority: undefined,
+//         updated: Date.now(),
+//       });
+//       updatedCount++;
+//     }
 
-    return {
-      totalTasks: allRecurringTasks.length,
-      tasksWithPriority: tasksWithPriority.length,
-      updatedCount,
-    };
-  },
-});
+//     return {
+//       totalTasks: allRecurringTasks.length,
+//       tasksWithPriority: tasksWithPriority.length,
+//       updatedCount,
+//     };
+//   },
+// });
