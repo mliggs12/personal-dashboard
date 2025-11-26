@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 
+import { Id } from "./_generated/dataModel";
 import { internalMutation, mutation, query } from "./_generated/server";
 import dayjs from "./lib/dayjs.config";
 import { getCurrentUserOrThrow } from "./users";
@@ -172,7 +173,7 @@ export const updateReadyToTitheIntentions = internalMutation({
 
     // Process each user's intentions with their timezone
     for (const [userId, userIntentions] of intentionsByUser) {
-      const user = await ctx.db.get(userId as any);
+      const user = await ctx.db.get(userId as Id<"users">);
       if (!user) continue;
       
       const timezone = user.timezone ?? "America/Denver";

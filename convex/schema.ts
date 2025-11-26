@@ -413,38 +413,4 @@ export default defineSchema({
     updated: v.number(),
   })
     .index("by_user", ["userId"]),
-
-  // Pulling the String
-  stringPulls: defineTable({
-    title: v.string(),
-    category: v.union(
-      v.literal("pain"),
-      v.literal("belief"),
-      v.literal("decision"),
-      v.literal("experience"),
-    ),
-    layers: v.array(v.object({
-      question: v.string(),
-      answer: v.string(),
-      order: v.number(),
-      isInsight: v.optional(v.boolean()),
-    })),
-    beliefId: v.optional(v.id("beliefs")),
-    intentionId: v.optional(v.id("intentions")),
-    status: v.union(
-      v.literal("active"),
-      v.literal("completed"),
-      v.literal("archived"),
-    ),
-    notes: v.optional(v.string()),
-    archivedAt: v.optional(v.number()),
-    lastEditedLayer: v.optional(v.number()),
-    updated: v.number(),
-    userId: v.id("users"),
-  })
-    .index("by_user", ["userId"])
-    .index("by_category", ["category"])
-    .index("by_belief", ["beliefId"])
-    .index("by_intention", ["intentionId"])
-    .index("by_status", ["status"]),
 });
