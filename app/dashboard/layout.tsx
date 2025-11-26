@@ -2,7 +2,6 @@
 
 import { usePathname } from "next/navigation";
 import { Authenticated } from "convex/react";
-import dayjs from "@/lib/dayjs.config";
 import { Bell, Zap } from "lucide-react";
 
 import SidebarLeft from "@/app/dashboard/components/sidebar/sidebar-left";
@@ -15,6 +14,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Toaster } from "@/components/ui/toaster";
 import { useIsMobile } from "@/hooks/use-mobile";
+import dayjs from "@/lib/dayjs.config";
 import { cn } from "@/lib/utils";
 
 import CommandPalette from "./components/command-palette/command-palette";

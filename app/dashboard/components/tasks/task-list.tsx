@@ -5,7 +5,6 @@ import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Doc } from "@/convex/_generated/dataModel";
 import { useToast } from "@/hooks/use-toast";
-import dayjs from "@/lib/dayjs.config";
 
 import { completeTask } from "../../tasks/actions";
 

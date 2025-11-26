@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { useMutation } from "convex/react";
-import dayjs from "@/lib/dayjs.config";
 import { 
   Calendar, 
   Camera, 
@@ -17,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { api } from "@/convex/_generated/api";
 import { useIsMobile } from "@/hooks/use-mobile";
+import dayjs from "@/lib/dayjs.config";
 
 import CalendarScheduleView from "./components/calendar/calendar-schedule-view";
 import DashboardBanner from "./components/dashboard-banner";

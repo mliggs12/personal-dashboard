@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useQuery } from "convex/react";
-import dayjs from "@/lib/dayjs.config";
 
 import { api } from "@/convex/_generated/api";
 

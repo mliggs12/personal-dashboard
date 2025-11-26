@@ -1,5 +1,3 @@
-import dayjs from "@/lib/dayjs.config";
-
 import { weeksAliveSinceBirth } from "./utils.stoic";
 import WeekCheckbox from "./week-checkbox";
 

@@ -1,7 +1,5 @@
 "use client";
 
-import dayjs from "@/lib/dayjs.config";
-
 import {
   Table,
   TableBody,
@@ -11,6 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Doc } from "@/convex/_generated/dataModel";
+import dayjs from "@/lib/dayjs.config";
 
 interface TaskStats {
   count: number;

@@ -1,9 +1,9 @@
 import clsx from "clsx";
-import dayjs from "@/lib/dayjs.config";
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Doc } from "@/convex/_generated/dataModel";
+import dayjs from "@/lib/dayjs.config";
 import { cn } from "@/lib/utils";
 
 export default function Task({

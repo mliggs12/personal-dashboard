@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
 import { Doc } from "@/convex/_generated/dataModel";
 import { useToast } from "@/hooks/use-toast";
-import dayjs from "@/lib/dayjs.config";
 import { cn } from "@/lib/utils";
 
 import { completeTask } from "../../tasks/actions";

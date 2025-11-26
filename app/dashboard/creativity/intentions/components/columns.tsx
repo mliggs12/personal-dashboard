@@ -1,11 +1,11 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import dayjs from "@/lib/dayjs.config";
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { Doc } from "@/convex/_generated/dataModel";
 import { timestampToLongDate } from "@/lib/date.utils";
+import dayjs from "@/lib/dayjs.config";
 
 import { DataTableColumnHeader } from "./data-table-column-header";
 import { DataTableRowActions } from "./data-table-row-actions";

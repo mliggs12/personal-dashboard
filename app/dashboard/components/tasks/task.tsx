@@ -1,4 +1,3 @@
-import dayjs from "@/lib/dayjs.config";
 import { Repeat } from "lucide-react";
 
 import { Checkbox } from "@/components/ui/checkbox";
@@ -10,6 +9,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Doc } from "@/convex/_generated/dataModel";
+import dayjs from "@/lib/dayjs.config";
 import { cn } from "@/lib/utils";
 
 import EditTaskDialog from "./edit-task-dialog";
