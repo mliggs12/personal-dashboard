@@ -2,24 +2,19 @@
 
 import { useState } from "react";
 import { useMutation } from "convex/react";
-import dayjs from "dayjs";
-import timezone from "dayjs/plugin/timezone";
-import utc from "dayjs/plugin/utc";
 import { ChevronDown, ChevronRight, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
 import { Doc } from "@/convex/_generated/dataModel";
 import { useToast } from "@/hooks/use-toast";
+import dayjs from "@/lib/dayjs.config";
 import { cn } from "@/lib/utils";
 
 import { completeTask } from "../../tasks/actions";
 
 import AddSubtaskForm from "./add-subtask-form";
 import Task from "./task";
-
-dayjs.extend(timezone);
-dayjs.extend(utc);
 
 interface TaskWithSubtasks extends Doc<"tasks"> {
   subtasks: TaskWithSubtasks[];

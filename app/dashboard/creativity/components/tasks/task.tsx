@@ -1,13 +1,10 @@
 import clsx from "clsx";
-import dayjs from "dayjs";
-import calendar from "dayjs/plugin/calendar";
+import dayjs from "@/lib/dayjs.config";
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Doc } from "@/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
-
-dayjs.extend(calendar);
 
 export default function Task({
   data,

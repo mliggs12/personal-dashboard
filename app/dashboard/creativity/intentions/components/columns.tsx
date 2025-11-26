@@ -1,8 +1,7 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import dayjs from "dayjs";
-import localizedFormat from "dayjs/plugin/localizedFormat";
+import dayjs from "@/lib/dayjs.config";
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { Doc } from "@/convex/_generated/dataModel";
@@ -12,8 +11,6 @@ import { DataTableColumnHeader } from "./data-table-column-header";
 import { DataTableRowActions } from "./data-table-row-actions";
 import { IntentionEmotionSelect } from "./intention-emotion-select-inline";
 import { IntentionStatusSelect } from "./intention-status-select-inline";
-
-dayjs.extend(localizedFormat);
 
 export const columns: ColumnDef<Doc<"intentions">>[] = [
   {

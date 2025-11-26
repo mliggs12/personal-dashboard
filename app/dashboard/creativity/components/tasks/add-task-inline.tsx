@@ -3,8 +3,7 @@
 import { Dispatch, SetStateAction } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "convex/react";
-import dayjs from "dayjs";
-import localizedFormat from "dayjs/plugin/localizedFormat";
+import dayjs from "@/lib/dayjs.config";
 import { CalendarIcon, Text } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -37,9 +36,6 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-
-
-dayjs.extend(localizedFormat);
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),

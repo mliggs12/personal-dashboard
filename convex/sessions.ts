@@ -1,15 +1,11 @@
 import { v } from "convex/values";
-import dayjs from "dayjs";
-import timezone from "dayjs/plugin/timezone";
-import utc from "dayjs/plugin/utc";
 
 import { timestampToShortDateTime } from "../lib/date.utils";
 
 import { mutation, query } from "./_generated/server";
+import { getDayBoundariesInTimezone } from "./lib/date.utils";
+import dayjs from "./lib/dayjs.config";
 import { getCurrentUserOrThrow } from "./users";
-
-dayjs.extend(utc);
-dayjs.extend(timezone);
 
 export const create = mutation({
   args: {
@@ -43,13 +39,17 @@ export const create = mutation({
 export const getDaySessions = query({
   args: {
     timestamp: v.string(),
-    userTimezone: v.string(),
+    userTimezone: v.optional(v.string()), // Optional - will use saved timezone if not provided
   },
   async handler(ctx, { timestamp, userTimezone }) {
     const user = await getCurrentUserOrThrow(ctx);
+    // Use parameter if provided, otherwise use saved timezone from database, fallback to default
+    const timezone = userTimezone ?? user.timezone ?? "America/Denver";
 
-    const dayStart = dayjs(timestamp).tz(userTimezone).startOf("day").valueOf();
-    const dayEnd = dayjs(timestamp).tz(userTimezone).endOf("day").valueOf();
+    const { start: dayStart, end: dayEnd } = getDayBoundariesInTimezone(
+      dayjs(timestamp).valueOf(),
+      timezone
+    );
     console.log("Fetching sessions for user:", user._id, "from", timestampToShortDateTime(dayStart), "to", timestampToShortDateTime(dayEnd));
 
     return await ctx.db

@@ -1,14 +1,11 @@
 "use client";
 
 import { useQuery } from "convex/react";
-import dayjs from "dayjs";
-import localizedFormat from "dayjs/plugin/localizedFormat";
+import dayjs from "@/lib/dayjs.config";
 
 import { api } from "@/convex/_generated/api";
 import { cn } from "@/lib/utils";
 import { MessageWithUserType } from "@/types";
-
-dayjs.extend(localizedFormat);
 
 interface MessageBoxProps {
   message: MessageWithUserType;

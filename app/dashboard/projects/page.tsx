@@ -2,14 +2,11 @@
 
 import Link from "next/link";
 import { useQuery } from "convex/react";
-import dayjs from "dayjs";
-import localizedFormat from "dayjs/plugin/localizedFormat";
+import dayjs from "@/lib/dayjs.config";
 
 import { api } from "@/convex/_generated/api";
 
 import AddProjectDialogDrawer from "../components/projects/add-project-dialog-drawer";
-
-dayjs.extend(localizedFormat);
 
 export default function ProjectsPage() {
   const projects = useQuery(api.projects.list);

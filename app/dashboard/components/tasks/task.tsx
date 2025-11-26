@@ -1,7 +1,4 @@
-import dayjs from "dayjs";
-import isToday from "dayjs/plugin/isToday";
-import isYesterday from "dayjs/plugin/isYesterday";
-import relativeTime from "dayjs/plugin/relativeTime";
+import dayjs from "@/lib/dayjs.config";
 import { Repeat } from "lucide-react";
 
 import { Checkbox } from "@/components/ui/checkbox";
@@ -16,10 +13,6 @@ import { Doc } from "@/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
 
 import EditTaskDialog from "./edit-task-dialog";
-
-dayjs.extend(isToday);
-dayjs.extend(isYesterday);
-dayjs.extend(relativeTime);
 
 function displayDueDate(dueDateString: string) {
   const dueDate = dayjs(dueDateString, "YYYY-MM-DD");

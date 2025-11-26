@@ -1,9 +1,4 @@
-import dayjs from "dayjs";
-import timezone from "dayjs/plugin/timezone";
-import utc from "dayjs/plugin/utc";
-
-dayjs.extend(timezone);
-dayjs.extend(utc);
+import dayjs from "./dayjs.config";
 
 export async function nextDueDate(frequency: string, startTimestamp: number) {
   const startDate = dayjs(startTimestamp);

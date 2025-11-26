@@ -1,15 +1,8 @@
 import { v } from "convex/values";
-import dayjs from "dayjs";
-import timezone from "dayjs/plugin/timezone";
-import utc from "dayjs/plugin/utc";
 
 import { internalMutation, mutation, query } from "./_generated/server";
+import dayjs from "./lib/dayjs.config";
 import { getCurrentUserOrThrow } from "./users";
-
-dayjs.extend(utc);
-dayjs.extend(timezone);
-
-const TIMEZONE = "America/Denver";
 
 export const list = query(async (ctx) => {
   const user = await getCurrentUserOrThrow(ctx);
@@ -149,29 +142,13 @@ export const search = query({
 });
 
 // Internal mutation to automatically update stale "allow" intentions to "tithe"
-// This runs via a scheduled cron job hourly, but only executes at 6am local time
+// This runs via a scheduled cron job hourly, but only executes at 6am local time per user
 // Logic: If status changed to "allow" on day X (any time), it updates on day X+4
 // Example: Changed on Jan 2nd -> Updates on Jan 6th (3 complete days: 3rd, 4th, 5th)
 export const updateReadyToTitheIntentions = internalMutation({
   args: {},
   async handler(ctx) {
     const now = Date.now();
-    
-    // Check if it's currently 6am in the local timezone
-    const localNow = dayjs().tz(TIMEZONE);
-    const currentHour = localNow.hour();
-    
-    // Only run between 6am and 7am local time
-    if (currentHour !== 6) {
-      console.log(
-        `Skipping intention update - current hour is ${currentHour}, not 6am (${TIMEZONE})`
-      );
-      return { updatedCount: 0, skipped: true };
-    }
-    
-    // Get start of today in local timezone
-    const todayLocal = localNow.startOf("day");
-    const todayTimestamp = todayLocal.valueOf();
 
     // Get all intentions with status "allow"
     const allowIntentions = await ctx.db
@@ -179,35 +156,68 @@ export const updateReadyToTitheIntentions = internalMutation({
       .filter((q) => q.eq(q.field("status"), "allow"))
       .collect();
 
-    // Filter and update intentions where 3+ complete calendar days have passed
-    let updatedCount = 0;
+    // Group intentions by user to process per-user timezones
+    const intentionsByUser = new Map<string, typeof allowIntentions>();
     for (const intention of allowIntentions) {
-      // Use allowedAt if available, otherwise fall back to _creationTime
-      // (for backward compatibility with old intentions that don't have allowedAt)
-      const allowedTimestamp = intention.allowedAt ?? intention._creationTime;
+      if (!intention.userId) continue;
+      const userId = intention.userId;
+      if (!intentionsByUser.has(userId)) {
+        intentionsByUser.set(userId, []);
+      }
+      intentionsByUser.get(userId)!.push(intention);
+    }
+
+    let updatedCount = 0;
+    const skippedByTimezone: Record<string, number> = {};
+
+    // Process each user's intentions with their timezone
+    for (const [userId, userIntentions] of intentionsByUser) {
+      const user = await ctx.db.get(userId as any);
+      if (!user) continue;
       
-      // Get start of the day when status was changed to "allow" (in local timezone)
-      const allowedDateLocal = dayjs(allowedTimestamp).tz(TIMEZONE).startOf("day");
-      const allowedDateTimestamp = allowedDateLocal.valueOf();
+      const timezone = user.timezone ?? "America/Denver";
+      const localNow = dayjs().tz(timezone);
+      const currentHour = localNow.hour();
       
-      // Calculate difference in days
-      const daysDifference = Math.floor(
-        (todayTimestamp - allowedDateTimestamp) / (24 * 60 * 60 * 1000)
-      );
+      // Only run at 6am local time for this user's timezone
+      if (currentHour !== 6) {
+        skippedByTimezone[timezone] = (skippedByTimezone[timezone] || 0) + userIntentions.length;
+        continue;
+      }
       
-      // Update if 4 or more days difference (3 complete days have passed)
-      if (daysDifference >= 4) {
-        await ctx.db.patch(intention._id, {
-          status: "tithe",
-          updated: now,
-          allowedAt: undefined, // Clear allowedAt since status is no longer "allow"
-        });
-        updatedCount++;
+      // Get start of today in user's timezone
+      const todayLocal = localNow.startOf("day");
+      const todayTimestamp = todayLocal.valueOf();
+
+      // Filter and update intentions where 3+ complete calendar days have passed
+      for (const intention of userIntentions) {
+        // Use allowedAt if available, otherwise fall back to _creationTime
+        // (for backward compatibility with old intentions that don't have allowedAt)
+        const allowedTimestamp = intention.allowedAt ?? intention._creationTime;
+        
+        // Get start of the day when status was changed to "allow" (in user's timezone)
+        const allowedDateLocal = dayjs(allowedTimestamp).tz(timezone).startOf("day");
+        const allowedDateTimestamp = allowedDateLocal.valueOf();
+        
+        // Calculate difference in days
+        const daysDifference = Math.floor(
+          (todayTimestamp - allowedDateTimestamp) / (24 * 60 * 60 * 1000)
+        );
+        
+        // Update if 4 or more days difference (3 complete days have passed)
+        if (daysDifference >= 4) {
+          await ctx.db.patch(intention._id, {
+            status: "tithe",
+            updated: now,
+            allowedAt: undefined, // Clear allowedAt since status is no longer "allow"
+          });
+          updatedCount++;
+        }
       }
     }
 
     console.log(
-      `Updated ${updatedCount} allow intentions to tithe status at ${localNow.format("YYYY-MM-DD HH:mm:ss z")}`
+      `Updated ${updatedCount} allow intentions to tithe status. Skipped by timezone: ${JSON.stringify(skippedByTimezone)}`
     );
     return { updatedCount, skipped: false };
   },

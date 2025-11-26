@@ -1,14 +1,7 @@
 import { v } from "convex/values";
-import dayjs from "dayjs";
-import timezone from "dayjs/plugin/timezone";
-import utc from "dayjs/plugin/utc";
 
-import { api } from "./_generated/api";
 import { mutation, query } from "./_generated/server";
 import { getCurrentUserOrThrow } from "./users";
-
-dayjs.extend(utc);
-dayjs.extend(timezone);
 
 export const list = query(async (ctx) => {
   const user = await getCurrentUserOrThrow(ctx);

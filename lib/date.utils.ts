@@ -1,13 +1,6 @@
 // Global Date/Time Display Formatting and Timezone Utilities
 
-import dayjs from "dayjs";
-import localizedFormat from "dayjs/plugin/localizedFormat";
-import timezone from "dayjs/plugin/timezone";
-import utc from "dayjs/plugin/utc";
-
-dayjs.extend(localizedFormat);
-dayjs.extend(timezone);
-dayjs.extend(utc);
+import dayjs from "./dayjs.config";
 
 export function formatShortDate(date: Date) {
   return dayjs(date).format("ll"); // "Aug 16, 2018"
@@ -86,6 +79,7 @@ export const getUserTimezone = (): string => {
     try {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       if (timezone && typeof timezone === "string") {
+        console.log("Browser timezone", timezone);
         return timezone;
       }
     } catch (error) {
@@ -98,3 +92,35 @@ export const getUserTimezone = (): string => {
   // Fallback timezone if detection fails
   return "America/Denver";
 };
+
+/**
+ * Converts a date string to the user's timezone.
+ * 
+ * @param date - Date string in YYYY-MM-DD format
+ * @param timezone - IANA timezone string (e.g., "America/New_York")
+ * @returns Date string in YYYY-MM-DD format in the specified timezone
+ */
+export function convertDateToUserTimezone(date: string, timezone: string): string {
+  return dayjs(date).tz(timezone).format("YYYY-MM-DD");
+}
+
+/**
+ * Gets today's date in UTC as YYYY-MM-DD string.
+ * Useful for server-side rendering.
+ * 
+ * @returns Today's date formatted as YYYY-MM-DD in UTC
+ */
+export function getTodayInUTC(): string {
+  return dayjs().utc().format("YYYY-MM-DD");
+}
+
+/**
+ * Converts a UTC date string to the user's timezone.
+ * 
+ * @param utcDate - UTC date string (ISO format or YYYY-MM-DD)
+ * @param timezone - IANA timezone string (e.g., "America/New_York")
+ * @returns Date string in YYYY-MM-DD format in the specified timezone
+ */
+export function convertUTCToUserTimezone(utcDate: string, timezone: string): string {
+  return dayjs.utc(utcDate).tz(timezone).format("YYYY-MM-DD");
+}

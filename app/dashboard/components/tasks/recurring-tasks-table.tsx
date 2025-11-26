@@ -1,7 +1,6 @@
 "use client";
 
-import dayjs from "dayjs";
-import localizedFormat from "dayjs/plugin/localizedFormat";
+import dayjs from "@/lib/dayjs.config";
 
 import {
   Table,
@@ -12,8 +11,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Doc } from "@/convex/_generated/dataModel";
-
-dayjs.extend(localizedFormat);
 
 interface TaskStats {
   count: number;

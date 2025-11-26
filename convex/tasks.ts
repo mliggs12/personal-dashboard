@@ -1,31 +1,11 @@
 import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
-import dayjs from "dayjs";
-import isToday from "dayjs/plugin/isToday";
-import timezone from "dayjs/plugin/timezone";
-import utc from "dayjs/plugin/utc";
 
 import { Doc, Id } from "./_generated/dataModel";
 import { internalMutation, mutation, MutationCtx, query } from "./_generated/server";
-import { getCurrentUserOrThrow, userByExternalId } from "./users";
-
-dayjs.extend(isToday);
-dayjs.extend(timezone);
-dayjs.extend(utc);
-const TIMEZONE = "America/Denver";
-
-/**
- * Normalizes a date string to YYYY-MM-DD format.
- * Handles both legacy YYYY/MM/DD format and current YYYY-MM-DD format.
- * 
- * @param date - Date string in YYYY-MM-DD or YYYY/MM/DD format
- * @returns Normalized date string in YYYY-MM-DD format, or undefined if date is undefined/invalid
- */
-function normalizeDateString(date: string | undefined): string | undefined {
-  if (!date) return undefined;
-  const parsed = dayjs(date, ["YYYY-MM-DD", "YYYY/MM/DD"]);
-  return parsed.isValid() ? parsed.format("YYYY-MM-DD") : date;
-}
+import { getDayBoundariesInTimezone, normalizeDateString } from "./lib/date.utils";
+import dayjs from "./lib/dayjs.config";
+import { getCurrentUserOrThrow, getUserTimezone, userByExternalId } from "./users";
 
 export const list = query({
   args: { paginationOpts: paginationOptsValidator },
@@ -378,15 +358,13 @@ export const completedTasks = query({
 export const completedTodayTasks = query({
   async handler(ctx) {
     const user = await getCurrentUserOrThrow(ctx);
-
-    // Attempt to set local timezone
-    const localTimezone = dayjs.tz.guess();
-    const todayStart = dayjs().tz(localTimezone).startOf("day");
+    const timezone = await getUserTimezone(ctx);
+    const { start: todayStart } = getDayBoundariesInTimezone(Date.now(), timezone);
 
     return await ctx.db
       .query("tasks")
       .withIndex("by_user", (q) => q.eq("userId", user._id))
-      .filter((q) => q.gte(q.field("completed"), todayStart.valueOf()))
+      .filter((q) => q.gte(q.field("completed"), todayStart))
       .collect();
   },
 });
@@ -394,17 +372,16 @@ export const completedTodayTasks = query({
 export const totalCompletedTodayTasks = query({
   handler: async (ctx) => {
     const user = await getCurrentUserOrThrow(ctx);
-
-    const todayStart = dayjs().tz(TIMEZONE).startOf("day");
-    const todayEnd = dayjs().tz(TIMEZONE).endOf("day");
+    const timezone = await getUserTimezone(ctx);
+    const { start: todayStart, end: todayEnd } = getDayBoundariesInTimezone(Date.now(), timezone);
 
     const tasks = await ctx.db
       .query("tasks")
       .withIndex("by_user", (q) => q.eq("userId", user._id))
       .filter((q) =>
         q.and(
-          q.gte(q.field("completed"), todayStart.valueOf()),
-          q.lte(q.field("completed"), todayEnd.valueOf()),
+          q.gte(q.field("completed"), todayStart),
+          q.lte(q.field("completed"), todayEnd),
         ),
       )
       .collect();
@@ -516,12 +493,15 @@ export const createRecurringTask = mutation({
       user = await getCurrentUserOrThrow(ctx);
     }
     
+    // Use the target user's timezone (not the current user's)
+    const timezone = user!.timezone ?? "America/Denver";
+    
     const taskId = await ctx.db.insert("recurringTasks", {
       name,
       status: "active",
       frequency,
       type,
-      nextRunDate: calculateNextRunDate(frequency, dayjs().tz(TIMEZONE).startOf("day")),
+      nextRunDate: calculateNextRunDate(frequency, dayjs().tz(timezone).startOf("day")),
       notes: notes || "",
       updated: Date.now(),
       userId: user!._id,
@@ -757,12 +737,13 @@ function shouldGenerateTaskToday(
     frequency: "daily" | "3-day" | "weekly" | "monthly";
     nextRunDate: string;
   },
-  today: dayjs.Dayjs
+  today: dayjs.Dayjs,
+  timezone: string
 ): boolean {
   if (!recurringTask.nextRunDate) {
     return false;
   }
-  const nextRunDate = dayjs(recurringTask.nextRunDate).tz(TIMEZONE).startOf("day");
+  const nextRunDate = dayjs(recurringTask.nextRunDate).tz(timezone).startOf("day");
   const todayStart = today.startOf("day");
   
   // Don't generate if today is before the next due date
@@ -794,20 +775,41 @@ async function createNextWhenDoneTask(
   completedTask: Doc<"tasks">,
   recurringTask: Doc<"recurringTasks">
 ): Promise<void> {
-  const today = dayjs().tz(TIMEZONE);
-  const nextRunDate = calculateNextRunDate(recurringTask.frequency, today);
+  // Get the recurring task owner's timezone (not the current user's)
+  const user = await ctx.db.get(recurringTask.userId);
+  const timezone = user?.timezone ?? "America/Denver";
+  const today = dayjs().tz(timezone).startOf("day");
+  
+  // Calculate next due date based on frequency
+  let nextDueDate: string;
+  switch (recurringTask.frequency) {
+    case "daily":
+      nextDueDate = today.add(1, "day").format("YYYY-MM-DD");
+      break;
+    case "3-day":
+      nextDueDate = today.add(3, "day").format("YYYY-MM-DD");
+      break;
+    case "weekly":
+      nextDueDate = today.add(1, "week").format("YYYY-MM-DD");
+      break;
+    case "monthly":
+      nextDueDate = today.add(1, "month").format("YYYY-MM-DD");
+      break;
+    default:
+      throw new Error(`Invalid frequency: ${recurringTask.frequency}`);
+  }
   
   await ctx.db.insert("tasks", {
     name: recurringTask.name,
     status: "todo",
     notes: completedTask.notes || "",
-    due: nextRunDate,
+    due: nextDueDate,
     recurringTaskId: recurringTask._id,
     userId: recurringTask.userId,
   });
   
   await ctx.db.patch(recurringTask._id, {
-    nextRunDate: nextRunDate,
+    nextRunDate: nextDueDate,
     updated: Date.now(),
   });
 }
@@ -822,14 +824,6 @@ async function createNextWhenDoneTask(
  */
 export const generateRecurringTaskInstances = internalMutation({
   async handler(ctx) {
-    const localNow = dayjs().tz(TIMEZONE);
-    
-    // Only run at 6am local time
-    if (localNow.hour() !== 6) {
-      return { generatedCount: 0, skipped: true };
-    }
-    
-    const todayLocal = localNow.startOf("day");
     const recurringTasks = await ctx.db
       .query("recurringTasks")
       .filter((q) => 
@@ -841,8 +835,24 @@ export const generateRecurringTaskInstances = internalMutation({
       .collect();
 
     let generatedCount = 0;
+    const skippedByTimezone: Record<string, number> = {};
 
     for (const recurringTask of recurringTasks) {
+      // Get user's timezone
+      const user = await ctx.db.get(recurringTask.userId);
+      if (!user) continue;
+      const timezone = user.timezone ?? "America/Denver";
+      
+      const localNow = dayjs().tz(timezone);
+      
+      // Only run at 6am local time for this user's timezone
+      if (localNow.hour() !== 6) {
+        skippedByTimezone[timezone] = (skippedByTimezone[timezone] || 0) + 1;
+        continue;
+      }
+      
+      const todayLocal = localNow.startOf("day");
+      
       // Get effective next run date (handles backward compatibility with "due" field)
       const effectiveNextRunDate = getNextRunDate(recurringTask);
       if (!effectiveNextRunDate) {
@@ -856,14 +866,15 @@ export const generateRecurringTaskInstances = internalMutation({
             frequency: recurringTask.frequency,
             nextRunDate: effectiveNextRunDate,
           },
-          todayLocal
+          todayLocal,
+          timezone
         )
       ) {
         continue;
       }
       
       // Use the effective next run date as the task's due date
-      const taskDueDate = dayjs(effectiveNextRunDate).tz(TIMEZONE).startOf("day").format("YYYY-MM-DD");
+      const taskDueDate = dayjs(effectiveNextRunDate).tz(timezone).startOf("day").format("YYYY-MM-DD");
       
       // Prevent duplicates: check if task already exists with this due date
       const existingTask = await ctx.db
@@ -894,7 +905,7 @@ export const generateRecurringTaskInstances = internalMutation({
       // Always update to nextRunDate (migrates old tasks from "due" to "nextRunDate")
       const nextRunDate = calculateNextRunDate(
         recurringTask.frequency,
-        dayjs(taskDueDate).tz(TIMEZONE)
+        dayjs(taskDueDate).tz(timezone)
       );
       await ctx.db.patch(recurringTask._id, {
         nextRunDate: nextRunDate,
@@ -905,7 +916,7 @@ export const generateRecurringTaskInstances = internalMutation({
     }
 
     console.log(
-      `Generated ${generatedCount} recurring task instances at ${localNow.format("YYYY-MM-DD HH:mm:ss z")}`
+      `Generated ${generatedCount} recurring task instances. Skipped by timezone: ${JSON.stringify(skippedByTimezone)}`
     );
     return { generatedCount, skipped: false };
   },
@@ -926,7 +937,8 @@ export const generateRecurringTaskInstances = internalMutation({
 export const testGenerateRecurringTasks = mutation({
   args: {},
   async handler(ctx) {
-    const localNow = dayjs().tz(TIMEZONE);
+    const timezone = await getUserTimezone(ctx);
+    const localNow = dayjs().tz(timezone);
     const todayLocal = localNow.startOf("day");
     const todayStr = todayLocal.format("YYYY-MM-DD");
     
@@ -952,6 +964,11 @@ export const testGenerateRecurringTasks = mutation({
     let generatedCount = 0;
 
     for (const recurringTask of recurringTasks) {
+      // Get user's timezone for this recurring task
+      const user = await ctx.db.get(recurringTask.userId);
+      const taskTimezone = user?.timezone ?? "America/Denver";
+      const taskToday = dayjs().tz(taskTimezone).startOf("day");
+      
       // Get effective next run date (handles backward compatibility with "due" field)
       const effectiveNextRunDate = getNextRunDate(recurringTask);
       if (!effectiveNextRunDate) {
@@ -970,17 +987,18 @@ export const testGenerateRecurringTasks = mutation({
           frequency: recurringTask.frequency,
           nextRunDate: effectiveNextRunDate,
         },
-        todayLocal
+        taskToday,
+        taskTimezone
       );
       
       if (!shouldGenerate) {
-        const nextRunDate = dayjs(effectiveNextRunDate).tz(TIMEZONE).startOf("day");
-        const reason = todayLocal.isBefore(nextRunDate)
-          ? `Today (${todayStr}) is before nextRunDate (${effectiveNextRunDate})`
+        const nextRunDate = dayjs(effectiveNextRunDate).tz(taskTimezone).startOf("day");
+        const reason = taskToday.isBefore(nextRunDate)
+          ? `Today (${taskToday.format("YYYY-MM-DD")}) is before nextRunDate (${effectiveNextRunDate})`
           : recurringTask.frequency === "weekly"
-          ? `Day of week mismatch: today is ${todayLocal.day()}, nextRunDate is ${nextRunDate.day()}`
+          ? `Day of week mismatch: today is ${taskToday.day()}, nextRunDate is ${nextRunDate.day()}`
           : recurringTask.frequency === "monthly"
-          ? `Day of month mismatch: today is ${todayLocal.date()}, nextRunDate is ${nextRunDate.date()}`
+          ? `Day of month mismatch: today is ${taskToday.date()}, nextRunDate is ${nextRunDate.date()}`
           : "Unknown reason";
         
         results.push({
@@ -994,7 +1012,7 @@ export const testGenerateRecurringTasks = mutation({
       }
       
       // Use the effective next run date as the task's due date
-      const taskDueDate = dayjs(effectiveNextRunDate).tz(TIMEZONE).startOf("day").format("YYYY-MM-DD");
+      const taskDueDate = dayjs(effectiveNextRunDate).tz(taskTimezone).startOf("day").format("YYYY-MM-DD");
       
       // Prevent duplicates: check if task already exists with this due date
       const existingTask = await ctx.db
@@ -1031,7 +1049,7 @@ export const testGenerateRecurringTasks = mutation({
       // Always update to nextRunDate (migrates old tasks from "due" to "nextRunDate")
       const nextRunDate = calculateNextRunDate(
         recurringTask.frequency,
-        dayjs(taskDueDate).tz(TIMEZONE)
+        dayjs(taskDueDate).tz(taskTimezone)
       );
       await ctx.db.patch(recurringTask._id, {
         nextRunDate: nextRunDate,

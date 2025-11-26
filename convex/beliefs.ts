@@ -1,7 +1,8 @@
 import { v } from "convex/values";
 
 import { mutation, query } from "./_generated/server";
-import { getCurrentUserOrThrow } from "./users";
+import dayjs from "./lib/dayjs.config";
+import { getCurrentUserOrThrow, getUserTimezone } from "./users";
 
 export const list = query(async (ctx) => {
   const user = await getCurrentUserOrThrow(ctx);
@@ -86,22 +87,19 @@ export const activeBeliefsToday = query({
   args: {},
   async handler(ctx) {
     const user = await getCurrentUserOrThrow(ctx);
+    const timezone = await getUserTimezone(ctx);
 
-    // Current UTC timestamp
+    // Get start of today at 3 AM in user's timezone
     const now = Date.now();
-
-    // Convert to local time (UTC-6) and set start of day to 3 AM
-    const localOffset = -6 * 60 * 60 * 1000; // UTC-6 in milliseconds
-    const localNow = new Date(now + localOffset);
-    const startOfDay = new Date(localNow);
-    startOfDay.setHours(3, 0, 0, 0);
-    // Convert back to UTC for comparison with _creationTime
-    const startOfDayUTC = new Date(startOfDay.getTime() - localOffset);
+    const localNow = dayjs(now).tz(timezone);
+    const startOfDay = localNow.hour(3).minute(0).second(0).millisecond(0);
+    // Convert to UTC timestamp for comparison with _creationTime
+    const startOfDayUTC = startOfDay.utc().valueOf();
 
     return await ctx.db
       .query("beliefs")
       .withIndex("by_user", (q) => q.eq("userId", user._id))
-      .filter((q) => q.gte(q.field("_creationTime"), startOfDayUTC.getTime()))
+      .filter((q) => q.gte(q.field("_creationTime"), startOfDayUTC))
       .collect();
   },
 });

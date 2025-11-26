@@ -1,12 +1,9 @@
 "use client";
 
 import { startTransition,useEffect, useState } from "react";
-import dayjs from "dayjs";
-import timezone from "dayjs/plugin/timezone";
-import utc from "dayjs/plugin/utc";
 
-dayjs.extend(timezone);
-dayjs.extend(utc);
+import { getUserTimezone } from "@/lib/date.utils";
+import dayjs from "@/lib/dayjs.config";
 
 /**
  * Custom hook for client-side date handling in Next.js
@@ -37,29 +34,11 @@ export function useClientDate() {
     startTransition(() => {
       setIsClient(true);
 
-      // Get user's timezone from browser
-      if (
-        typeof Intl !== "undefined" &&
-        typeof Intl.DateTimeFormat === "function"
-      ) {
-        try {
-          const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-          if (userTimezone && typeof userTimezone === "string") {
-            setTimezone(userTimezone);
-            // Calculate today's date in user's timezone
-            const todayDate = dayjs().tz(userTimezone).format("YYYY-MM-DD");
-            setToday(todayDate);
-            return;
-          }
-        } catch (error) {
-          console.warn("[useClientDate] Failed to detect timezone:", error);
-        }
-      }
-
-      // Fallback to America/Denver if detection fails
-      const fallbackTimezone = "America/Denver";
-      setTimezone(fallbackTimezone);
-      const todayDate = dayjs().tz(fallbackTimezone).format("YYYY-MM-DD");
+      // Get user's timezone from browser (using centralized utility)
+      const userTimezone = getUserTimezone();
+      setTimezone(userTimezone);
+      // Calculate today's date in user's timezone
+      const todayDate = dayjs().tz(userTimezone).format("YYYY-MM-DD");
       setToday(todayDate);
     });
   }, []);

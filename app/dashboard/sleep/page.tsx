@@ -2,14 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
-import dayjs from "dayjs";
-import localizedFormat from "dayjs/plugin/localizedFormat";
 
 import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-
-dayjs.extend(localizedFormat);
+import dayjs from "@/lib/dayjs.config";
 
 export default function SleepTracker() {
   const activeSession = useQuery(api.sleepRecords.getActiveSleepSession);

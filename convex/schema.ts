@@ -264,6 +264,7 @@ export default defineSchema({
   users: defineTable({
     name: v.string(),
     externalId: v.string(),
+    timezone: v.optional(v.string()), // IANA timezone string (e.g., "America/Denver", "America/New_York")
   }).index("byExternalId", ["externalId"]),
 
   // Messenger/Chat
