@@ -280,9 +280,9 @@ export default function EnemyForm({ enemyId, onSuccess, onCancel }: EnemyFormPro
                   {field.value.map((_, index) => (
                     <ResistanceInput
                       key={index}
-                      form={form}
+                      form={form as unknown as UseFormReturn<FieldValues>}
                       index={index}
-                      resistances={field.value}
+                      resistances= {field.value as unknown as Array<{ type: string; multiplier: number }>}
                       open={openResistanceIndex === index}
                       onOpenChange={(isOpen) => {
                         setOpenResistanceIndex(isOpen ? index : null);
