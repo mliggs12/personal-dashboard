@@ -1,11 +1,13 @@
 "use client";
 
-import { useMutation, useQuery } from "convex/react";
-import { ArrowLeft, Edit, Trash2 } from "lucide-react";
+import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMutation, useQuery } from "convex/react";
+import { ArrowLeft, Edit, Trash2 } from "lucide-react";
 
+import EnemyForm from "@/app/dashboard/gd/components/enemy-form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,13 +20,12 @@ import {
   DrawerClose,
   DrawerContent,
   DrawerFooter,
-  DrawerTrigger,
 } from "@/components/ui/drawer";
 import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useToast } from "@/hooks/use-toast";
 
-import { EnemyForm } from "../../components/enemy-form";
 import { TypeBadge } from "../../components/type-badge";
 
 export default function EnemyDetailPage() {
@@ -33,7 +34,7 @@ export default function EnemyDetailPage() {
   const isMobile = useIsMobile();
   const { toast } = useToast();
   const enemyId = params.enemyId as string;
-  const enemy = useQuery(api.gdEnemies.get, { enemyId: enemyId as any });
+  const enemy = useQuery(api.gdEnemies.get, { enemyId: enemyId as Id<"gdEnemies"> });
   const deleteEnemy = useMutation(api.gdEnemies.remove);
   const stages = useQuery(api.gdStages.list) || [];
 
@@ -42,7 +43,7 @@ export default function EnemyDetailPage() {
   const handleDelete = async () => {
     if (confirm("Are you sure you want to delete this enemy?")) {
       try {
-        await deleteEnemy({ enemyId: enemyId as any });
+        await deleteEnemy({ enemyId: enemyId as Id<"gdEnemies"> });
         toast({
           title: "Enemy deleted",
           duration: 2000,
@@ -85,7 +86,7 @@ export default function EnemyDetailPage() {
 
   const EnemyFormContent = (
     <EnemyForm
-      enemyId={enemyId as any}
+      enemyId={enemyId as Id<"gdEnemies">}
       onSuccess={() => {
         setEditDialogOpen(false);
       }}
@@ -128,10 +129,12 @@ export default function EnemyDetailPage() {
         {enemy.image && (
           <Card>
             <CardContent className="p-4">
-              <img
+              <Image
                 src={enemy.image}
                 alt={enemy.name}
-                className="w-full max-w-md mx-auto rounded-lg"
+                className="w-full max-w-md mx-auto rounded-lg object-cover"
+                width={100}
+                height={100}
               />
             </CardContent>
           </Card>

@@ -51,7 +51,7 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 
-import { EnemyForm } from "./enemy-form";
+import EnemyForm from "./enemy-form";
 import { TypeBadge } from "./type-badge";
 
 const formSchema = z.object({

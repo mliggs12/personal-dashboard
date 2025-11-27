@@ -31,7 +31,7 @@ import { Id } from "@/convex/_generated/dataModel";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useToast } from "@/hooks/use-toast";
 
-import { EnemyForm } from "./components/enemy-form";
+import EnemyForm from "./components/enemy-form";
 import { StageForm } from "./components/stage-form";
 import { StageList } from "./components/stage-list";
 

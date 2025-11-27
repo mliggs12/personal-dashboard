@@ -1,5 +1,9 @@
 "use client";
 
+import { X } from "lucide-react";
+import { FieldValues, UseFormReturn } from "react-hook-form";
+import { z } from "zod";
+
 import { Button } from "@/components/ui/button";
 import {
   FormControl,
@@ -15,13 +19,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { X } from "lucide-react";
-import { UseFormReturn } from "react-hook-form";
 
 import { DAMAGE_TYPES } from "../lib/types";
 
 interface WeaknessInputProps {
-  form: UseFormReturn<any>;
+  form: UseFormReturn<FieldValues>;
   index: number;
   onRemove: () => void;
   weaknesses: Array<{ type: string; multiplier: number }>;
@@ -29,7 +31,7 @@ interface WeaknessInputProps {
   onOpenChange?: (open: boolean) => void;
 }
 
-export function WeaknessInput({ form, index, onRemove, weaknesses, open, onOpenChange }: WeaknessInputProps) {
+export default function WeaknessInput({ form, index, onRemove, open, onOpenChange }: WeaknessInputProps) {
 
   return (
     <div className="flex gap-2 items-start">

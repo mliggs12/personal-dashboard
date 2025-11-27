@@ -1,12 +1,13 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery } from "convex/react";
 import { Check, ChevronsUpDown, Plus, X } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { FieldValues, useForm, UseFormReturn } from "react-hook-form";
 import { z } from "zod";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -18,7 +19,6 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import {
-  DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -42,10 +42,9 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
 
 import { ResistanceInput } from "./resistance-input";
-import { WeaknessInput } from "./weakness-input";
+import WeaknessInput from "./weakness-input";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -77,16 +76,16 @@ interface EnemyFormProps {
   onCancel?: () => void;
 }
 
-export function EnemyForm({ enemyId, onSuccess, onCancel }: EnemyFormProps) {
+export default function EnemyForm({ enemyId, onSuccess, onCancel }: EnemyFormProps) {
   const { toast } = useToast();
   const createEnemy = useMutation(api.gdEnemies.create);
   const updateEnemy = useMutation(api.gdEnemies.update);
   const getEnemy = useQuery(
-    enemyId ? api.gdEnemies.get : "skip",
-    enemyId ? { enemyId } : "skip"
+    api.gdEnemies.get,
+    enemyId ? { enemyId: enemyId as Id<"gdEnemies"> } : "skip"
   );
-  const enemies = useQuery(api.gdEnemies.list) ?? [];
-  const stages = useQuery(api.gdStages.list) ?? [];
+  const enemiesQuery = useQuery(api.gdEnemies.list);
+  const stagesQuery = useQuery(api.gdStages.list);
 
   const [stageSelectOpen, setStageSelectOpen] = useState(false);
   const [openWeaknessIndex, setOpenWeaknessIndex] = useState<number | null>(null);
@@ -108,7 +107,7 @@ export function EnemyForm({ enemyId, onSuccess, onCancel }: EnemyFormProps) {
 
   // Load enemy data if editing
   useEffect(() => {
-    if (getEnemy && enemyId) {
+    if (getEnemy) {
       form.reset({
         name: getEnemy.name,
         weaknesses: getEnemy.weaknesses,
@@ -120,20 +119,22 @@ export function EnemyForm({ enemyId, onSuccess, onCancel }: EnemyFormProps) {
         stageIds: getEnemy.stageIds.length > 0 ? getEnemy.stageIds.map((id) => id as string) : undefined,
       });
     }
-  }, [getEnemy, enemyId, form]);
+  }, [getEnemy, form]);
 
-  const selectedStageIds = form.watch("stageIds") || [];
+  const selectedStageIds = form.watch("stageIds") ?? [];
+  const stages = stagesQuery ?? [];
   const selectedStages = stages.filter((s) =>
     selectedStageIds.includes(s._id as string)
   );
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
+      const enemies = enemiesQuery ?? [];
       // Check for duplicate enemy name (case-insensitive)
       const duplicateEnemy = enemies.find(
         (e) =>
           e.name.toLowerCase() === values.name.toLowerCase().trim() &&
-          (!enemyId || e._id !== enemyId)
+          (enemyId ? e._id !== enemyId : true)
       );
 
       if (duplicateEnemy) {
@@ -225,19 +226,16 @@ export function EnemyForm({ enemyId, onSuccess, onCancel }: EnemyFormProps) {
                   {field.value.map((_, index) => (
                     <WeaknessInput
                       key={index}
-                      form={form}
-                      index={index}
+                      form={form as unknown as UseFormReturn<FieldValues>}
                       weaknesses={field.value}
                       open={openWeaknessIndex === index}
-                      onOpenChange={(isOpen) => {
+                      onOpenChange={(isOpen: boolean) => {
                         setOpenWeaknessIndex(isOpen ? index : null);
                       }}
+                      index={index}
                       onRemove={() => {
                         const updated = field.value.filter((_, i) => i !== index);
                         field.onChange(updated);
-                        if (openWeaknessIndex === index) {
-                          setOpenWeaknessIndex(null);
-                        }
                       }}
                     />
                   ))}

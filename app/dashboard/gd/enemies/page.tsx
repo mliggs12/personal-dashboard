@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { useMutation, useQuery } from "convex/react";
 import { Plus, Search, X } from "lucide-react";
 
@@ -32,8 +32,7 @@ import { Id } from "@/convex/_generated/dataModel";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useToast } from "@/hooks/use-toast";
 
-import { EnemyForm } from "../components/enemy-form";
-import { EnemyPreview } from "../components/enemy-preview";
+import EnemyForm from "../components/enemy-form";
 import { TypeBadge } from "../components/type-badge";
 import { DAMAGE_TYPES } from "../lib/types";
 
@@ -42,7 +41,7 @@ type EnemySortOption = "name-asc" | "name-desc" | "elite-first" | "normal-first"
 export default function EnemiesPage() {
   const isMobile = useIsMobile();
   const { toast } = useToast();
-  const enemies = useQuery(api.gdEnemies.list) ?? [];
+  const enemiesQuery = useQuery(api.gdEnemies.list);
   const deleteEnemy = useMutation(api.gdEnemies.remove);
 
   const [enemyDialogOpen, setEnemyDialogOpen] = useState(false);
@@ -53,6 +52,7 @@ export default function EnemiesPage() {
   const [sortBy, setSortBy] = useState<EnemySortOption>("name-asc");
 
   const filteredEnemies = useMemo(() => {
+    const enemies = enemiesQuery ?? [];
     let filtered = [...enemies];
 
     // Filter by search query
@@ -100,7 +100,7 @@ export default function EnemiesPage() {
     });
 
     return filtered;
-  }, [enemies, searchQuery, eliteFilter, damageTypeFilter, sortBy]);
+  }, [enemiesQuery, searchQuery, eliteFilter, damageTypeFilter, sortBy]);
 
   const handleEditEnemy = (enemyId: Id<"gdEnemies">) => {
     setEditingEnemyId(enemyId);
