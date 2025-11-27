@@ -40,9 +40,7 @@ type EnemySortOption = "name-asc" | "name-desc" | "elite-first" | "normal-first"
 
 export default function EnemiesPage() {
   const isMobile = useIsMobile();
-  const { toast } = useToast();
   const enemiesQuery = useQuery(api.gdEnemies.list);
-  const deleteEnemy = useMutation(api.gdEnemies.remove);
 
   const [enemyDialogOpen, setEnemyDialogOpen] = useState(false);
   const [editingEnemyId, setEditingEnemyId] = useState<Id<"gdEnemies"> | undefined>();
@@ -102,28 +100,28 @@ export default function EnemiesPage() {
     return filtered;
   }, [enemiesQuery, searchQuery, eliteFilter, damageTypeFilter, sortBy]);
 
-  const handleEditEnemy = (enemyId: Id<"gdEnemies">) => {
-    setEditingEnemyId(enemyId);
-    setEnemyDialogOpen(true);
-  };
+  // const handleEditEnemy = (enemyId: Id<"gdEnemies">) => {
+  //   setEditingEnemyId(enemyId);
+  //   setEnemyDialogOpen(true);
+  // };
 
-  const handleDeleteEnemy = async (enemyId: Id<"gdEnemies">) => {
-    if (confirm("Are you sure you want to delete this enemy?")) {
-      try {
-        await deleteEnemy({ enemyId });
-        toast({
-          title: "Enemy deleted",
-          duration: 2000,
-        });
-      } catch (error) {
-        toast({
-          title: "Error",
-          description: "Failed to delete enemy",
-          variant: "destructive",
-        });
-      }
-    }
-  };
+  // const handleDeleteEnemy = async (enemyId: Id<"gdEnemies">) => {
+  //   if (confirm("Are you sure you want to delete this enemy?")) {
+  //     try {
+  //       await deleteEnemy({ enemyId });
+  //       toast({
+  //         title: "Enemy deleted",
+  //         duration: 2000,
+  //       });
+  //     } catch (error) {
+  //       toast({
+  //         title: "Error",
+  //         description: "Failed to delete enemy",
+  //         variant: "destructive",
+  //       });
+  //     }
+  //   }
+  // };
 
   const handleEnemySuccess = () => {
     setEnemyDialogOpen(false);

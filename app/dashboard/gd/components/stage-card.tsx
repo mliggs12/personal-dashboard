@@ -1,16 +1,18 @@
 "use client";
 
+import { useState } from "react";
+import { ChevronDown, ChevronUp, Edit, Trash2 } from "lucide-react";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Doc, Id } from "@/convex/_generated/dataModel";
-import { ChevronDown, ChevronUp, Edit, Trash2 } from "lucide-react";
-import { useState } from "react";
 
 import {
-  calculateStageWeaknesses,
   calculateStageResistances,
+  calculateStageWeaknesses,
 } from "../lib/weakness-calculator";
+
 import { EnemyPreview } from "./enemy-preview";
 
 interface StageCardProps {

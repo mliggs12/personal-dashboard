@@ -1,6 +1,6 @@
+import { NextResponse } from "next/server";
 import { readFile } from "fs/promises";
 import { join } from "path";
-import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
@@ -13,7 +13,7 @@ export async function GET() {
     });
   } catch (error) {
     return NextResponse.json(
-      { error: "Failed to read CSV file" },
+      { error: `Failed to read CSV file: ${error instanceof Error ? error.message : "Unknown error"}` },
       { status: 500 }
     );
   }

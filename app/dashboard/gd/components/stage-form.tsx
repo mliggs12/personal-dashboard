@@ -1,14 +1,14 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery } from "convex/react";
 import { Check, ChevronsUpDown, Minus, Plus, X } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { InputGroup, InputGroupButton, InputGroupInput } from "@/components/ui/input-group";
 import {
   Command,
   CommandEmpty,
@@ -32,7 +32,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { InputGroup, InputGroupButton, InputGroupInput } from "@/components/ui/input-group";
 import {
   Popover,
   PopoverContent,
@@ -49,7 +49,6 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
 
 import EnemyForm from "./enemy-form";
 import { TypeBadge } from "./type-badge";
@@ -71,8 +70,8 @@ export function StageForm({ stageId, onSuccess, onCancel }: StageFormProps) {
   const createStage = useMutation(api.gdStages.create);
   const updateStage = useMutation(api.gdStages.update);
   const getStage = useQuery(
-    stageId ? api.gdStages.get : "skip",
-    stageId ? { stageId } : "skip"
+    api.gdStages.get,
+    { stageId: stageId as Id<"gdStages"> }
   );
   const stages = useQuery(api.gdStages.list) ?? [];
   const enemies = useQuery(api.gdEnemies.list) ?? [];
@@ -101,7 +100,11 @@ export function StageForm({ stageId, onSuccess, onCancel }: StageFormProps) {
     }
   }, [getStage, stageId, form]);
 
-  const selectedEnemyIds = form.watch("enemyIds");
+  const selectedEnemyIds = useWatch({
+    control: form.control,
+    name: "enemyIds",
+    defaultValue: [],
+  }) ?? [];
   const selectedEnemies = enemies.filter((e) =>
     selectedEnemyIds.includes(e._id as string)
   );
@@ -239,10 +242,10 @@ export function StageForm({ stageId, onSuccess, onCancel }: StageFormProps) {
                         }
                       }}
                       onFocus={(e) => {
-                        e.target.select();
+                        (e.target as HTMLInputElement).select();
                       }}
                       onClick={(e) => {
-                        e.target.select();
+                        (e.target as HTMLInputElement).select();
                       }}
                       onKeyDown={(e) => {
                         if (

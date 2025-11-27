@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery } from "convex/react";
 import { Check, ChevronsUpDown, Plus, X } from "lucide-react";
-import { FieldValues, useForm, UseFormReturn } from "react-hook-form";
+import { FieldValues, useForm, UseFormReturn, useWatch } from "react-hook-form";
 import { z } from "zod";
 
 import { Badge } from "@/components/ui/badge";
@@ -121,7 +121,11 @@ export default function EnemyForm({ enemyId, onSuccess, onCancel }: EnemyFormPro
     }
   }, [getEnemy, form]);
 
-  const selectedStageIds = form.watch("stageIds") ?? [];
+  const selectedStageIds = useWatch({
+    control: form.control,
+    name: "stageIds",
+    defaultValue: [],
+  }) ?? [];
   const stages = stagesQuery ?? [];
   const selectedStages = stages.filter((s) =>
     selectedStageIds.includes(s._id as string)

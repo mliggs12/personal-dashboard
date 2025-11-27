@@ -36,7 +36,7 @@ export default function EnemyDetailPage() {
   const enemyId = params.enemyId as string;
   const enemy = useQuery(api.gdEnemies.get, { enemyId: enemyId as Id<"gdEnemies"> });
   const deleteEnemy = useMutation(api.gdEnemies.remove);
-  const stages = useQuery(api.gdStages.list) || [];
+  const stages = useQuery(api.gdStages.list) ?? [];
 
   const [editDialogOpen, setEditDialogOpen] = useState(false);
 
@@ -52,7 +52,7 @@ export default function EnemyDetailPage() {
       } catch (error) {
         toast({
           title: "Error",
-          description: "Failed to delete enemy",
+          description: error instanceof Error ? error.message : "Failed to delete enemy",
           variant: "destructive",
         });
       }
@@ -81,7 +81,7 @@ export default function EnemyDetailPage() {
   }
 
   const enemyStages = stages.filter((stage) =>
-    enemy.stageIds.includes(stage._id)
+    enemy.stageIds?.includes(stage._id) ?? false
   );
 
   const EnemyFormContent = (
