@@ -1,5 +1,8 @@
 "use client";
 
+import { X } from "lucide-react";
+import { FieldValues, UseFormReturn } from "react-hook-form";
+
 import { Button } from "@/components/ui/button";
 import {
   FormControl,
@@ -15,27 +18,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { X } from "lucide-react";
-import { UseFormReturn } from "react-hook-form";
 
 import { DAMAGE_TYPES } from "../lib/types";
 
 interface ResistanceInputProps {
-  form: UseFormReturn<any>;
+  form: UseFormReturn<FieldValues>;
   index: number;
   onRemove: () => void;
-  resistances: string[];
+  resistances: Array<{ type: string; multiplier: number }>;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }
 
-export function ResistanceInput({ form, index, onRemove, resistances, open, onOpenChange }: ResistanceInputProps) {
+export function ResistanceInput({ form, index, onRemove, open, onOpenChange }: ResistanceInputProps) {
 
   return (
     <div className="flex gap-2 items-start">
       <FormField
         control={form.control}
-        name={`resistances.${index}`}
+        name={`resistances.${index}.type`}
         render={({ field }) => (
           <FormItem className="flex-1">
             <FormLabel>Type</FormLabel>

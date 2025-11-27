@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { useMutation, useQuery } from "convex/react";
+import { useQuery } from "convex/react";
 import { Plus, Search, X } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -30,7 +30,6 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useToast } from "@/hooks/use-toast";
 
 import EnemyForm from "../components/enemy-form";
 import { TypeBadge } from "../components/type-badge";

@@ -1,8 +1,9 @@
 "use client";
 
+import Link from "next/link";
+
 import { Badge } from "@/components/ui/badge";
 import { Doc } from "@/convex/_generated/dataModel";
-import Link from "next/link";
 
 import { TypeBadge } from "./type-badge";
 
