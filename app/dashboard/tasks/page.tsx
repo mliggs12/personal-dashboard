@@ -4,6 +4,7 @@ import { useQuery } from "convex/react";
 
 import { DataTable } from "@/components/ui/data-table";
 import { api } from "@/convex/_generated/api";
+import { Doc } from "@/convex/_generated/dataModel";
 import { useTableState } from "@/hooks/use-table-state";
 
 import { columns } from "./components/columns";
@@ -11,7 +12,7 @@ import { DataTablePagination } from "./components/data-table-pagination";
 import { DataTableToolbar } from "./components/data-table-toolbar";
 
 export default function TasksPage() {
-  const tasksQuery = useQuery(api.tasks.getTasksWithSubtasks);
+  const tasksQuery = useQuery(api.tasks.list, { paginationOpts: { numItems: 100, cursor: null } });
   const tasks = tasksQuery ?? [];
   const { savedState, onStateChange } = useTableState("tasks");
 
@@ -32,7 +33,7 @@ export default function TasksPage() {
         </div>
       </div>
       <DataTable
-        data={tasks}
+        data={tasks as Doc<"tasks">[]}
         columns={columns}
         toolbar={(table) => <DataTableToolbar table={table} />}
         pagination={(table) => <DataTablePagination table={table} />}
