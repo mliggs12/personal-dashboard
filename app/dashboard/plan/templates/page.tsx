@@ -2,16 +2,10 @@
 
 import Link from "next/link";
 import { useQuery } from "convex/react";
-import dayjs from "dayjs";
-import timezone from "dayjs/plugin/timezone";
-import utc from "dayjs/plugin/utc";
 
 import { api } from "@/convex/_generated/api";
 
 import CreateTemplateDrawerDialog from "../components/create-template-drawer-dialog";
-
-dayjs.extend(utc);
-dayjs.extend(timezone);
 
 export default function TemplatesPage() {
   const templates = useQuery(api.schedules.getTemplates);
