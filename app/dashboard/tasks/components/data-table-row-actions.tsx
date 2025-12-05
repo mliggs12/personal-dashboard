@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { Row } from "@tanstack/react-table";
-import { useMutation, useQuery } from "convex/react";
+import { useMutation } from "convex/react";
 
 import {
   AlertDialog,
@@ -26,7 +26,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { api } from "@/convex/_generated/api";
-import { Doc, Id } from "@/convex/_generated/dataModel";
+import { Doc } from "@/convex/_generated/dataModel";
 import { useToast } from "@/hooks/use-toast";
 
 import EditTaskDialog from "../../components/tasks/edit-task-dialog";
@@ -47,12 +47,11 @@ export function DataTableRowActions<TData>({
   const completeTask = useMutation(api.tasks.completeTask);
   const unCompleteTask = useMutation(api.tasks.unCompleteTask);
   const removeTask = useMutation(api.tasks.remove);
-  const subtasks = useQuery(api.tasks.getSubtasks, { parentTaskId: task._id });
 
   const handleDuplicate = async () => {
     try {
       // Create the main task
-      const newTaskId = await createTask({
+      await createTask({
         name: `${task.name} (copy)`,
         status: task.status,
         priority: task.priority,
@@ -62,41 +61,10 @@ export function DataTableRowActions<TData>({
         parentTaskId: task.parentTaskId,
       });
       
-      // Duplicate subtasks if they exist
-      if (subtasks && subtasks.length > 0 && newTaskId) {
-        // Recursively duplicate all subtasks
-        const duplicateSubtasks = async (parentId: string, newParentId: string) => {
-          // Get all direct subtasks of the current parent
-          const directSubtasks = subtasks.filter(
-            (st) => st.parentTaskId?.toString() === parentId
-          );
-          
-          for (const subtask of directSubtasks) {
-            const newSubtaskId = await createTask({
-              name: `${subtask.name} (copy)`,
-              status: subtask.status,
-              priority: subtask.priority,
-              notes: subtask.notes,
-              due: subtask.due,
-              intentionId: subtask.intentionId,
-              parentTaskId: newParentId as Id<"tasks">,
-            });
-            
-            // Recursively duplicate nested subtasks
-            if (newSubtaskId) {
-              await duplicateSubtasks(subtask._id, newSubtaskId);
-            }
-          }
-        };
-        
-        await duplicateSubtasks(task._id, newTaskId);
-      }
       
       toast({
         title: "Task duplicated",
-        description: subtasks && subtasks.length > 0 
-          ? `Task and ${subtasks.length} subtask(s) duplicated successfully.`
-          : "The task has been successfully duplicated.",
+        description: "The task has been successfully duplicated.",
         duration: 3000,
       });
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
