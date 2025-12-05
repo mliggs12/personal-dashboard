@@ -1,12 +1,11 @@
 import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
 
-import { Doc, Id } from "./_generated/dataModel";
-import { internalMutation, mutation, MutationCtx, query } from "./_generated/server";
-import { getDayBoundariesInTimezone, normalizeDateString } from "./lib/date.utils";
+import { mutation, query } from "./_generated/server";
+import { normalizeDateString } from "./lib/date.utils";
 import dayjs from "./lib/dayjs.config";
-import { createNextWhenDoneTask } from "./recurringTasksHelpers";
-import { getCurrentUserOrThrow, getUserTimezone, userByExternalId } from "./users";
+import { calculateNextRunDate, createNextWhenDoneTask } from "./recurringTasksHelpers";
+import { getCurrentUserOrThrow, userByExternalId } from "./users";
 
 export const list = query({
   args: { paginationOpts: paginationOptsValidator },
@@ -368,90 +367,106 @@ export const deadlineTasks = query({
 // RECURRING TASKS
 // ============================================================================
 
-// export const removeRecurringFromTask = mutation({
-//   args: { taskId: v.id("tasks") },
-//   async handler(ctx, { taskId }) {
-//     const task = await ctx.db.get(taskId);
-//     if (task === null) throw new Error("Could not find task");
+export const removeRecurringFromTask = mutation({
+  args: { taskId: v.id("tasks") },
+  async handler(ctx, { taskId }) {
+    const task = await ctx.db.get(taskId);
+    if (task === null) throw new Error("Could not find task");
 
-//     if (!task.recurringTaskId) {
-//       throw new Error("Task is not associated with a recurring task");
-//     }
+    if (!task.recurringTaskId) {
+      throw new Error("Task is not associated with a recurring task");
+    }
 
-//     const recurringTaskId = task.recurringTaskId;
+    const recurringTaskId = task.recurringTaskId;
 
-//     // Remove the recurringTaskId association from this task
-//     await ctx.db.patch(taskId, {
-//       recurringTaskId: undefined,
-//       updated: Date.now(),
-//     });
+    // Remove the recurringTaskId association from this task
+    await ctx.db.patch(taskId, {
+      recurringTaskId: undefined,
+      updated: Date.now(),
+    });
 
-//     // Check if there are any other task instances still using this recurring task
-//     const remainingInstances = await ctx.db
-//       .query("tasks")
-//       .withIndex("by_recurringTaskId", (q) => q.eq("recurringTaskId", recurringTaskId))
-//       .collect();
+    // Check if there are any other task instances still using this recurring task
+    const remainingInstances = await ctx.db
+      .query("tasks")
+      .withIndex("by_recurringTaskId", (q) => q.eq("recurringTaskId", recurringTaskId))
+      .collect();
 
-//     // If no other instances exist, delete the base recurring task
-//     if (remainingInstances.length === 0) {
-//       await ctx.db.delete(recurringTaskId);
-//       console.log(
-//         `Removed recurring association from task "${task.name}" (${taskId}) and deleted unused recurring task (${recurringTaskId})`
-//       );
-//     } else {
-//       console.log(
-//         `Removed recurring association from task "${task.name}" (${taskId}). Recurring task (${recurringTaskId}) kept active with ${remainingInstances.length} remaining instances.`
-//       );
-//     }
+    // If no other instances exist, delete the base recurring task
+    if (remainingInstances.length === 0) {
+      await ctx.db.delete(recurringTaskId);
+      console.log(
+        `Removed recurring association from task "${task.name}" (${taskId}) and deleted unused recurring task (${recurringTaskId})`
+      );
+    } else {
+      console.log(
+        `Removed recurring association from task "${task.name}" (${taskId}). Recurring task (${recurringTaskId}) kept active with ${remainingInstances.length} remaining instances.`
+      );
+    }
 
-//     return task;
-//   },
-// });
+    return task;
+  },
+});
 
-// // Convert a regular task to a recurring task by creating a new recurring task
-// export const convertTaskToRecurring = mutation({
-//   args: {
-//     taskId: v.id("tasks"),
-//     frequency: v.union(
-//       v.literal("daily"),
-//       v.literal("3-day"),
-//       v.literal("weekly"),
-//       v.literal("monthly"),
-//     ),
-//     type: v.union(v.literal("onSchedule"), v.literal("whenDone")),
-//   },
-//   async handler(ctx, { taskId, frequency, type }) {
-//     const task = await ctx.db.get(taskId);
-//     if (task === null) throw new Error("Could not find task");
+// Convert a regular task to a recurring task by creating a new recurring task
+export const convertTaskToRecurring = mutation({
+  args: {
+    taskId: v.id("tasks"),
+    schedule: v.object({
+      interval: v.object({
+        amount: v.number(),
+        unit: v.union(v.literal("day"), v.literal("week"), v.literal("month")),
+      }),
+      time: v.optional(v.string()),
+      daysOfWeek: v.optional(v.array(v.number())),
+      dayOfMonth: v.optional(v.number()),
+    }),
+    recurrenceType: v.union(v.literal("schedule"), v.literal("completion")),
+  },
+  async handler(ctx, { taskId, schedule, recurrenceType }) {
+    const task = await ctx.db.get(taskId);
+    if (task === null) throw new Error("Could not find task");
 
-//     // Normalize due date to YYYY-MM-DD format (handle legacy YYYY/MM/DD format)
-//     const normalizedNextRunDate = normalizeDateString(task.due) ?? dayjs().format("YYYY-MM-DD");
+    // Get user to access timezone
+    const user = await ctx.db.get(task.userId!);
+    if (!user) throw new Error("Could not find user");
+    
+    const timezone = user.timezone ?? "America/Denver";
 
-//     // Create a new recurring task based on the current task
-//     const recurringTaskId = await ctx.db.insert("recurringTasks", {
-//       name: task.name,
-//       status: "active",
-//       nextRunDate: normalizedNextRunDate,
-//       notes: task.notes || "",
-//       updated: Date.now(),
-//       frequency,
-//       type,
-//       userId: task.userId!,
-//     });
+    // Normalize due date to YYYY-MM-DD format (handle legacy YYYY/MM/DD format)
+    const normalizedDueDate = normalizeDateString(task.due);
+    
+    // Calculate nextRunDate based on schedule
+    // Use task's due date if available, otherwise use today in user's timezone
+    const baseDate = normalizedDueDate
+      ? dayjs.tz(normalizedDueDate, timezone).startOf("day")
+      : dayjs.tz(timezone).startOf("day");
+    
+    const nextRunDate = calculateNextRunDate(schedule, baseDate);
 
-//     // Update the task to reference the new recurring task
-//     await ctx.db.patch(taskId, {
-//       recurringTaskId,
-//       updated: Date.now(),
-//     });
+    // Create a new recurring task based on the current task
+    const recurringTaskId = await ctx.db.insert("recurringTasks", {
+      name: task.name,
+      schedule,
+      recurrenceType,
+      nextRunDate,
+      isActive: true,
+      updated: Date.now(),
+      userId: task.userId!,
+    });
 
-//     console.log(
-//       `Converted task "${task.name}" (${taskId}) to recurring task (${recurringTaskId})`
-//     );
+    // Update the task to reference the new recurring task
+    await ctx.db.patch(taskId, {
+      recurringTaskId,
+      updated: Date.now(),
+    });
 
-//     return { taskId, recurringTaskId };
-//   },
-// });
+    console.log(
+      `Converted task "${task.name}" (${taskId}) to recurring task (${recurringTaskId})`
+    );
+
+    return { taskId, recurringTaskId };
+  },
+});
 
 // ============================================================================
 // PROJECTS

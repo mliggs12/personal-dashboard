@@ -11,7 +11,6 @@ import {
 import {
   Calendar,
   CalendarCheck,
-  CalendarClock,
   CalendarDays,
   X,
 } from "lucide-react";
@@ -92,11 +91,6 @@ export const frequencies = [
     label: "Daily",
     value: "daily",
     icon: <CalendarCheck className="w-4 h-4 text-primary capitalize" />,
-  },
-  {
-    label: "3-Day",
-    value: "3-day",
-    icon: <CalendarClock className="w-4 h-4 text-primary capitalize" />,
   },
   {
     label: "Weekly",

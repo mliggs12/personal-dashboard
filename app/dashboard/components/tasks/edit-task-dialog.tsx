@@ -208,6 +208,35 @@ export default function EditTaskDialog({
     );
   };
 
+  // Helper function to convert frequency string to schedule object
+  const frequencyToSchedule = (frequency: string) => {
+    switch (frequency) {
+      case "daily":
+        return {
+          interval: {
+            amount: 1,
+            unit: "day" as const,
+          },
+        };
+      case "weekly":
+        return {
+          interval: {
+            amount: 1,
+            unit: "week" as const,
+          },
+        };
+      case "monthly":
+        return {
+          interval: {
+            amount: 1,
+            unit: "month" as const,
+          },
+        };
+      default:
+        throw new Error(`Invalid frequency: ${frequency}`);
+    }
+  };
+
   const handleFrequencyChange = async (frequency: string) => {
     try {
       // Case 1: User selected "none" - remove recurring
@@ -222,10 +251,13 @@ export default function EditTaskDialog({
       }
       // Case 2: User selected frequency but task is not recurring yet - convert to recurring
       else if (frequency !== "none" && !recurringTaskId) {
+        const schedule = frequencyToSchedule(frequency);
+        const recurrenceType = recurType === "onSchedule" ? "schedule" : "completion";
+        
         await convertTaskToRecurring({
           taskId: _id,
-          frequency: frequency as "daily" | "3-day" | "weekly" | "monthly",
-          type: recurType || "whenDone", // Default to whenDone if not set
+          schedule,
+          recurrenceType,
         });
         setRecurFrequency(
           frequencies.find((frequencyInfo) => frequencyInfo.value === frequency),
@@ -238,9 +270,11 @@ export default function EditTaskDialog({
       }
       // Case 3: User changed frequency on existing recurring task - update recurring task
       else if (frequency !== "none" && recurringTaskId) {
+        const schedule = frequencyToSchedule(frequency);
+        
         await updateRecurringTask({
           recurringTaskId: recurringTaskId as Id<"recurringTasks">,
-          frequency: frequency as "daily" | "3-day" | "weekly" | "monthly",
+          schedule,
         });
         setRecurFrequency(
           frequencies.find((frequencyInfo) => frequencyInfo.value === frequency),
