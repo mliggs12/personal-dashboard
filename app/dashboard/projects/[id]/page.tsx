@@ -14,7 +14,7 @@ export default function ProjectsPage() {
   const project = useQuery(api.projects.get, {
     projectId: id,
   });
-  const tasks = useQuery(api.tasks.getByProject, { projectId: id });
+  const tasks = useQuery(api.tasks.listByProject, { projectId: id as Id<"projects"> });
 
   if (project === undefined || tasks === undefined) {
     return <div className="animate-pulse">Loading...</div>;
