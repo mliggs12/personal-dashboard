@@ -24,14 +24,11 @@ import IntentionNotes from "../../components/intention-notes";
 import IntentionStatusSelect from "../../components/intention-status-select";
 import IntentionTitle from "../../components/intention-title";
 import StatementItem from "../../components/statement-item";
-import { AddTaskWrapper } from "../../components/tasks/add-task-button";
-import TaskList from "../../components/tasks/task-list";
 
 export default function IntentionPage() {
   const { id } = useParams<{ id: string }>();
   const intention = useQuery(api.intentions.get, { id: id as Id<"intentions"> });
   const emotions = useQuery(api.emotions.list);
-  const tasks = useQuery(api.tasks.getByIntention, { intentionId: id as Id<"intentions"> });
   const statements = useQuery(api.statements.byIntentionId, { intentionId: id as Id<"intentions"> });
   const beliefs = useQuery(api.beliefs.byIntention, { intentionId: id as Id<"intentions"> });
   const updateBelief = useMutation(api.beliefs.update);
@@ -39,7 +36,6 @@ export default function IntentionPage() {
   if (
     intention === undefined ||
     emotions === undefined ||
-    tasks === undefined ||
     statements === undefined ||
     beliefs === undefined
   ) {
@@ -164,13 +160,6 @@ export default function IntentionPage() {
                 <div className="space-y-4">
                   <h4 className="text-3xl">Notes</h4>
                   <IntentionNotes intention={intention} />
-                </div>
-                <div className="space-y-2">
-                  <h4 className="text-3xl">Tasks</h4>
-                  <div className="flex flex-col border-y-2">
-                    <TaskList items={tasks ?? []} />
-                  </div>
-                  <AddTaskWrapper intentionId={intention._id} />
                 </div>
               </div>
             </CardContent>
