@@ -64,7 +64,7 @@ export default function RecurringTasksTable({
               </div>
             </TableCell>
             <TableCell className="pl-2 pr-10 capitalize">
-              {task.status}
+              {task.isActive ? "Active" : "Inactive"}
             </TableCell>
             <TableCell className="pl-2 pr-10">
               {dayjs(task._creationTime).format("L")}
@@ -73,9 +73,13 @@ export default function RecurringTasksTable({
               {dayjs(task.updated).format("l LT")}
             </TableCell>
             <TableCell className="pl-2 pr-10 capitalize">
-              {task.frequency}
+              {task.schedule?.interval 
+                ? `${task.schedule.interval.amount} ${task.schedule.interval.unit}${task.schedule.interval.amount !== 1 ? 's' : ''}`
+                : "N/A"}
             </TableCell>
-            <TableCell className="pl-2 pr-10 capitalize">{task.type}</TableCell>
+            <TableCell className="pl-2 pr-10 capitalize">
+              {task.recurrenceType === "schedule" ? "On schedule" : "When done"}
+            </TableCell>
             <TableCell className="pl-2 pr-10 capitalize">
               {task.stats.count}
             </TableCell>

@@ -222,24 +222,25 @@ export default defineSchema({
 
   recurringTasks: defineTable({
     name: v.string(),
-    status: v.union(
-      v.literal("active"),
-      v.literal("paused"),
-      v.literal("archived"),
-    ),
-    frequency: v.union(
-      v.literal("daily"),
-      v.literal("3-day"),
-      v.literal("weekly"),
-      v.literal("monthly"),
-    ),
-    type: v.union(v.literal("onSchedule"), v.literal("whenDone")),
-    nextRunDate: v.optional(v.string()),
-    due: v.optional(v.string()),
-    notes: v.optional(v.string()),
+    schedule: v.optional(v.object({
+      interval: v.optional(v.object({
+        amount: v.number(),
+        unit: v.union(v.literal("day"), v.literal("week"), v.literal("month")),
+      })),
+      time: v.optional(v.string()),    // "06:00", local time
+      daysOfWeek: v.optional(v.array(v.number())),   // For weekly: 0-6 (Sunday-Saturday)
+      dayOfMonth: v.optional(v.number()),   // For monthly: 1-31
+    })),
+    recurrenceType: v.union(v.literal("schedule"), v.literal("completion")),
+    nextRunDate: v.string(), // YYYY-MM-DD format
+    isActive: v.boolean(),
     updated: v.number(),
     userId: v.id("users"),
-  }).index("by_user", ["userId"]),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_recurrenceType", ["userId", "recurrenceType"])
+    .index("by_user_nextRunDate", ["userId", "nextRunDate"])
+    .index("by_isActive_recurrenceType", ["isActive", "recurrenceType"]),
 
   sleepRecords: defineTable({
     sleepStart: v.number(),

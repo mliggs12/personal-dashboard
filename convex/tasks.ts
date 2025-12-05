@@ -5,6 +5,7 @@ import { Doc, Id } from "./_generated/dataModel";
 import { internalMutation, mutation, MutationCtx, query } from "./_generated/server";
 import { getDayBoundariesInTimezone, normalizeDateString } from "./lib/date.utils";
 import dayjs from "./lib/dayjs.config";
+import { createNextWhenDoneTask } from "./recurringTasksHelpers";
 import { getCurrentUserOrThrow, getUserTimezone, userByExternalId } from "./users";
 
 export const list = query({
@@ -83,50 +84,6 @@ export const create = mutation({
   },
 });
 
-// Create a task for a specific project
-export const createForProject = mutation({
-  args: {
-    name: v.string(),
-    projectId: v.id("projects"),
-    status: v.optional(
-      v.union(
-        v.literal("backlog"),
-        v.literal("todo"),
-        v.literal("in_progress"),
-        v.literal("done"),
-        v.literal("archived"),
-      ),
-    ),
-    priority: v.optional(
-      v.union(v.literal("low"), v.literal("normal"), v.literal("high")),
-    ),
-    notes: v.optional(v.string()),
-    due: v.optional(v.string()),
-    parentTaskId: v.optional(v.id("tasks")),
-    userId: v.optional(v.id("users")),
-  },
-  async handler(
-    ctx,
-    { name, status, priority, notes, due, projectId, parentTaskId, userId },
-  ) {
-    if (!userId) {
-      const user = await getCurrentUserOrThrow(ctx);
-      userId = user._id;
-    }
-
-    return await ctx.db.insert("tasks", {
-      name,
-      projectId,
-      status: status || "todo",
-      priority: priority || "normal",
-      notes: notes || "",
-      due,
-      parentTaskId,
-      updated: Date.now(),
-      userId: userId,
-    });
-  },
-});
 
 export const remove = mutation({
   args: { taskId: v.id("tasks") },
@@ -175,7 +132,7 @@ export const completeTask = mutation({
     // Handle "whenDone" recurring tasks - create next instance immediately
     if (task?.recurringTaskId) {
       const recurringTask = await ctx.db.get(task.recurringTaskId);
-      if (recurringTask?.type === "whenDone" && recurringTask.status === "active") {
+      if (recurringTask?.recurrenceType === "completion" && recurringTask.isActive) {
         await createNextWhenDoneTask(ctx, task, recurringTask);
       }
     }
@@ -194,31 +151,95 @@ export const unCompleteTask = mutation({
   },
 });
 
-export const getByIntention = query({
-  args: { intentionId: v.id("intentions") },
-  async handler(ctx, { intentionId }) {
+export const update = mutation({
+  args: {
+    taskId: v.id("tasks"),
+    name: v.optional(v.string()),
+    status: v.optional(
+      v.union(
+        v.literal("backlog"),
+        v.literal("todo"),
+        v.literal("in_progress"),
+        v.literal("done"),
+        v.literal("archived"),
+      ),
+    ),
+    priority: v.optional(
+      v.union(v.literal("low"), v.literal("normal"), v.literal("high")),
+    ),
+    notes: v.optional(v.string()),
+    due: v.optional(v.string()),
+    completed: v.optional(v.number()),
+    recurringTaskId: v.optional(v.id("recurringTasks")),
+    intentionId: v.optional(v.id("intentions")),
+    parentTaskId: v.optional(v.id("tasks")),
+    userId: v.optional(v.id("users")),
+  },
+  async handler(
+    ctx,
+    {
+      taskId,
+      name,
+      status,
+      priority,
+      notes,
+      due,
+      completed,
+      recurringTaskId,
+      intentionId,
+      parentTaskId,
+      userId,
+    },
+  ) {
+    const task = await ctx.db.get(taskId);
+    if (task === null) throw new Error("Could not find task");
+
+    const now = Date.now();
+    const wasNotDone = task.status !== "done";
+    const isNowDone = status === "done";
+
+    await ctx.db.patch(taskId, {
+      name: name !== undefined ? name : task.name,
+      status: status !== undefined ? status : task.status,
+      priority: priority !== undefined ? priority : task.priority,
+      notes: notes !== undefined ? notes : task.notes,
+      due: due !== undefined ? (due === "" ? undefined : due) : task.due,
+      completed: completed !== undefined ? completed : (isNowDone && wasNotDone ? now : task.completed),
+      recurringTaskId: recurringTaskId !== undefined ? recurringTaskId : task.recurringTaskId,
+      intentionId: intentionId !== undefined ? intentionId : task.intentionId,
+      parentTaskId: parentTaskId !== undefined ? parentTaskId : task.parentTaskId,
+      userId: userId !== undefined ? userId : task.userId,
+      updated: now,
+    });
+
+    // Handle "whenDone" recurring tasks - create next instance immediately
+    // Only trigger if transitioning from not-done to done (prevents duplicate calls)
+    if (wasNotDone && isNowDone && task.recurringTaskId) {
+      const recurringTask = await ctx.db.get(task.recurringTaskId);
+      if (recurringTask?.recurrenceType === "completion" && recurringTask.isActive) {
+        await createNextWhenDoneTask(ctx, task, recurringTask);
+      }
+    }
+  },
+});
+
+export const search = query({
+  args: { query: v.string() },
+  async handler(ctx, { query }) {
     const user = await getCurrentUserOrThrow(ctx);
 
     return await ctx.db
       .query("tasks")
-      .withIndex("by_user", (q) => q.eq("userId", user._id))
-      .filter((q) => q.eq(q.field("intentionId"), intentionId))
+      .withSearchIndex("search_name", (q) =>
+        q.search("name", query).eq("userId", user._id),
+      )
       .collect();
   },
 });
 
-export const getByProject = query({
-  args: { projectId: v.id("projects") },
-  async handler(ctx, { projectId }) {
-    const user = await getCurrentUserOrThrow(ctx);
-
-    return await ctx.db
-      .query("tasks")
-      .withIndex("by_user", (q) => q.eq("userId", user._id))
-      .filter((q) => q.eq(q.field("projectId"), projectId))
-      .collect();
-  },
-});
+// ============================================================================
+// TASKS CARD
+// ============================================================================
 
 export const todayTasks = query({
   args: { date: v.string() },
@@ -343,68 +364,103 @@ export const deadlineTasks = query({
   },
 });
 
-export const completedTasks = query({
-  async handler(ctx) {
-    const user = await getCurrentUserOrThrow(ctx);
+// ============================================================================
+// RECURRING TASKS
+// ============================================================================
 
-    return await ctx.db
-      .query("tasks")
-      .withIndex("by_user", (q) => q.eq("userId", user._id))
-      .filter((q) => q.neq(q.field("completed"), undefined))
-      .collect();
-  },
-});
+// export const removeRecurringFromTask = mutation({
+//   args: { taskId: v.id("tasks") },
+//   async handler(ctx, { taskId }) {
+//     const task = await ctx.db.get(taskId);
+//     if (task === null) throw new Error("Could not find task");
 
-export const completedTodayTasks = query({
-  async handler(ctx) {
-    const user = await getCurrentUserOrThrow(ctx);
-    const timezone = await getUserTimezone(ctx);
-    const { start: todayStart } = getDayBoundariesInTimezone(Date.now(), timezone);
+//     if (!task.recurringTaskId) {
+//       throw new Error("Task is not associated with a recurring task");
+//     }
 
-    return await ctx.db
-      .query("tasks")
-      .withIndex("by_user", (q) => q.eq("userId", user._id))
-      .filter((q) => q.gte(q.field("completed"), todayStart))
-      .collect();
-  },
-});
+//     const recurringTaskId = task.recurringTaskId;
 
-export const totalCompletedTodayTasks = query({
-  handler: async (ctx) => {
-    const user = await getCurrentUserOrThrow(ctx);
-    const timezone = await getUserTimezone(ctx);
-    const { start: todayStart, end: todayEnd } = getDayBoundariesInTimezone(Date.now(), timezone);
+//     // Remove the recurringTaskId association from this task
+//     await ctx.db.patch(taskId, {
+//       recurringTaskId: undefined,
+//       updated: Date.now(),
+//     });
 
-    const tasks = await ctx.db
-      .query("tasks")
-      .withIndex("by_user", (q) => q.eq("userId", user._id))
-      .filter((q) =>
-        q.and(
-          q.gte(q.field("completed"), todayStart),
-          q.lte(q.field("completed"), todayEnd),
-        ),
-      )
-      .collect();
-    return tasks.length || 0;
-  },
-});
+//     // Check if there are any other task instances still using this recurring task
+//     const remainingInstances = await ctx.db
+//       .query("tasks")
+//       .withIndex("by_recurringTaskId", (q) => q.eq("recurringTaskId", recurringTaskId))
+//       .collect();
 
-export const incompleteTasks = query({
-  async handler(ctx) {
-    const user = await getCurrentUserOrThrow(ctx);
+//     // If no other instances exist, delete the base recurring task
+//     if (remainingInstances.length === 0) {
+//       await ctx.db.delete(recurringTaskId);
+//       console.log(
+//         `Removed recurring association from task "${task.name}" (${taskId}) and deleted unused recurring task (${recurringTaskId})`
+//       );
+//     } else {
+//       console.log(
+//         `Removed recurring association from task "${task.name}" (${taskId}). Recurring task (${recurringTaskId}) kept active with ${remainingInstances.length} remaining instances.`
+//       );
+//     }
 
-    return await ctx.db
-      .query("tasks")
-      .withIndex("by_user", (q) => q.eq("userId", user._id))
-      .filter((q) => q.eq(q.field("completed"), undefined))
-      .collect();
-  },
-});
+//     return task;
+//   },
+// });
 
-export const update = mutation({
+// // Convert a regular task to a recurring task by creating a new recurring task
+// export const convertTaskToRecurring = mutation({
+//   args: {
+//     taskId: v.id("tasks"),
+//     frequency: v.union(
+//       v.literal("daily"),
+//       v.literal("3-day"),
+//       v.literal("weekly"),
+//       v.literal("monthly"),
+//     ),
+//     type: v.union(v.literal("onSchedule"), v.literal("whenDone")),
+//   },
+//   async handler(ctx, { taskId, frequency, type }) {
+//     const task = await ctx.db.get(taskId);
+//     if (task === null) throw new Error("Could not find task");
+
+//     // Normalize due date to YYYY-MM-DD format (handle legacy YYYY/MM/DD format)
+//     const normalizedNextRunDate = normalizeDateString(task.due) ?? dayjs().format("YYYY-MM-DD");
+
+//     // Create a new recurring task based on the current task
+//     const recurringTaskId = await ctx.db.insert("recurringTasks", {
+//       name: task.name,
+//       status: "active",
+//       nextRunDate: normalizedNextRunDate,
+//       notes: task.notes || "",
+//       updated: Date.now(),
+//       frequency,
+//       type,
+//       userId: task.userId!,
+//     });
+
+//     // Update the task to reference the new recurring task
+//     await ctx.db.patch(taskId, {
+//       recurringTaskId,
+//       updated: Date.now(),
+//     });
+
+//     console.log(
+//       `Converted task "${task.name}" (${taskId}) to recurring task (${recurringTaskId})`
+//     );
+
+//     return { taskId, recurringTaskId };
+//   },
+// });
+
+// ============================================================================
+// PROJECTS
+// ============================================================================
+
+export const createForProject = mutation({
   args: {
-    taskId: v.id("tasks"),
-    name: v.optional(v.string()),
+    name: v.string(),
+    projectId: v.id("projects"),
     status: v.optional(
       v.union(
         v.literal("backlog"),
@@ -419,712 +475,41 @@ export const update = mutation({
     ),
     notes: v.optional(v.string()),
     due: v.optional(v.string()),
-    completed: v.optional(v.number()),
-    recurringTaskId: v.optional(v.id("recurringTasks")),
-    intentionId: v.optional(v.id("intentions")),
     parentTaskId: v.optional(v.id("tasks")),
     userId: v.optional(v.id("users")),
   },
   async handler(
     ctx,
-    {
-      taskId,
-      name,
-      status,
-      priority,
-      notes,
-      due,
-      completed,
-      recurringTaskId,
-      intentionId,
-      parentTaskId,
-      userId,
-    },
+    { name, status, priority, notes, due, projectId, parentTaskId, userId },
   ) {
-    const task = await ctx.db.get(taskId);
-    if (task === null) throw new Error("Could not find task");
-
-    const now = Date.now();
-    const wasNotDone = task.status !== "done";
-    const isNowDone = status === "done";
-
-    await ctx.db.patch(taskId, {
-      name: name || task.name,
-      status: status || task.status,
-      priority: priority || task.priority,
-      notes: notes !== undefined ? notes : task.notes,
-      due: due !== undefined ? (due === "" ? undefined : due) : task.due,
-      completed: completed !== undefined ? completed : (isNowDone && wasNotDone ? now : task.completed),
-      recurringTaskId: recurringTaskId || task.recurringTaskId,
-      intentionId: intentionId || task.intentionId,
-      parentTaskId: parentTaskId || task.parentTaskId,
-      userId: userId || task.userId,
-      updated: now,
-    });
-
-    // Handle "whenDone" recurring tasks - create next instance immediately
-    if (wasNotDone && isNowDone && task.recurringTaskId) {
-      const recurringTask = await ctx.db.get(task.recurringTaskId);
-      if (recurringTask?.type === "whenDone" && recurringTask.status === "active") {
-        await createNextWhenDoneTask(ctx, task, recurringTask);
-      }
+    if (!userId) {
+      const user = await getCurrentUserOrThrow(ctx);
+      userId = user._id;
     }
-  },
-});
 
-export const createRecurringTask = mutation({
-  args: {
-    name: v.string(),
-    frequency: v.union(
-      v.literal("daily"),
-      v.literal("3-day"),
-      v.literal("weekly"),
-      v.literal("monthly"),
-    ),
-    type: v.union(v.literal("onSchedule"), v.literal("whenDone")),
-    notes: v.optional(v.string()),
-    userId: v.optional(v.string()),
-  },
-  async handler(ctx, { name, frequency, type, notes, userId }) {
-    let user;
-    if (userId) {
-      user = await userByExternalId(ctx, userId);
-    } else {
-      user = await getCurrentUserOrThrow(ctx);
-    }
-    
-    // Use the target user's timezone (not the current user's)
-    const timezone = user!.timezone ?? "America/Denver";
-    
-    const taskId = await ctx.db.insert("recurringTasks", {
+    return await ctx.db.insert("tasks", {
       name,
-      status: "active",
-      frequency,
-      type,
-      nextRunDate: calculateNextRunDate(frequency, dayjs().tz(timezone).startOf("day")),
+      projectId,
+      status: status || "todo",
+      priority: priority || "normal",
       notes: notes || "",
+      due,
+      parentTaskId,
       updated: Date.now(),
-      userId: user!._id,
+      userId: userId,
     });
-
-    return taskId;
   },
 });
 
-// TODO: Review this AI generated code and make sure it is correct.
-// Remove recurring association from a task and handle base recurring task cleanup
-export const removeRecurringFromTask = mutation({
-  args: { taskId: v.id("tasks") },
-  async handler(ctx, { taskId }) {
-    const task = await ctx.db.get(taskId);
-    if (task === null) throw new Error("Could not find task");
-
-    if (!task.recurringTaskId) {
-      throw new Error("Task is not associated with a recurring task");
-    }
-
-    const recurringTaskId = task.recurringTaskId;
-
-    // Remove the recurringTaskId association from this task
-    await ctx.db.patch(taskId, {
-      recurringTaskId: undefined,
-      updated: Date.now(),
-    });
-
-    // Check if there are any other task instances still using this recurring task
-    const remainingInstances = await ctx.db
-      .query("tasks")
-      .withIndex("by_recurringTaskId", (q) => q.eq("recurringTaskId", recurringTaskId))
-      .collect();
-
-    // If no other instances exist, delete the base recurring task
-    if (remainingInstances.length === 0) {
-      await ctx.db.delete(recurringTaskId);
-      console.log(
-        `Removed recurring association from task "${task.name}" (${taskId}) and deleted unused recurring task (${recurringTaskId})`
-      );
-    } else {
-      console.log(
-        `Removed recurring association from task "${task.name}" (${taskId}). Recurring task (${recurringTaskId}) kept active with ${remainingInstances.length} remaining instances.`
-      );
-    }
-
-    return task;
-  },
-});
-
-// Convert a regular task to a recurring task by creating a new recurring task
-export const convertTaskToRecurring = mutation({
-  args: {
-    taskId: v.id("tasks"),
-    frequency: v.union(
-      v.literal("daily"),
-      v.literal("3-day"),
-      v.literal("weekly"),
-      v.literal("monthly"),
-    ),
-    type: v.union(v.literal("onSchedule"), v.literal("whenDone")),
-  },
-  async handler(ctx, { taskId, frequency, type }) {
-    const task = await ctx.db.get(taskId);
-    if (task === null) throw new Error("Could not find task");
-
-    // Normalize due date to YYYY-MM-DD format (handle legacy YYYY/MM/DD format)
-    const normalizedNextRunDate = normalizeDateString(task.due) ?? dayjs().format("YYYY-MM-DD");
-
-    // Create a new recurring task based on the current task
-    const recurringTaskId = await ctx.db.insert("recurringTasks", {
-      name: task.name,
-      status: "active",
-      nextRunDate: normalizedNextRunDate,
-      notes: task.notes || "",
-      updated: Date.now(),
-      frequency,
-      type,
-      userId: task.userId!,
-    });
-
-    // Update the task to reference the new recurring task
-    await ctx.db.patch(taskId, {
-      recurringTaskId,
-      updated: Date.now(),
-    });
-
-    console.log(
-      `Converted task "${task.name}" (${taskId}) to recurring task (${recurringTaskId})`
-    );
-
-    return { taskId, recurringTaskId };
-  },
-});
-
-export const search = query({
-  args: { query: v.string() },
-  async handler(ctx, { query }) {
-    const user = await getCurrentUserOrThrow(ctx);
-
-    return await ctx.db
-      .query("tasks")
-      .withSearchIndex("search_name", (q) =>
-        q.search("name", query).eq("userId", user._id),
-      )
-      .collect();
-  },
-});
-
-export const getSubtasks = query({
-  args: { parentTaskId: v.id("tasks") },
-  async handler(ctx, { parentTaskId }) {
+export const listByProject = query({
+  args: { projectId: v.id("projects") },
+  async handler(ctx, { projectId }) {
     const user = await getCurrentUserOrThrow(ctx);
 
     return await ctx.db
       .query("tasks")
       .withIndex("by_user", (q) => q.eq("userId", user._id))
-      .filter((q) => q.eq(q.field("parentTaskId"), parentTaskId))
+      .filter((q) => q.eq(q.field("projectId"), projectId))
       .collect();
   },
 });
-
-export const getTasksWithSubtasks = query({
-  async handler(ctx) {
-    const user = await getCurrentUserOrThrow(ctx);
-
-    const allTasks = await ctx.db
-      .query("tasks")
-      .withIndex("by_user", (q) => q.eq("userId", user._id))
-      .filter((q) => q.eq(q.field("completed"), undefined))
-      .collect();
-
-    // Collect all unique recurring task IDs
-    const recurringTaskIds = new Set(
-      allTasks
-        .map((task) => task.recurringTaskId)
-        .filter((id): id is NonNullable<typeof id> => id !== undefined)
-    );
-
-    // Fetch all recurring tasks in batch
-    const recurringTasks = await Promise.all(
-      Array.from(recurringTaskIds).map((id) => ctx.db.get(id))
-    );
-
-    // Create lookup map: recurringTaskId -> _creationTime
-    const recurringTaskCreationTimeMap = new Map();
-    for (const recurringTask of recurringTasks) {
-      if (recurringTask) {
-        recurringTaskCreationTimeMap.set(recurringTask._id, recurringTask._creationTime);
-      }
-    }
-
-    // Helper function to enrich a task with parent creation time
-    const enrichTask = (task: Doc<"tasks">): Doc<"tasks"> => {
-      const enriched = { ...task };
-      if (task.recurringTaskId && recurringTaskCreationTimeMap.has(task.recurringTaskId)) {
-        enriched._creationTime = recurringTaskCreationTimeMap.get(task.recurringTaskId);
-      }
-      return enriched;
-    };
-
-    // Group tasks by parent-child relationships
-    const taskMap = new Map();
-    const rootTasks = [];
-
-    // First pass: create task map and identify root tasks
-    for (const task of allTasks) {
-      const enriched = enrichTask(task);
-      taskMap.set(task._id, { ...enriched, subtasks: [] });
-      if (!task.parentTaskId) {
-        rootTasks.push(task._id);
-      }
-    }
-
-    // Second pass: build hierarchy
-    for (const task of allTasks) {
-      if (task.parentTaskId && taskMap.has(task.parentTaskId)) {
-        taskMap.get(task.parentTaskId).subtasks.push(taskMap.get(task._id));
-      }
-    }
-
-    // Return only root tasks with their subtasks nested, all enriched
-    return rootTasks.map(id => enrichTask(taskMap.get(id))).filter(Boolean);
-  },
-});
-
-// ============================================================================
-// RECURRING TASKS HELPERS
-// ============================================================================
-
-/**
- * Gets the effective next run date from a recurring task.
- * Handles backward compatibility: uses nextRunDate if available, otherwise falls back to due.
- */
-function getNextRunDate(recurringTask: {
-  nextRunDate?: string;
-  due?: string;
-}): string | undefined {
-  return recurringTask.nextRunDate || recurringTask.due;
-}
-
-/**
- * Calculates the next run date based on frequency from a base date.
- */
-function calculateNextRunDate(
-  frequency: "daily" | "3-day" | "weekly" | "monthly",
-  baseDate: dayjs.Dayjs
-): string {
-  switch (frequency) {
-    case "daily":
-      return baseDate.add(1, "day").format("YYYY-MM-DD");
-    case "3-day":
-      return baseDate.add(3, "day").format("YYYY-MM-DD");
-    case "weekly":
-      return baseDate.add(1, "week").format("YYYY-MM-DD");
-    case "monthly":
-      return baseDate.add(1, "month").format("YYYY-MM-DD");
-    default:
-      throw new Error(`Invalid frequency: ${frequency}`);
-  }
-}
-
-/**
- * Determines if an "onSchedule" recurring task should generate a task today.
- * recurringTask.nextRunDate represents the NEXT run date that should be generated.
- * 
- * For onSchedule tasks, we generate based purely on schedule/frequency,
- * regardless of whether previous instances were completed.
- */
-function shouldGenerateTaskToday(
-  recurringTask: {
-    frequency: "daily" | "3-day" | "weekly" | "monthly";
-    nextRunDate: string;
-  },
-  today: dayjs.Dayjs,
-  timezone: string
-): boolean {
-  if (!recurringTask.nextRunDate) {
-    return false;
-  }
-  const nextRunDate = dayjs(recurringTask.nextRunDate).tz(timezone).startOf("day");
-  const todayStart = today.startOf("day");
-  
-  // Don't generate if today is before the next due date
-  if (todayStart.isBefore(nextRunDate)) {
-    return false;
-  }
-  
-  // For weekly/monthly, also require matching day/date pattern
-  // For daily/3-day: nextRunDate is already calculated correctly (1 day or 3 days out),
-  // so if today >= nextRunDate, generate (already checked above)
-  switch (recurringTask.frequency) {
-    case "daily":
-    case "3-day":
-      return true; // Generate if today >= nextRunDate (already checked above)
-    case "weekly":
-    case "monthly":
-      return todayStart.isSame(nextRunDate, "day");
-    default:
-      return false;
-  }
-}
-
-/**
- * Creates the next task instance for a "whenDone" recurring task.
- * Called immediately when a task is completed.
- */
-async function createNextWhenDoneTask(
-  ctx: MutationCtx,
-  completedTask: Doc<"tasks">,
-  recurringTask: Doc<"recurringTasks">
-): Promise<void> {
-  // Get the recurring task owner's timezone (not the current user's)
-  const user = await ctx.db.get(recurringTask.userId);
-  const timezone = user?.timezone ?? "America/Denver";
-  const today = dayjs().tz(timezone).startOf("day");
-  
-  // Calculate next due date based on frequency
-  let nextDueDate: string;
-  switch (recurringTask.frequency) {
-    case "daily":
-      nextDueDate = today.add(1, "day").format("YYYY-MM-DD");
-      break;
-    case "3-day":
-      nextDueDate = today.add(3, "day").format("YYYY-MM-DD");
-      break;
-    case "weekly":
-      nextDueDate = today.add(1, "week").format("YYYY-MM-DD");
-      break;
-    case "monthly":
-      nextDueDate = today.add(1, "month").format("YYYY-MM-DD");
-      break;
-    default:
-      throw new Error(`Invalid frequency: ${recurringTask.frequency}`);
-  }
-  
-  await ctx.db.insert("tasks", {
-    name: recurringTask.name,
-    status: "todo",
-    notes: completedTask.notes || "",
-    due: nextDueDate,
-    recurringTaskId: recurringTask._id,
-    userId: recurringTask.userId,
-  });
-  
-  await ctx.db.patch(recurringTask._id, {
-    nextRunDate: nextDueDate,
-    updated: Date.now(),
-  });
-}
-
-/**
- * Internal mutation: Generates recurring task instances for "onSchedule" type tasks.
- * Runs via cron job hourly, but only executes at 6am local time.
- * 
- * onSchedule tasks generate based purely on schedule/frequency, regardless of
- * whether previous instances were completed. Duplicate prevention ensures we
- * don't create multiple tasks with the same due date.
- */
-export const generateRecurringTaskInstances = internalMutation({
-  async handler(ctx) {
-    const recurringTasks = await ctx.db
-      .query("recurringTasks")
-      .filter((q) => 
-        q.and(
-          q.eq(q.field("status"), "active"),
-          q.eq(q.field("type"), "onSchedule")
-        )
-      )
-      .collect();
-
-    let generatedCount = 0;
-    const skippedByTimezone: Record<string, number> = {};
-
-    for (const recurringTask of recurringTasks) {
-      // Get user's timezone
-      const user = await ctx.db.get(recurringTask.userId);
-      if (!user) continue;
-      const timezone = user.timezone ?? "America/Denver";
-      
-      const localNow = dayjs().tz(timezone);
-      
-      // Only run at 6am local time for this user's timezone
-      if (localNow.hour() !== 6) {
-        skippedByTimezone[timezone] = (skippedByTimezone[timezone] || 0) + 1;
-        continue;
-      }
-      
-      const todayLocal = localNow.startOf("day");
-      
-      // Get effective next run date (handles backward compatibility with "due" field)
-      const effectiveNextRunDate = getNextRunDate(recurringTask);
-      if (!effectiveNextRunDate) {
-        continue;
-      }
-      
-      // Check if we should generate based on schedule
-      if (
-        !shouldGenerateTaskToday(
-          {
-            frequency: recurringTask.frequency,
-            nextRunDate: effectiveNextRunDate,
-          },
-          todayLocal,
-          timezone
-        )
-      ) {
-        continue;
-      }
-      
-      // Use the effective next run date as the task's due date
-      const taskDueDate = dayjs(effectiveNextRunDate).tz(timezone).startOf("day").format("YYYY-MM-DD");
-      
-      // Prevent duplicates: check if task already exists with this due date
-      const existingTask = await ctx.db
-        .query("tasks")
-        .withIndex("by_recurringTaskId", (q) =>
-          q.eq("recurringTaskId", recurringTask._id)
-        )
-        .filter((q) => q.eq(q.field("due"), taskDueDate))
-        .first();
-      
-      if (existingTask) {
-        continue;
-      }
-      
-      
-      
-      // Create the new task instance
-      await ctx.db.insert("tasks", {
-        name: recurringTask.name,
-        status: "todo",
-        notes: recurringTask.notes || "",
-        due: taskDueDate,
-        recurringTaskId: recurringTask._id,
-        userId: recurringTask.userId,
-      });
-      
-      // Update recurring task's next run date
-      // Always update to nextRunDate (migrates old tasks from "due" to "nextRunDate")
-      const nextRunDate = calculateNextRunDate(
-        recurringTask.frequency,
-        dayjs(taskDueDate).tz(timezone)
-      );
-      await ctx.db.patch(recurringTask._id, {
-        nextRunDate: nextRunDate,
-        updated: Date.now(),
-      });
-      
-      generatedCount++;
-    }
-
-    console.log(
-      `Generated ${generatedCount} recurring task instances. Skipped by timezone: ${JSON.stringify(skippedByTimezone)}`
-    );
-    return { generatedCount, skipped: false };
-  },
-});
-
-/**
- * Test mutation: Manually trigger recurring task generation for "onSchedule" tasks.
- * Bypasses the 6am time check for testing purposes.
- * 
- * Usage: Call this mutation from Convex Dashboard or your UI to test task generation.
- * 
- * Example:
- * - Create a recurring task with type "onSchedule", frequency "daily", nextRunDate set to yesterday
- * - Call this mutation
- * - Check that a new task was created with today's date
- * - Verify the recurring task's nextRunDate was updated to tomorrow
- */
-export const testGenerateRecurringTasks = mutation({
-  args: {},
-  async handler(ctx) {
-    const timezone = await getUserTimezone(ctx);
-    const localNow = dayjs().tz(timezone);
-    const todayLocal = localNow.startOf("day");
-    const todayStr = todayLocal.format("YYYY-MM-DD");
-    
-    const recurringTasks = await ctx.db
-      .query("recurringTasks")
-      .filter((q) => 
-        q.and(
-          q.eq(q.field("status"), "active"),
-          q.eq(q.field("type"), "onSchedule")
-        )
-      )
-      .collect();
-
-    const results: Array<{
-      name: string;
-      nextRunDate: string;
-      shouldGenerate: boolean;
-      taskCreated: boolean;
-      taskDueDate?: string;
-      reason?: string;
-    }> = [];
-
-    let generatedCount = 0;
-
-    for (const recurringTask of recurringTasks) {
-      // Get user's timezone for this recurring task
-      const user = await ctx.db.get(recurringTask.userId);
-      const taskTimezone = user?.timezone ?? "America/Denver";
-      const taskToday = dayjs().tz(taskTimezone).startOf("day");
-      
-      // Get effective next run date (handles backward compatibility with "due" field)
-      const effectiveNextRunDate = getNextRunDate(recurringTask);
-      if (!effectiveNextRunDate) {
-        results.push({
-          name: recurringTask.name,
-          nextRunDate: recurringTask.nextRunDate || recurringTask.due || "N/A",
-          shouldGenerate: false,
-          taskCreated: false,
-          reason: "No nextRunDate or due date found",
-        });
-        continue;
-      }
-      
-      const shouldGenerate = shouldGenerateTaskToday(
-        {
-          frequency: recurringTask.frequency,
-          nextRunDate: effectiveNextRunDate,
-        },
-        taskToday,
-        taskTimezone
-      );
-      
-      if (!shouldGenerate) {
-        const nextRunDate = dayjs(effectiveNextRunDate).tz(taskTimezone).startOf("day");
-        const reason = taskToday.isBefore(nextRunDate)
-          ? `Today (${taskToday.format("YYYY-MM-DD")}) is before nextRunDate (${effectiveNextRunDate})`
-          : recurringTask.frequency === "weekly"
-          ? `Day of week mismatch: today is ${taskToday.day()}, nextRunDate is ${nextRunDate.day()}`
-          : recurringTask.frequency === "monthly"
-          ? `Day of month mismatch: today is ${taskToday.date()}, nextRunDate is ${nextRunDate.date()}`
-          : "Unknown reason";
-        
-        results.push({
-          name: recurringTask.name,
-          nextRunDate: effectiveNextRunDate,
-          shouldGenerate: false,
-          taskCreated: false,
-          reason,
-        });
-        continue;
-      }
-      
-      // Use the effective next run date as the task's due date
-      const taskDueDate = dayjs(effectiveNextRunDate).tz(taskTimezone).startOf("day").format("YYYY-MM-DD");
-      
-      // Prevent duplicates: check if task already exists with this due date
-      const existingTask = await ctx.db
-        .query("tasks")
-        .withIndex("by_recurringTaskId", (q) =>
-          q.eq("recurringTaskId", recurringTask._id)
-        )
-        .filter((q) => q.eq(q.field("due"), taskDueDate))
-        .first();
-      
-      if (existingTask) {
-        results.push({
-          name: recurringTask.name,
-          nextRunDate: effectiveNextRunDate,
-          shouldGenerate: true,
-          taskCreated: false,
-          taskDueDate,
-          reason: `Task already exists with due date ${taskDueDate}`,
-        });
-        continue;
-      }
-      
-      // Create the new task instance
-      await ctx.db.insert("tasks", {
-        name: recurringTask.name,
-        status: "todo",
-        notes: recurringTask.notes || "",
-        due: taskDueDate,
-        recurringTaskId: recurringTask._id,
-        userId: recurringTask.userId,
-      });
-      
-      // Update recurring task's next run date
-      // Always update to nextRunDate (migrates old tasks from "due" to "nextRunDate")
-      const nextRunDate = calculateNextRunDate(
-        recurringTask.frequency,
-        dayjs(taskDueDate).tz(taskTimezone)
-      );
-      await ctx.db.patch(recurringTask._id, {
-        nextRunDate: nextRunDate,
-        updated: Date.now(),
-      });
-      
-      generatedCount++;
-      results.push({
-        name: recurringTask.name,
-        nextRunDate: effectiveNextRunDate,
-        shouldGenerate: true,
-        taskCreated: true,
-        taskDueDate,
-      });
-    }
-
-    console.log(
-      `Test: Generated ${generatedCount} recurring task instances at ${localNow.format("YYYY-MM-DD HH:mm:ss z")}`
-    );
-    
-    return {
-      today: todayStr,
-      generatedCount,
-      totalRecurringTasks: recurringTasks.length,
-      results,
-    };
-  },
-});
-
-// Cleanup function to remove orphaned recurring tasks that have no associated task instances
-// This is useful for cleaning up recurring tasks that existed before the deletion cleanup logic was implemented
-export const cleanupOrphanedRecurringTasks = mutation({
-  args: {},
-  async handler(ctx) {
-    // Get all recurring tasks
-    const allRecurringTasks = await ctx.db
-      .query("recurringTasks")
-      .collect();
-
-    const orphanedTasks: Array<{ id: Id<"recurringTasks">; name: string }> = [];
-    let deletedCount = 0;
-
-    // Check each recurring task for orphaned status
-    for (const recurringTask of allRecurringTasks) {
-      // Check if there are any task instances still using this recurring task
-      const taskInstances = await ctx.db
-        .query("tasks")
-        .withIndex("by_recurringTaskId", (q) =>
-          q.eq("recurringTaskId", recurringTask._id)
-        )
-        .collect();
-
-      // If no instances exist, this recurring task is orphaned
-      if (taskInstances.length === 0) {
-        orphanedTasks.push({
-          id: recurringTask._id,
-          name: recurringTask.name,
-        });
-        await ctx.db.delete(recurringTask._id);
-        deletedCount++;
-        console.log(
-          `Deleted orphaned recurring task "${recurringTask.name}" (${recurringTask._id}) - no associated task instances found`
-        );
-      }
-    }
-
-    console.log(
-      `Cleanup complete: Found ${allRecurringTasks.length} recurring tasks, deleted ${deletedCount} orphaned task(s)`
-    );
-
-    return {
-      totalRecurringTasks: allRecurringTasks.length,
-      orphanedCount: deletedCount,
-      orphanedTasks,
-    };
-  },
-});
-

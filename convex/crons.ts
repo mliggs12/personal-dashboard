@@ -20,8 +20,7 @@ crons.hourly(
 crons.hourly(
   "generate recurring task instances",
   { minuteUTC: 0 },
-  internal.tasks.generateRecurringTaskInstances
+  internal.recurringTasksHelpers.generateRecurringTasks
 );
 
 export default crons;
-

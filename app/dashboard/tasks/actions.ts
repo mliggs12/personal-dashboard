@@ -38,9 +38,16 @@ export async function createTask(
 
 export async function createRecurringTask(
   name: string,
-  frequency: string,
-  type: string,
-  notes?: string,
+  schedule: {
+    interval: {
+      amount: number;
+      unit: "day" | "week" | "month";
+    };
+    time?: string;
+    daysOfWeek?: number[];
+    dayOfMonth?: number;
+  },
+  recurrenceType: "schedule" | "completion",
 ) {
   const { userId } = await auth();
   if (!userId) {
@@ -49,16 +56,11 @@ export async function createRecurringTask(
     );
   }
 
-  const recurringTaskId = await fetchMutation(api.tasks.createRecurringTask, {
+  const recurringTaskId = await fetchMutation(api.recurringTasks.create, {
     name,
-    frequency: frequency as
-      | "daily"
-      | "3-day"
-      | "weekly"
-      | "monthly",
-    type: type as "onSchedule" | "whenDone",
-    notes,
-    userId: userId,
+    schedule,
+    recurrenceType,
+    userId,
   });
 
   return recurringTaskId;

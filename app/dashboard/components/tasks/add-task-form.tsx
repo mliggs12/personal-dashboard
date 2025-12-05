@@ -48,9 +48,9 @@ const formSchema = z
     notes: z.string().optional(),
     due: z.date().optional(),
     frequency: z
-      .enum(["daily", "3-day", "weekly", "monthly"])
+      .enum(["daily", "weekly", "monthly"])
       .optional(),
-    type: z.enum(["onSchedule", "whenDone"]).optional(),
+    recurrenceType: z.enum(["schedule", "completion"]).optional(),
   })
   .refine(
     (data) => {
@@ -89,28 +89,29 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
   const handleSetRecurring = () => {
     if (!showRecurring) {
       form.setValue("frequency", "daily");
-      form.setValue("type", "whenDone");
+      form.setValue("recurrenceType", "completion");
       if (!form.getValues("due")) {
         form.setValue("due", new Date());
       }
     } else {
       form.setValue("frequency", undefined);
-      form.setValue("type", undefined);
+      form.setValue("recurrenceType", undefined);
     }
     setShowRecurring(!showRecurring);
   };
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
-    const { name, status, priority, notes, due, frequency, type } = data;
+    const { name, status, priority, notes, due, frequency, recurrenceType } = data;
 
     const dueDate = dayjs(due).format("YYYY-MM-DD");
 
-    if (frequency && due && type) {
+    if (frequency && due && recurrenceType) {
+      const unit = (frequency === "daily" ? "day" : frequency === "weekly" ? "week" : "month") as "day" | "week" | "month";
+
       const recurringTaskId = await createRecurringTask(
         name,
-        frequency,
-        type,
-        notes,
+        { interval: { amount: 1, unit } },
+        recurrenceType,
       );
 
       await createTask({
@@ -121,6 +122,7 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
           | "todo"
           | "in_progress"
           | "archived",
+        priority: priority as "low" | "normal" | "high",
         notes,
         due: dueDate,
         recurringTaskId,
@@ -327,7 +329,6 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="daily">Daily</SelectItem>
-                          <SelectItem value="3-day">3-Day</SelectItem>
                           <SelectItem value="weekly">Weekly</SelectItem>
                           <SelectItem value="monthly">Monthly</SelectItem>
                         </SelectContent>
@@ -337,7 +338,7 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
                 />
                 <FormField
                   control={form.control}
-                  name="type"
+                  name="recurrenceType"
                   render={({ field }) => (
                     <FormItem>
                       <Select
@@ -346,13 +347,13 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
                       >
                         <FormControl>
                           <SelectTrigger className="gap-2">
-                            <SelectValue placeholder="Select type" />
+                            <SelectValue placeholder="Select recurrence type" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="whenDone">When done</SelectItem>
-                          <SelectItem value="onSchedule">
-                            On schedule
+                          <SelectItem value="completion">When task is completed</SelectItem>
+                          <SelectItem value="schedule">
+                            On schedule (daily, weekly, monthly)
                           </SelectItem>
                         </SelectContent>
                       </Select>

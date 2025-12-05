@@ -33,6 +33,7 @@ import type * as messages from "../messages.js";
 import type * as notes from "../notes.js";
 import type * as projects from "../projects.js";
 import type * as recurringTasks from "../recurringTasks.js";
+import type * as recurringTasksHelpers from "../recurringTasksHelpers.js";
 import type * as schedules from "../schedules.js";
 import type * as scratchPads from "../scratchPads.js";
 import type * as sessions from "../sessions.js";
@@ -75,6 +76,7 @@ declare const fullApi: ApiFromModules<{
   notes: typeof notes;
   projects: typeof projects;
   recurringTasks: typeof recurringTasks;
+  recurringTasksHelpers: typeof recurringTasksHelpers;
   schedules: typeof schedules;
   scratchPads: typeof scratchPads;
   sessions: typeof sessions;

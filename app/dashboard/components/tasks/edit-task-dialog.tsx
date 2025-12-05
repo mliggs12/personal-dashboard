@@ -76,14 +76,30 @@ export default function EditTaskDialog({
 
   useEffect(() => {
     if (recurringTask) {
-      // eslint-disable-next-line
-      setRecurFrequency(
-        frequencies.find(
-          (frequencyInfo) => frequencyInfo.value === recurringTask.frequency,
-        ),
-      );
+      // Derive frequency from schedule.interval
+      if (recurringTask.schedule?.interval) {
+        const unit = recurringTask.schedule.interval.unit;
+        const amount = recurringTask.schedule.interval.amount;
+        let frequencyValue: string;
+        if (unit === "day" && amount === 1) {
+          frequencyValue = "daily";
+        } else if (unit === "week" && amount === 1) {
+          frequencyValue = "weekly";
+        } else if (unit === "month" && amount === 1) {
+          frequencyValue = "monthly";
+        } else {
+          frequencyValue = "none"; // Custom intervals not supported in UI yet
+        }
+        
+        // eslint-disable-next-line
+        setRecurFrequency(
+          frequencies.find(
+            (frequencyInfo) => frequencyInfo.value === frequencyValue,
+          ),
+        );
+      }
        
-      setRecurType(recurringTask.type);
+      setRecurType(recurringTask.recurrenceType === "schedule" ? "onSchedule" : "whenDone");
     }
   }, [recurringTask]);
 
@@ -258,7 +274,7 @@ export default function EditTaskDialog({
     try {
       await updateRecurringTask({
         recurringTaskId: recurringTaskId as Id<"recurringTasks">,
-        type: type as "onSchedule" | "whenDone",
+        recurrenceType: type === "onSchedule" ? "schedule" : "completion",
       });
       setRecurType(type);
       toast({
