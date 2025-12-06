@@ -1,7 +1,7 @@
 import { Dayjs } from "dayjs";
 
 import { Doc } from "./_generated/dataModel";
-import { internalMutation, mutation, MutationCtx } from "./_generated/server";
+import { internalMutation, MutationCtx } from "./_generated/server";
 import dayjs from "./lib/dayjs.config";
 
 export function calculateNextRunDate(
@@ -322,7 +322,7 @@ export function checkIfShouldGenerate(
    * Test mutation: Dry run mode that shows what would happen without making changes.
    * Can be called manually to test the logic at any time, regardless of current time.
    */
-  export const testGenerateRecurringTasks = mutation({
+  export const testGenerateRecurringTasks = internalMutation({
     async handler(ctx) {
       return await generateRecurringTasksCore(ctx, true, true);
     },
