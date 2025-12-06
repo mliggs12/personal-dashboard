@@ -226,11 +226,6 @@ export function checkIfShouldGenerate(
         const schedule = recurringTask.schedule!;
         const interval = schedule.interval!;
         
-        console.log(`[generateRecurringTasks] Checking task: "${recurringTask.name}"`);
-        console.log(`  User timezone: ${timezone}`);
-        console.log(`  Current date (user timezone): ${todayLocal.format("YYYY-MM-DD")}`);
-        console.log(`  Stored nextRunDate: ${recurringTask.nextRunDate}`);
-        
         // Check if we should generate based on schedule
         const shouldGenerate = checkIfShouldGenerate(
           {
@@ -245,8 +240,6 @@ export function checkIfShouldGenerate(
           todayLocal,
           timezone
         );
-        
-        console.log(`  Result: ${shouldGenerate ? "✅ GENERATE" : "❌ SKIP"} (${shouldGenerate ? "should generate" : "should not generate"})`);
         
         if (!shouldGenerate) {
           continue;
@@ -264,22 +257,10 @@ export function checkIfShouldGenerate(
           .first();
         
         if (existingTask) {
-          console.log(`  ⚠️  SKIP: Task with due date ${taskDueDate} already exists`);
           continue;
         }
         
         if (dryRun) {
-          console.log(`  [DRY RUN] Would create task with due date: ${taskDueDate}`);
-          const nextRunDate = calculateNextRunDate(
-            {
-              interval: interval,
-              time: schedule.time,
-              daysOfWeek: schedule.daysOfWeek,
-              dayOfMonth: schedule.dayOfMonth,
-            },
-            todayLocal
-          );
-          console.log(`  [DRY RUN] Would update nextRunDate to: ${nextRunDate}`);
           generatedCount++;
           continue;
         }
@@ -318,6 +299,8 @@ export function checkIfShouldGenerate(
       }
     }
 
+    console.log(`[generateRecurringTasks] Completed: ${generatedCount} generated, ${errorCount} errors${dryRun ? " (DRY RUN - no changes made)" : ""}`);
+    
     return { generatedCount, errorCount, skipped: false };
   }
 
