@@ -454,8 +454,8 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
                   form.setValue("frequency", data.frequency);
                   form.setValue("recurrenceType", data.recurrenceType);
                   form.setValue("customInterval", data.customInterval);
-                  // If completion type is selected and due date is not set, set it to today
-                  if (data.recurrenceType === "completion" && !form.getValues("due")) {
+                  // Set due date to today if not already set when any recurrence option is selected
+                  if (!form.getValues("due")) {
                     form.setValue("due", new Date());
                   }
                 }
