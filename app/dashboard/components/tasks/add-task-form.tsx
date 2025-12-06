@@ -421,7 +421,6 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
               )}
               onClick={() => {
                 setIsRecurDialogOpen(true);
-                // Don't automatically set due date - let user choose
               }}
             >
               <div className="flex items-center gap-2">
@@ -454,12 +453,11 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
                 } else {
                   form.setValue("frequency", data.frequency);
                   form.setValue("recurrenceType", data.recurrenceType);
-                  if (data.customInterval) {
-                    form.setValue("customInterval", data.customInterval);
-                  } else {
-                    form.setValue("customInterval", undefined);
+                  form.setValue("customInterval", data.customInterval);
+                  // If completion type is selected and due date is not set, set it to today
+                  if (data.recurrenceType === "completion" && !form.getValues("due")) {
+                    form.setValue("due", new Date());
                   }
-                  // Don't automatically set due date - let user choose
                 }
               }}
               initialData={{
