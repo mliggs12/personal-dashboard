@@ -30,32 +30,14 @@ const eslintConfig = [
       },
     },
     rules: {
-      // Simple import sort rules
-      'simple-import-sort/imports': [
-        'error',
-        {
-          groups: [
-            // Side effect imports
-            ['^\\u0000'],
-            // React and Next.js imports first
-            ['^react$', '^next', '^@?\\w'],
-            // Internal imports (your project files)
-            ['^@/', '^~/'],
-            // Parent imports
-            ['^\\.\\.(?!/?$)', '^\\.\\./?$'],
-            // Same folder imports
-            ['^\\./(?=.*/)(?!/?$)', '^\\.(?!/?$)', '^\\./?$'],
-            // Style imports (CSS modules, regular CSS)
-            ['^.+\\.module\\.(css|scss|sass)$', '^.+\\.(css|scss|sass)$'],
-          ],
-        },
-      ],
-      'simple-import-sort/exports': 'error',
-      
-      // Additional import rules
-      'import/first': 'error',
-      'import/newline-after-import': 'error',
-      'import/no-duplicates': 'error',
+      // Simple import sort rules - disabled to allow flexible import ordering
+      'simple-import-sort/imports': 'off',
+      'simple-import-sort/exports': 'off',
+
+      // Additional import rules - disabled to allow flexible import ordering
+      'import/first': 'off',
+      'import/newline-after-import': 'off',
+      'import/no-duplicates': 'error', // Keep this one as it prevents actual duplicates
     },
   },
 ]
