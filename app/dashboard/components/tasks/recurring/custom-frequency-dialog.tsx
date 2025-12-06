@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Check, X, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -63,43 +63,58 @@ export function CustomFrequencyDialog({
   initialData,
 }: CustomFrequencyDialogProps) {
   const isMobile = useIsMobile();
+  
+  // Compute initial values based on initialData
+  const initialValues = useMemo(() => {
+    if (initialData?.interval) {
+      const days = initialData.daysOfWeek || [];
+      const recurrenceType = initialData.recurrenceType || "schedule";
+      // Ensure at least one day is selected for weekly with schedule type
+      const selectedDays = 
+        initialData.interval.unit === "week" && 
+        recurrenceType === "schedule" && 
+        days.length === 0
+          ? [1] // Default to Monday if no days selected
+          : days;
+      
+      return {
+        recurrenceType,
+        amount: initialData.interval.amount,
+        unit: initialData.interval.unit,
+        selectedDays,
+      };
+    }
+    
+    // Default values when opening fresh
+    return {
+      recurrenceType: "schedule" as const,
+      amount: 1,
+      unit: "week" as const,
+      selectedDays: [1],
+    };
+  }, [initialData]);
+
   const [recurrenceType, setRecurrenceType] = useState<"schedule" | "completion">(
-    initialData?.recurrenceType || "schedule"
+    initialValues.recurrenceType
   );
-  const [amount, setAmount] = useState(initialData?.interval?.amount || 1);
+  const [amount, setAmount] = useState(initialValues.amount);
   const [unit, setUnit] = useState<"day" | "week" | "month" | "year">(
-    initialData?.interval?.unit || "week"
+    initialValues.unit
   );
   const [selectedDays, setSelectedDays] = useState<number[]>(
-    initialData?.daysOfWeek || []
+    initialValues.selectedDays
   );
   const [isHelpDialogOpen, setIsHelpDialogOpen] = useState(false);
 
+  // Reset state when dialog opens with new initialData
   useEffect(() => {
     if (open) {
-      if (initialData?.interval) {
-        // If initialData has interval data, use it (custom is already set)
-        setRecurrenceType(initialData.recurrenceType || "schedule");
-        setAmount(initialData.interval.amount);
-        setUnit(initialData.interval.unit);
-        // Ensure at least one day is selected for weekly with schedule type
-        const days = initialData.daysOfWeek || [];
-        if (initialData.interval.unit === "week" && (initialData.recurrenceType || "schedule") === "schedule" && days.length === 0) {
-          setSelectedDays([1]); // Default to Monday if no days selected
-        } else {
-          setSelectedDays(days);
-        }
-      } else {
-        // When opening fresh (no existing custom interval), always default to "By Schedule Dates" (schedule)
-        // Ignore initialData.recurrenceType to ensure "schedule" is always the default
-        setRecurrenceType("schedule");
-        setAmount(1);
-        setUnit("week");
-        // Default to Monday (value 1) when opening with weekly
-        setSelectedDays([1]);
-      }
+      setRecurrenceType(initialValues.recurrenceType);
+      setAmount(initialValues.amount);
+      setUnit(initialValues.unit);
+      setSelectedDays(initialValues.selectedDays);
     }
-  }, [open, initialData]);
+  }, [open, initialValues]);
 
   const handleSave = () => {
     const data: {

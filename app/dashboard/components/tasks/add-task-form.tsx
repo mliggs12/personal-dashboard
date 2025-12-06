@@ -2,8 +2,8 @@ import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "convex/react";
 import dayjs from "dayjs";
-import { CalendarIcon, Text } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { CalendarIcon, RotateCcw, Text, X } from "lucide-react";
+import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
 import { priorities, statuses } from "@/app/dashboard/tasks/data/data";
@@ -36,8 +36,7 @@ import { cn } from "@/lib/utils";
 
 import { createRecurringTask } from "../../tasks/actions";
 import { RecurDialog } from "./recurring/recur-dialog";
-import { RotateCcw, X } from "lucide-react";
-import { DAYS_OF_WEEK, formatDaysOfWeek, getCurrentDayOfWeek, getCurrentDayName } from "./recurring/recurrence-utils";
+import { formatDaysOfWeek, getCurrentDayName } from "./recurring/recurrence-utils";
 
 const formSchema = z
   .object({
@@ -98,9 +97,9 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
   });
 
   // Watch frequency and customInterval to update display reactively
-  const frequency = form.watch("frequency");
-  const customInterval = form.watch("customInterval");
-  const recurrenceType = form.watch("recurrenceType");
+  const frequency = useWatch({ control: form.control, name: "frequency" });
+  const customInterval = useWatch({ control: form.control, name: "customInterval" });
+  const recurrenceType = useWatch({ control: form.control, name: "recurrenceType" });
 
   const handleClearRecur = (e: React.MouseEvent) => {
     e.stopPropagation();

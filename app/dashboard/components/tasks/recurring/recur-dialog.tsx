@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Check, X } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/dialog";
 import {
   Drawer,
-  DrawerClose,
   DrawerContent,
   DrawerFooter,
   DrawerHeader,
@@ -20,16 +19,8 @@ import {
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { CustomFrequencyDialog } from "./custom-frequency-dialog";
-import { DAYS_OF_WEEK, formatDaysOfWeek, getCurrentDayOfWeek, getCurrentDayName } from "./recurrence-utils";
+import { formatDaysOfWeek, getCurrentDayOfWeek, getCurrentDayName } from "./recurrence-utils";
 
 interface RecurDialogProps {
   open: boolean;
@@ -61,11 +52,28 @@ export function RecurDialog({
   initialData,
 }: RecurDialogProps) {
   const isMobile = useIsMobile();
+  
+  // Compute initial values based on initialData
+  const initialValues = useMemo(() => {
+    if (initialData) {
+      return {
+        frequency: initialData.frequency || "none" as const,
+        recurrenceType: initialData.recurrenceType || "completion" as const,
+        customInterval: initialData.customInterval,
+      };
+    }
+    return {
+      frequency: "none" as const,
+      recurrenceType: "completion" as const,
+      customInterval: undefined as undefined,
+    };
+  }, [initialData]);
+
   const [frequency, setFrequency] = useState<"none" | "daily" | "weekly" | "monthly" | "yearly" | "weekday" | "custom">(
-    initialData?.frequency || "none"
+    initialValues.frequency
   );
   const [recurrenceType, setRecurrenceType] = useState<"schedule" | "completion">(
-    initialData?.recurrenceType || "completion"
+    initialValues.recurrenceType
   );
   const [customInterval, setCustomInterval] = useState<
     | {
@@ -74,22 +82,17 @@ export function RecurDialog({
         daysOfWeek?: number[];
       }
     | undefined
-  >(initialData?.customInterval);
+  >(initialValues.customInterval);
   const [isCustomDialogOpen, setIsCustomDialogOpen] = useState(false);
 
+  // Reset state when dialog opens with new initialData
   useEffect(() => {
     if (open) {
-      if (initialData) {
-        setFrequency(initialData.frequency || "none");
-        setRecurrenceType(initialData.recurrenceType || "completion");
-        setCustomInterval(initialData.customInterval);
-      } else {
-        setFrequency("none");
-        setRecurrenceType("completion");
-        setCustomInterval(undefined);
-      }
+      setFrequency(initialValues.frequency);
+      setRecurrenceType(initialValues.recurrenceType);
+      setCustomInterval(initialValues.customInterval);
     }
-  }, [open, initialData]);
+  }, [open, initialValues]);
 
   const handleOptionClick = (value: "none" | "daily" | "weekly" | "monthly" | "yearly" | "weekday" | "custom") => {
     if (value === "custom") {
