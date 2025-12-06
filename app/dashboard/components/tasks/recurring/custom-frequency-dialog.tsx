@@ -25,7 +25,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import { DAYS_OF_WEEK_OBJECTS } from "./recurrence-utils";
+import { DAYS_OF_WEEK_OBJECTS, calculateNextWeeklyOccurrence, getDayOfWeekFromDate } from "./recurrence-utils";
 import { RecurTypeHelpDialog } from "./recur-type-help-dialog";
 
 interface CustomFrequencyDialogProps {
@@ -47,6 +47,8 @@ interface CustomFrequencyDialogProps {
     };
     daysOfWeek?: number[];
   };
+  currentDueDate?: Date | undefined;
+  onSetDueDate?: (date: Date) => void;
 }
 
 const UNITS = [
@@ -61,8 +63,15 @@ export function CustomFrequencyDialog({
   onOpenChange,
   onSave,
   initialData,
+  currentDueDate,
+  onSetDueDate,
 }: CustomFrequencyDialogProps) {
   const isMobile = useIsMobile();
+  
+  // Helper to get reference date (due date or today)
+  const getReferenceDate = () => {
+    return currentDueDate || new Date();
+  };
   
   // Compute initial values based on initialData
   const initialValues = useMemo(() => {
@@ -70,11 +79,12 @@ export function CustomFrequencyDialog({
       const days = initialData.daysOfWeek || [];
       const recurrenceType = initialData.recurrenceType || "schedule";
       // Ensure at least one day is selected for weekly with schedule type
+      // Use due date's day or today if no days selected
       const selectedDays = 
         initialData.interval.unit === "week" && 
         recurrenceType === "schedule" && 
         days.length === 0
-          ? [1] // Default to Monday if no days selected
+          ? [getDayOfWeekFromDate(getReferenceDate())] // Default to due date's day or today
           : days;
       
       return {
@@ -85,14 +95,15 @@ export function CustomFrequencyDialog({
       };
     }
     
-    // Default values when opening fresh
+    // Default values when opening fresh - use due date's day or today
+    const refDate = getReferenceDate();
     return {
       recurrenceType: "schedule" as const,
       amount: 1,
       unit: "week" as const,
-      selectedDays: [1],
+      selectedDays: [getDayOfWeekFromDate(refDate)],
     };
-  }, [initialData]);
+  }, [initialData, currentDueDate]);
 
   const [recurrenceType, setRecurrenceType] = useState<"schedule" | "completion">(
     initialValues.recurrenceType
@@ -133,6 +144,14 @@ export function CustomFrequencyDialog({
 
     if (unit === "week" && selectedDays.length > 0) {
       data.daysOfWeek = selectedDays;
+      
+      // Always update due date when checkmark is pressed (not when X/close is pressed)
+      // Calculate next occurrence based on selected days
+      if (recurrenceType === "schedule" && onSetDueDate) {
+        const refDate = getReferenceDate();
+        const nextOccurrence = calculateNextWeeklyOccurrence(selectedDays, refDate);
+        onSetDueDate(nextOccurrence);
+      }
     }
 
     onSave(data);
@@ -192,7 +211,8 @@ export function CustomFrequencyDialog({
               setSelectedDays([]);
             } else if (value === "schedule" && unit === "week" && selectedDays.length === 0) {
               // When switching to "By Schedule Dates" (schedule) with weekly, ensure at least one day is selected
-              setSelectedDays([1]); // Default to Monday
+              const refDate = getReferenceDate();
+              setSelectedDays([getDayOfWeekFromDate(refDate)]); // Default to due date's day or today
             }
           }}
         >
@@ -235,7 +255,8 @@ export function CustomFrequencyDialog({
                 setUnit(value);
                 // When switching to weekly with schedule type, ensure at least one day is selected
                 if (value === "week" && recurrenceType === "schedule" && selectedDays.length === 0) {
-                  setSelectedDays([1]); // Default to Monday
+                  const refDate = getReferenceDate();
+                  setSelectedDays([getDayOfWeekFromDate(refDate)]); // Default to due date's day or today
                 }
               }}
             >

@@ -20,7 +20,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { CustomFrequencyDialog } from "./custom-frequency-dialog";
-import { formatDaysOfWeek, getCurrentDayOfWeek, getCurrentDayName } from "./recurrence-utils";
+import { formatDaysOfWeek, getDayOfWeekFromDate, getDayNameFromDate, getDayOfMonthFromDate, formatDayOfMonth, getMonthNameFromDate } from "./recurrence-utils";
 
 interface RecurDialogProps {
   open: boolean;
@@ -43,6 +43,8 @@ interface RecurDialogProps {
       daysOfWeek?: number[];
     };
   };
+  currentDueDate?: Date | undefined;
+  onSetDueDate?: (date: Date) => void;
 }
 
 export function RecurDialog({
@@ -50,8 +52,15 @@ export function RecurDialog({
   onOpenChange,
   onSave,
   initialData,
+  currentDueDate,
+  onSetDueDate,
 }: RecurDialogProps) {
   const isMobile = useIsMobile();
+  
+  // Helper to get the reference date (due date or today)
+  const getReferenceDate = () => {
+    return currentDueDate || new Date();
+  };
   
   // Compute initial values based on initialData
   const initialValues = useMemo(() => {
@@ -110,16 +119,17 @@ export function RecurDialog({
           customInterval: undefined,
         });
       } else {
-        // Daily, Monthly, Yearly, and Weekday default to "schedule" (By Completion Dates)
+        // Daily, Monthly, Yearly, and Weekday default to "schedule"
         if (value === "weekly") {
-          // For Weekly, set the current day of the week
+          // For Weekly, use the due date's day of week or today's
+          const refDate = getReferenceDate();
           onSave({
             frequency: value,
             recurrenceType: "schedule",
             customInterval: {
               amount: 1,
               unit: "week",
-              daysOfWeek: [getCurrentDayOfWeek()],
+              daysOfWeek: [getDayOfWeekFromDate(refDate)],
             },
           });
         } else {
@@ -160,16 +170,24 @@ export function RecurDialog({
   };
 
   const getWeeklyLabel = () => {
-    if (frequency === "custom" && customInterval?.unit === "week" && customInterval?.daysOfWeek && customInterval.daysOfWeek.length > 0) {
-      return `Weekly (${formatDaysOfWeek(customInterval.daysOfWeek)})`;
-    }
-    // Check if weekly is selected and has days in initialData or customInterval
-    const weeklyDays = initialData?.customInterval?.daysOfWeek || customInterval?.daysOfWeek;
-    if (frequency === "weekly" && weeklyDays && weeklyDays.length > 0) {
-      return `Weekly (${formatDaysOfWeek(weeklyDays)})`;
-    }
-    // Always show current day as preview, even when not selected
-    return `Weekly (${getCurrentDayName()})`;
+    // Always use due date or today for quick options
+    const refDate = getReferenceDate();
+    return `Weekly (${getDayNameFromDate(refDate)})`;
+  };
+
+  const getMonthlyLabel = () => {
+    // Always use due date or today for quick options
+    const refDate = getReferenceDate();
+    const dayOfMonth = getDayOfMonthFromDate(refDate);
+    return `Monthly (${formatDayOfMonth(dayOfMonth)})`;
+  };
+
+  const getYearlyLabel = () => {
+    // Always use due date or today for quick options
+    const refDate = getReferenceDate();
+    const month = getMonthNameFromDate(refDate);
+    const day = getDayOfMonthFromDate(refDate);
+    return `Yearly (on ${month} ${day})`;
   };
 
   const getCustomLabel = () => {
@@ -178,13 +196,28 @@ export function RecurDialog({
       const unitLabel = unit === "day" ? "day" : unit === "week" ? "week" : unit === "month" ? "month" : "year";
       const pluralUnit = amount !== 1 ? `${unitLabel}s` : unitLabel;
       
+      // Show the actual selected days for weekly
       if (unit === "week" && daysOfWeek && daysOfWeek.length > 0) {
-        const dayNames = formatDaysOfWeek(daysOfWeek);
+        const selectedDayNames = formatDaysOfWeek(daysOfWeek);
         if (amount === 1) {
-          return `Custom (Weekly on ${dayNames})`;
+          return `Custom (Weekly on ${selectedDayNames})`;
         } else {
-          return `Custom (Every ${amount} weeks on ${dayNames})`;
+          return `Custom (Every ${amount} weeks on ${selectedDayNames})`;
         }
+      }
+      
+      // For monthly/yearly custom intervals, use today (no specific day selected)
+      if (unit === "month" && amount === 1) {
+        const today = new Date();
+        const dayOfMonth = getDayOfMonthFromDate(today);
+        return `Custom (Monthly on ${formatDayOfMonth(dayOfMonth)})`;
+      }
+      
+      if (unit === "year" && amount === 1) {
+        const today = new Date();
+        const month = getMonthNameFromDate(today);
+        const day = getDayOfMonthFromDate(today);
+        return `Custom (Yearly on ${month} ${day})`;
       }
       
       return `Custom (Every ${amount} ${pluralUnit})`;
@@ -196,8 +229,8 @@ export function RecurDialog({
     { value: "none" as const, label: "None" },
     { value: "daily" as const, label: "Daily" },
     { value: "weekly" as const, label: getWeeklyLabel() },
-    { value: "monthly" as const, label: "Monthly" },
-    { value: "yearly" as const, label: "Yearly" },
+    { value: "monthly" as const, label: getMonthlyLabel() },
+    { value: "yearly" as const, label: getYearlyLabel() },
     { value: "weekday" as const, label: "Every Weekday (Mon - Fri)" },
     { value: "custom" as const, label: getCustomLabel() },
   ];
@@ -270,6 +303,8 @@ export function RecurDialog({
             interval: customInterval,
             daysOfWeek: customInterval?.daysOfWeek,
           }}
+          currentDueDate={currentDueDate}
+          onSetDueDate={onSetDueDate}
         />
       </>
     );
@@ -294,6 +329,8 @@ export function RecurDialog({
           interval: customInterval,
           daysOfWeek: customInterval?.daysOfWeek,
         }}
+        currentDueDate={currentDueDate}
+        onSetDueDate={onSetDueDate}
       />
     </>
   );

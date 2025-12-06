@@ -87,7 +87,7 @@ export function AddProjectForm({ className }: React.ComponentProps<"form">) {
           )}
         />
 
-        <div className="flex w-full justify-end">
+        <div className="flex flex-1 w-full justify-end">
           <Button
             disabled={!form.getValues("name")}
             size="sm"

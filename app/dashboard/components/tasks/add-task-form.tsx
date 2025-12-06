@@ -36,7 +36,7 @@ import { cn } from "@/lib/utils";
 
 import { createRecurringTask } from "../../tasks/actions";
 import { RecurDialog } from "./recurring/recur-dialog";
-import { formatDaysOfWeek, getCurrentDayName } from "./recurring/recurrence-utils";
+import { formatDaysOfWeek, getDayNameFromDate, getDayOfMonthFromDate, formatDayOfMonth, getMonthNameFromDate } from "./recurring/recurrence-utils";
 
 const formSchema = z
   .object({
@@ -99,6 +99,7 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
   // Watch frequency and customInterval to update display reactively
   const frequency = useWatch({ control: form.control, name: "frequency" });
   const customInterval = useWatch({ control: form.control, name: "customInterval" });
+  const dueDate = useWatch({ control: form.control, name: "due" });
 
   const handleClearRecur = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -108,10 +109,15 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
   };
 
   const getRecurButtonText = () => {
+    // Helper to get reference date (due date or today) - only used when custom is NOT set
+    const getReferenceDate = () => {
+      return dueDate || new Date();
+    };
+    
     if (frequency === "custom" && customInterval) {
       const { amount, unit, daysOfWeek } = customInterval;
       
-      // Special handling for weekly with days
+      // Special handling for weekly with days - show the actual selected days
       if (unit === "week" && daysOfWeek && daysOfWeek.length > 0) {
         const selectedDayNames = formatDaysOfWeek(daysOfWeek);
         
@@ -122,32 +128,47 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
         }
       }
       
+      // For monthly/yearly custom intervals, use today (no specific day selected)
+      const today = new Date();
+      if (unit === "month" && amount === 1) {
+        const dayOfMonth = getDayOfMonthFromDate(today);
+        return `Monthly (${formatDayOfMonth(dayOfMonth)})`;
+      }
+      
+      if (unit === "year" && amount === 1) {
+        const month = getMonthNameFromDate(today);
+        const day = getDayOfMonthFromDate(today);
+        return `Yearly (on ${month} ${day})`;
+      }
+      
       // For other units or weekly without specific days
       const unitLabel = unit === "day" ? "day" : unit === "week" ? "week" : unit === "month" ? "month" : "year";
       const pluralUnit = amount !== 1 ? `${unitLabel}s` : unitLabel;
       return `Every ${amount} ${pluralUnit}`;
     }
 
+    // When custom is NOT set, use due date (or today) for labels
     switch (frequency) {
       case "daily":
         return "Daily";
       case "weekly":
-        // Show days if available in customInterval
-        if (customInterval?.unit === "week" && customInterval?.daysOfWeek && customInterval.daysOfWeek.length > 0) {
-          const selectedDayNames = formatDaysOfWeek(customInterval.daysOfWeek);
-          return `Weekly on ${selectedDayNames}`;
-        }
-        // Always show current day as preview
-        return `Weekly on ${getCurrentDayName()}`;
+        const refDateWeekly = getReferenceDate();
+        return `Weekly on ${getDayNameFromDate(refDateWeekly)}`;
       case "monthly":
-        return "Monthly";
+        const refDateMonthly = getReferenceDate();
+        const dayOfMonth = getDayOfMonthFromDate(refDateMonthly);
+        return `Monthly (${formatDayOfMonth(dayOfMonth)})`;
       case "yearly":
-        return "Yearly";
+        const refDateYearly = getReferenceDate();
+        const month = getMonthNameFromDate(refDateYearly);
+        const day = getDayOfMonthFromDate(refDateYearly);
+        return `Yearly (on ${month} ${day})`;
       case "weekday":
         return "Every Weekday";
       default:
-        // Always show Weekly preview when no frequency is set
-        return `Weekly on ${getCurrentDayName()}`;
+        // Use due date or today for preview when no frequency is set
+        const refDateDefault = getReferenceDate();
+        return `Weekly on ${getDayNameFromDate(refDateDefault)}`;
     }
   };
 
@@ -410,7 +431,7 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
               )}
             />
           </div>
-          <div className="flex gap-8 items-center">
+          <div className="flex gap-1 md:gap-8 items-center">
             <Button
               size="lg"
               variant="outline"
@@ -465,8 +486,12 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
                 recurrenceType: form.getValues("recurrenceType"),
                 customInterval: form.getValues("customInterval"),
               }}
+              currentDueDate={dueDate}
+              onSetDueDate={(date) => {
+                form.setValue("due", date);
+              }}
             />
-            <div className="flex justify-end">
+            <div className="flex flex-1 justify-end">
               <Button
                 disabled={!form.getValues("name")}
                 size="sm"
