@@ -20,7 +20,7 @@ export default function ScratchPad() {
   const updateScratchPad = useMutation(api.scratchPads.update);
   const createNote = useMutation(api.notes.create);
 
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<NodeJS.Timeout>(undefined);
 
   const handleChange = useCallback(
     (content: string) => {
@@ -98,7 +98,7 @@ export default function ScratchPad() {
 }
 
 interface ClearDialogProps {
-  editorRef: React.RefObject<ScratchPadEditorRef>;
+  editorRef: React.RefObject<ScratchPadEditorRef | null>;
 }
 
 const ClearDialog = ({ editorRef }: ClearDialogProps) => {

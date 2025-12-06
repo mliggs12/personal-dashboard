@@ -29,7 +29,7 @@ interface DataTableFacetedFilterProps<TData, TValue> {
   options: {
     label: string;
     value: string;
-    icon?: React.ReactElement;
+    icon?: React.ReactElement<any>;
   }[];
 }
 

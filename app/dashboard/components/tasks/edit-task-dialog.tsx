@@ -105,7 +105,7 @@ export default function EditTaskDialog({
 
 
 
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<NodeJS.Timeout>(undefined);
 
   const handleChange = useCallback(
     (notes: string) => {
