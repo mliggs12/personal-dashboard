@@ -215,13 +215,13 @@ export function RecurDialog({
       }
     }
     
-    // For monthly/yearly custom intervals, use today (no specific day selected)
+    // For monthly/yearly custom intervals, use reference date (due date or today)
     if (unit === "month" && amount === 1) {
       if (isCompletion) {
         return `Custom (1 month after completion)`;
       }
-      const today = new Date();
-      const dayOfMonth = getDayOfMonthFromDate(today);
+      const refDate = getReferenceDate();
+      const dayOfMonth = getDayOfMonthFromDate(refDate);
       return `Custom (Monthly on ${formatDayOfMonth(dayOfMonth)})`;
     }
     
@@ -229,9 +229,9 @@ export function RecurDialog({
       if (isCompletion) {
         return `Custom (1 year after completion)`;
       }
-      const today = new Date();
-      const month = getMonthNameFromDate(today);
-      const day = getDayOfMonthFromDate(today);
+      const refDate = getReferenceDate();
+      const month = getMonthNameFromDate(refDate);
+      const day = getDayOfMonthFromDate(refDate);
       return `Custom (Yearly on ${month} ${day})`;
     }
     

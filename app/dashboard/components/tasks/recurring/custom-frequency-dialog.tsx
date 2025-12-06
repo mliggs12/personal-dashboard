@@ -80,10 +80,17 @@ export function CustomFrequencyDialog({
     if (initialData?.interval) {
       const days = initialData.daysOfWeek || [];
       const recurrenceType = initialData.recurrenceType || "schedule";
+      // If month or year is selected with schedule type (disabled), reset to week
+      // Allow month/year for completion type since it's simpler and doesn't need future functionality
+      const unit = 
+        (initialData.interval.unit === "month" || initialData.interval.unit === "year") && 
+        recurrenceType === "schedule"
+          ? "week" as const
+          : initialData.interval.unit;
       // Ensure at least one day is selected for weekly with schedule type
       // Use due date's day or today if no days selected
       const selectedDays = 
-        initialData.interval.unit === "week" && 
+        unit === "week" && 
         recurrenceType === "schedule" && 
         days.length === 0
           ? [getDayOfWeekFromDate(refDate)] // Default to due date's day or today
@@ -92,7 +99,7 @@ export function CustomFrequencyDialog({
       return {
         recurrenceType,
         amount: initialData.interval.amount,
-        unit: initialData.interval.unit,
+        unit,
         selectedDays,
       };
     }
@@ -210,10 +217,18 @@ export function CustomFrequencyDialog({
             if (value === "completion") {
               // Clear selected days when switching to "By Completion Dates" (completion) type
               setSelectedDays([]);
-            } else if (value === "schedule" && unit === "week" && selectedDays.length === 0) {
-              // When switching to "By Schedule Dates" (schedule) with weekly, ensure at least one day is selected
-              const refDate = getReferenceDate();
-              setSelectedDays([getDayOfWeekFromDate(refDate)]); // Default to due date's day or today
+            } else if (value === "schedule") {
+              // When switching to "By Schedule Dates" (schedule) type
+              // If month or year is selected, reset to week (since they're disabled for schedule)
+              if (unit === "month" || unit === "year") {
+                const refDate = getReferenceDate();
+                setUnit("week");
+                setSelectedDays([getDayOfWeekFromDate(refDate)]); // Default to due date's day or today
+              } else if (unit === "week" && selectedDays.length === 0) {
+                // When switching to schedule with weekly, ensure at least one day is selected
+                const refDate = getReferenceDate();
+                setSelectedDays([getDayOfWeekFromDate(refDate)]); // Default to due date's day or today
+              }
             }
           }}
         >
@@ -253,6 +268,11 @@ export function CustomFrequencyDialog({
             <Select
               value={unit}
               onValueChange={(value: "day" | "week" | "month" | "year") => {
+                // Prevent selection of month/year options for schedule type (disabled)
+                // Allow month/year for completion type since it's simpler
+                if ((value === "month" || value === "year") && recurrenceType === "schedule") {
+                  return;
+                }
                 setUnit(value);
                 // When switching to weekly with schedule type, ensure at least one day is selected
                 if (value === "week" && recurrenceType === "schedule" && selectedDays.length === 0) {
@@ -265,11 +285,20 @@ export function CustomFrequencyDialog({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent side="bottom" avoidCollisions={isMobile}>
-                {UNITS.map((u) => (
-                  <SelectItem key={u.value} value={u.value}>
-                    {u.label}
-                  </SelectItem>
-                ))}
+                {UNITS.map((u) => {
+                  // Disable month/year only for schedule type (completion type can use them)
+                  const isDisabled = (u.value === "month" || u.value === "year") && recurrenceType === "schedule";
+                  return (
+                    <SelectItem 
+                      key={u.value} 
+                      value={u.value}
+                      disabled={isDisabled}
+                      className={isDisabled ? "opacity-50 cursor-not-allowed" : ""}
+                    >
+                      {u.label}
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
           </div>
