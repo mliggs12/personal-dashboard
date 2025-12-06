@@ -35,9 +35,9 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
 import { createRecurringTask } from "../../tasks/actions";
-import { RecurDialog } from "./recur-dialog";
+import { RecurDialog } from "./recurring/recur-dialog";
 import { RotateCcw, X } from "lucide-react";
-import { DAYS_OF_WEEK, formatDaysOfWeek, getCurrentDayOfWeek, getCurrentDayName } from "./recurrence-utils";
+import { DAYS_OF_WEEK, formatDaysOfWeek, getCurrentDayOfWeek, getCurrentDayName } from "./recurring/recurrence-utils";
 
 const formSchema = z
   .object({

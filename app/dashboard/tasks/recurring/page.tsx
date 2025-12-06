@@ -4,7 +4,7 @@ import { useQuery } from "convex/react";
 
 import { api } from "@/convex/_generated/api";
 
-import RecurringTasksTable from "../../components/tasks/recurring-tasks-table";
+import RecurringTasksTable from "../../components/tasks/recurring/recurring-tasks-table";
 
 export default function RecurringPage() {
   const recurringTasks = useQuery(api.recurringTasks.recurringTasksWithStats);
