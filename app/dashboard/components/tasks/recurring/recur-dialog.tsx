@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, startTransition } from "react";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -88,9 +88,11 @@ export function RecurDialog({
   // Reset state when dialog opens with new initialData
   useEffect(() => {
     if (open) {
-      setFrequency(initialValues.frequency);
-      setRecurrenceType(initialValues.recurrenceType);
-      setCustomInterval(initialValues.customInterval);
+      startTransition(() => {
+        setFrequency(initialValues.frequency);
+        setRecurrenceType(initialValues.recurrenceType);
+        setCustomInterval(initialValues.customInterval);
+      });
     }
   }, [open, initialValues]);
 

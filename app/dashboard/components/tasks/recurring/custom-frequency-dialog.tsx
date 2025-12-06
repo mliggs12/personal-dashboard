@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, startTransition } from "react";
 import { Check, X, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -109,10 +109,12 @@ export function CustomFrequencyDialog({
   // Reset state when dialog opens with new initialData
   useEffect(() => {
     if (open) {
-      setRecurrenceType(initialValues.recurrenceType);
-      setAmount(initialValues.amount);
-      setUnit(initialValues.unit);
-      setSelectedDays(initialValues.selectedDays);
+      startTransition(() => {
+        setRecurrenceType(initialValues.recurrenceType);
+        setAmount(initialValues.amount);
+        setUnit(initialValues.unit);
+        setSelectedDays(initialValues.selectedDays);
+      });
     }
   }, [open, initialValues]);
 

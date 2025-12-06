@@ -99,7 +99,6 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
   // Watch frequency and customInterval to update display reactively
   const frequency = useWatch({ control: form.control, name: "frequency" });
   const customInterval = useWatch({ control: form.control, name: "customInterval" });
-  const recurrenceType = useWatch({ control: form.control, name: "recurrenceType" });
 
   const handleClearRecur = (e: React.MouseEvent) => {
     e.stopPropagation();
