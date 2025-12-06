@@ -144,7 +144,6 @@ export function RecurDialog({
     }
   };
 
-
   const handleCustomSave = (data: {
     recurrenceType: "schedule" | "completion";
     interval: {
@@ -191,38 +190,52 @@ export function RecurDialog({
   };
 
   const getCustomLabel = () => {
-    if (customInterval) {
-      const { amount, unit, daysOfWeek } = customInterval;
-      const unitLabel = unit === "day" ? "day" : unit === "week" ? "week" : unit === "month" ? "month" : "year";
-      const pluralUnit = amount !== 1 ? `${unitLabel}s` : unitLabel;
-      
-      // Show the actual selected days for weekly
-      if (unit === "week" && daysOfWeek && daysOfWeek.length > 0) {
-        const selectedDayNames = formatDaysOfWeek(daysOfWeek);
-        if (amount === 1) {
-          return `Custom (Weekly on ${selectedDayNames})`;
-        } else {
-          return `Custom (Every ${amount} weeks on ${selectedDayNames})`;
-        }
-      }
-      
-      // For monthly/yearly custom intervals, use today (no specific day selected)
-      if (unit === "month" && amount === 1) {
-        const today = new Date();
-        const dayOfMonth = getDayOfMonthFromDate(today);
-        return `Custom (Monthly on ${formatDayOfMonth(dayOfMonth)})`;
-      }
-      
-      if (unit === "year" && amount === 1) {
-        const today = new Date();
-        const month = getMonthNameFromDate(today);
-        const day = getDayOfMonthFromDate(today);
-        return `Custom (Yearly on ${month} ${day})`;
-      }
-      
-      return `Custom (Every ${amount} ${pluralUnit})`;
+    // Only show custom interval details if frequency is actually "custom"
+    if (frequency !== "custom" || !customInterval) {
+      return "Custom";
     }
-    return "Custom";
+    
+    const { amount, unit, daysOfWeek } = customInterval;
+    const unitLabel = unit === "day" ? "day" : unit === "week" ? "week" : unit === "month" ? "month" : "year";
+    const pluralUnit = amount !== 1 ? `${unitLabel}s` : unitLabel;
+    const isCompletion = recurrenceType === "completion";
+    const afterCompletion = isCompletion ? " after completion" : "";
+    
+    // Show the actual selected days for weekly
+    if (unit === "week" && daysOfWeek && daysOfWeek.length > 0) {
+      const selectedDayNames = formatDaysOfWeek(daysOfWeek);
+      if (amount === 1) {
+        return isCompletion 
+          ? `Custom (1 week after completion)`
+          : `Custom (Weekly on ${selectedDayNames})`;
+      } else {
+        return isCompletion
+          ? `Custom (${amount} weeks after completion)`
+          : `Custom (Every ${amount} weeks on ${selectedDayNames})`;
+      }
+    }
+    
+    // For monthly/yearly custom intervals, use today (no specific day selected)
+    if (unit === "month" && amount === 1) {
+      if (isCompletion) {
+        return `Custom (1 month after completion)`;
+      }
+      const today = new Date();
+      const dayOfMonth = getDayOfMonthFromDate(today);
+      return `Custom (Monthly on ${formatDayOfMonth(dayOfMonth)})`;
+    }
+    
+    if (unit === "year" && amount === 1) {
+      if (isCompletion) {
+        return `Custom (1 year after completion)`;
+      }
+      const today = new Date();
+      const month = getMonthNameFromDate(today);
+      const day = getDayOfMonthFromDate(today);
+      return `Custom (Yearly on ${month} ${day})`;
+    }
+    
+    return `Custom (${amount} ${pluralUnit}${afterCompletion})`;
   };
 
   const options = [

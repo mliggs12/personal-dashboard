@@ -99,6 +99,7 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
   // Watch frequency and customInterval to update display reactively
   const frequency = useWatch({ control: form.control, name: "frequency" });
   const customInterval = useWatch({ control: form.control, name: "customInterval" });
+  const recurrenceType = useWatch({ control: form.control, name: "recurrenceType" });
   const dueDate = useWatch({ control: form.control, name: "due" });
 
   const handleClearRecur = (e: React.MouseEvent) => {
@@ -114,13 +115,22 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
       return dueDate || new Date();
     };
     
+    const isCompletion = recurrenceType === "completion";
+    const afterCompletion = isCompletion ? " after completion" : "";
+    
     if (frequency === "custom" && customInterval) {
       const { amount, unit, daysOfWeek } = customInterval;
       
       // Special handling for weekly with days - show the actual selected days
       if (unit === "week" && daysOfWeek && daysOfWeek.length > 0) {
+        if (isCompletion) {
+          if (amount === 1) {
+            return `1 week after completion`;
+          } else {
+            return `${amount} weeks after completion`;
+          }
+        }
         const selectedDayNames = formatDaysOfWeek(daysOfWeek);
-        
         if (amount === 1) {
           return `Weekly on ${selectedDayNames}`;
         } else {
@@ -131,11 +141,17 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
       // For monthly/yearly custom intervals, use today (no specific day selected)
       const today = new Date();
       if (unit === "month" && amount === 1) {
+        if (isCompletion) {
+          return `1 month after completion`;
+        }
         const dayOfMonth = getDayOfMonthFromDate(today);
         return `Monthly (${formatDayOfMonth(dayOfMonth)})`;
       }
       
       if (unit === "year" && amount === 1) {
+        if (isCompletion) {
+          return `1 year after completion`;
+        }
         const month = getMonthNameFromDate(today);
         const day = getDayOfMonthFromDate(today);
         return `Yearly (on ${month} ${day})`;
@@ -144,27 +160,36 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
       // For other units or weekly without specific days
       const unitLabel = unit === "day" ? "day" : unit === "week" ? "week" : unit === "month" ? "month" : "year";
       const pluralUnit = amount !== 1 ? `${unitLabel}s` : unitLabel;
-      return `Every ${amount} ${pluralUnit}`;
+      return `${amount} ${pluralUnit}${afterCompletion}`;
     }
 
     // When custom is NOT set, use due date (or today) for labels
     switch (frequency) {
       case "daily":
-        return "Daily";
+        return isCompletion ? "Daily after completion" : "Daily";
       case "weekly":
+        if (isCompletion) {
+          return "1 week after completion";
+        }
         const refDateWeekly = getReferenceDate();
         return `Weekly on ${getDayNameFromDate(refDateWeekly)}`;
       case "monthly":
+        if (isCompletion) {
+          return "1 month after completion";
+        }
         const refDateMonthly = getReferenceDate();
         const dayOfMonth = getDayOfMonthFromDate(refDateMonthly);
         return `Monthly (${formatDayOfMonth(dayOfMonth)})`;
       case "yearly":
+        if (isCompletion) {
+          return "1 year after completion";
+        }
         const refDateYearly = getReferenceDate();
         const month = getMonthNameFromDate(refDateYearly);
         const day = getDayOfMonthFromDate(refDateYearly);
         return `Yearly (on ${month} ${day})`;
       case "weekday":
-        return "Every Weekday";
+        return isCompletion ? "Every Weekday after completion" : "Every Weekday";
       default:
         // Use due date or today for preview when no frequency is set
         const refDateDefault = getReferenceDate();
