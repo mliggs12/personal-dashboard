@@ -20,6 +20,32 @@ export function calculateNextRunDate(
     case "day":
       return baseDate.add(schedule.interval.amount, "day").format("YYYY-MM-DD");
     case "week":
+      // If daysOfWeek is specified, calculate the next occurrence based on selected days
+      if (schedule.daysOfWeek && schedule.daysOfWeek.length > 0) {
+        const currentDayOfWeek = baseDate.day(); // 0 = Sunday, 6 = Saturday
+        const sortedDays = [...schedule.daysOfWeek].sort((a, b) => a - b);
+        
+        // Find the next day in the current week (must be > currentDayOfWeek)
+        // This ensures we skip today even if today is one of the selected days
+        const nextDayInWeek = sortedDays.find(day => day > currentDayOfWeek);
+        
+        if (nextDayInWeek !== undefined) {
+          // Next day is in the current week
+          const daysToAdd = nextDayInWeek - currentDayOfWeek;
+          return baseDate.add(daysToAdd, "day").format("YYYY-MM-DD");
+        } else {
+          // No day found in current week, wrap to first day of next week
+          // Calculate: days to end of week + days to first selected day
+          const firstDay = sortedDays[0];
+          const daysToEndOfWeek = 7 - currentDayOfWeek;
+          const daysToAdd = daysToEndOfWeek + firstDay;
+          
+          // If interval amount > 1, add additional weeks
+          const additionalWeeks = (schedule.interval.amount - 1) * 7;
+          return baseDate.add(daysToAdd + additionalWeeks, "day").format("YYYY-MM-DD");
+        }
+      }
+      // No daysOfWeek specified, use simple week addition
       return baseDate.add(schedule.interval.amount, "week").format("YYYY-MM-DD");
     case "month":
       return baseDate.add(schedule.interval.amount, "month").format("YYYY-MM-DD");
@@ -70,6 +96,15 @@ export function checkIfShouldGenerate(
       case "day":
         return true; // Generate if today >= nextRunDate (already checked above)
       case "week":
+        // For weekly schedules with specific days, check if today is one of the selected days
+        if (recurringTask.schedule?.daysOfWeek && recurringTask.schedule.daysOfWeek.length > 0) {
+          const todayDayOfWeek = todayStart.day(); // 0 = Sunday, 6 = Saturday
+          const isTodaySelected = recurringTask.schedule.daysOfWeek.includes(todayDayOfWeek);
+          // Only generate if today is a selected day AND today >= nextRunDate
+          return isTodaySelected && !todayStart.isBefore(nextRunDate);
+        }
+        // For weekly schedules without specific days, check if today matches nextRunDate
+        return todayStart.isSame(nextRunDate, "day");
       case "month":
         return todayStart.isSame(nextRunDate, "day");
       default:

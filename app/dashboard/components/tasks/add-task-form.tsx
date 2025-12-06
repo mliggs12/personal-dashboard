@@ -35,6 +35,9 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
 import { createRecurringTask } from "../../tasks/actions";
+import { RecurDialog } from "./recur-dialog";
+import { RotateCcw, X } from "lucide-react";
+import { DAYS_OF_WEEK, formatDaysOfWeek, getCurrentDayOfWeek, getCurrentDayName } from "./recurrence-utils";
 
 const formSchema = z
   .object({
@@ -48,19 +51,27 @@ const formSchema = z
     notes: z.string().optional(),
     due: z.date().optional(),
     frequency: z
-      .enum(["daily", "weekly", "monthly"])
+      .enum(["none", "daily", "weekly", "monthly", "yearly", "weekday", "custom"])
       .optional(),
     recurrenceType: z.enum(["schedule", "completion"]).optional(),
+    customInterval: z
+      .object({
+        amount: z.number().min(1),
+        unit: z.enum(["day", "week", "month", "year"]),
+        daysOfWeek: z.array(z.number()).optional(),
+      })
+      .optional(),
   })
   .refine(
     (data) => {
-      if (data.frequency && !data.due) {
+      // Only require due date for completion-type recurring tasks
+      if (data.frequency && data.frequency !== "none" && data.recurrenceType === "completion" && !data.due) {
         return false;
       }
       return true;
     },
     {
-      message: "Due date is required when recurring is set",
+      message: "Due date is required for completion-based recurring tasks",
       path: ["due"],
     },
   );
@@ -70,8 +81,8 @@ interface AddTaskFormProps extends React.ComponentProps<"form"> {
 }
 
 export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
-  const [showRecurring, setShowRecurring] = useState(false);
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const [isRecurDialogOpen, setIsRecurDialogOpen] = useState(false);
   const createTask = useMutation(api.tasks.create);
   const { toast } = useToast();
 
@@ -86,48 +97,148 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
     },
   });
 
-  const handleSetRecurring = () => {
-    if (!showRecurring) {
-      form.setValue("frequency", "daily");
-      form.setValue("recurrenceType", "completion");
-      if (!form.getValues("due")) {
-        form.setValue("due", new Date());
+  // Watch frequency and customInterval to update display reactively
+  const frequency = form.watch("frequency");
+  const customInterval = form.watch("customInterval");
+  const recurrenceType = form.watch("recurrenceType");
+
+  const handleClearRecur = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    form.setValue("frequency", undefined);
+    form.setValue("recurrenceType", undefined);
+    form.setValue("customInterval", undefined);
+  };
+
+  const getRecurButtonText = () => {
+    if (frequency === "custom" && customInterval) {
+      const { amount, unit, daysOfWeek } = customInterval;
+      
+      // Special handling for weekly with days
+      if (unit === "week" && daysOfWeek && daysOfWeek.length > 0) {
+        const selectedDayNames = formatDaysOfWeek(daysOfWeek);
+        
+        if (amount === 1) {
+          return `Weekly on ${selectedDayNames}`;
+        } else {
+          return `Every ${amount} weeks on ${selectedDayNames}`;
+        }
       }
-    } else {
-      form.setValue("frequency", undefined);
-      form.setValue("recurrenceType", undefined);
+      
+      // For other units or weekly without specific days
+      const unitLabel = unit === "day" ? "day" : unit === "week" ? "week" : unit === "month" ? "month" : "year";
+      const pluralUnit = amount !== 1 ? `${unitLabel}s` : unitLabel;
+      return `Every ${amount} ${pluralUnit}`;
     }
-    setShowRecurring(!showRecurring);
+
+    switch (frequency) {
+      case "daily":
+        return "Daily";
+      case "weekly":
+        // Show days if available in customInterval
+        if (customInterval?.unit === "week" && customInterval?.daysOfWeek && customInterval.daysOfWeek.length > 0) {
+          const selectedDayNames = formatDaysOfWeek(customInterval.daysOfWeek);
+          return `Weekly on ${selectedDayNames}`;
+        }
+        // Always show current day as preview
+        return `Weekly on ${getCurrentDayName()}`;
+      case "monthly":
+        return "Monthly";
+      case "yearly":
+        return "Yearly";
+      case "weekday":
+        return "Every Weekday";
+      default:
+        // Always show Weekly preview when no frequency is set
+        return `Weekly on ${getCurrentDayName()}`;
+    }
   };
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
-    const { name, status, priority, notes, due, frequency, recurrenceType } = data;
+    const { name, status, priority, notes, due, frequency, recurrenceType, customInterval } = data;
 
-    const dueDate = dayjs(due).format("YYYY-MM-DD");
+    const dueDate = due ? dayjs(due).format("YYYY-MM-DD") : undefined;
 
-    if (frequency && due && recurrenceType) {
-      const unit = (frequency === "daily" ? "day" : frequency === "weekly" ? "week" : "month") as "day" | "week" | "month";
+    // Handle recurring tasks
+    if (frequency && frequency !== "none" && recurrenceType) {
+      let interval: { amount: number; unit: "day" | "week" | "month" };
+      let daysOfWeek: number[] | undefined;
+
+      if (frequency === "custom" && customInterval) {
+        // Map "year" to "month" * 12 for backend compatibility
+        if (customInterval.unit === "year") {
+          interval = {
+            amount: customInterval.amount * 12,
+            unit: "month",
+          };
+        } else {
+          interval = {
+            amount: customInterval.amount,
+            unit: customInterval.unit as "day" | "week" | "month",
+          };
+        }
+        daysOfWeek = customInterval.daysOfWeek;
+      } else if (frequency === "weekday") {
+        // Every weekday = Mon-Fri (1-5)
+        interval = { amount: 1, unit: "week" };
+        daysOfWeek = [1, 2, 3, 4, 5];
+      } else if (frequency === "yearly") {
+        // Yearly = 12 months
+        interval = { amount: 12, unit: "month" };
+      } else {
+        const unit = (frequency === "daily" ? "day" : frequency === "weekly" ? "week" : "month") as "day" | "week" | "month";
+        interval = { amount: 1, unit };
+        // If weekly and we have customInterval with days, use those
+        if (frequency === "weekly" && customInterval?.unit === "week" && customInterval?.daysOfWeek) {
+          daysOfWeek = customInterval.daysOfWeek;
+        }
+      }
 
       const recurringTaskId = await createRecurringTask(
         name,
-        { interval: { amount: 1, unit } },
+        {
+          interval,
+          daysOfWeek,
+        },
         recurrenceType,
       );
 
-      await createTask({
-        name,
-        status: status as
-          | "done"
-          | "backlog"
-          | "todo"
-          | "in_progress"
-          | "archived",
-        priority: priority as "low" | "normal" | "high",
-        notes,
-        due: dueDate,
-        recurringTaskId,
-      });
+      // For scheduled tasks: only create task instance if due date is provided
+      // For completion tasks: due date is required (enforced by validation)
+      if (recurrenceType === "schedule" && dueDate) {
+        // User provided a due date, create the task instance
+        await createTask({
+          name,
+          status: status as
+            | "done"
+            | "backlog"
+            | "todo"
+            | "in_progress"
+            | "archived",
+          priority: priority as "low" | "normal" | "high",
+          notes,
+          due: dueDate,
+          recurringTaskId,
+        });
+      } else if (recurrenceType === "completion" && dueDate) {
+        // Completion tasks always need a due date (enforced by validation)
+        await createTask({
+          name,
+          status: status as
+            | "done"
+            | "backlog"
+            | "todo"
+            | "in_progress"
+            | "archived",
+          priority: priority as "low" | "normal" | "high",
+          notes,
+          due: dueDate,
+          recurringTaskId,
+        });
+      }
+      // If scheduled task with no due date, just create the recurring task
+      // The task generation system will create instances based on schedule
     } else {
+      // Non-recurring task
       await createTask({
         name,
         status: status as
@@ -301,68 +412,65 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
               )}
             />
           </div>
-          <div className="flex gap-2 items-center">
+          <div className="flex gap-8 items-center">
             <Button
               size="lg"
               variant="outline"
               type="button"
-              className="h-10"
-              onClick={handleSetRecurring}
+              className={cn(
+                "h-10 w-full flex items-center relative px-4 pr-8",
+                frequency ? "justify-between" : "justify-start gap-2"
+              )}
+              onClick={() => {
+                setIsRecurDialogOpen(true);
+                // Don't automatically set due date - let user choose
+              }}
             >
-              {showRecurring ? "Cancel" : "Set Recurring"}
+              <div className="flex items-center gap-2">
+                <RotateCcw className="h-4 w-4" />
+                <span>Recur</span>
+              </div>
+              {frequency && (
+                <>
+                  <span className="text-muted-foreground">{getRecurButtonText()}</span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 absolute right-1 hover:bg-transparent"
+                    onClick={handleClearRecur}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </>
+              )}
             </Button>
-            {showRecurring && (
-              <>
-                <FormField
-                  control={form.control}
-                  name="frequency"
-                  render={({ field }) => (
-                    <FormItem>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="gap-2">
-                            <SelectValue placeholder="Select frequency" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="daily">Daily</SelectItem>
-                          <SelectItem value="weekly">Weekly</SelectItem>
-                          <SelectItem value="monthly">Monthly</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="recurrenceType"
-                  render={({ field }) => (
-                    <FormItem>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="gap-2">
-                            <SelectValue placeholder="Select recurrence type" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="completion">When task is completed</SelectItem>
-                          <SelectItem value="schedule">
-                            On schedule (daily, weekly, monthly)
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormItem>
-                  )}
-                />
-              </>
-            )}
-            <div className="flex w-full justify-end">
+            <RecurDialog
+              open={isRecurDialogOpen}
+              onOpenChange={setIsRecurDialogOpen}
+              onSave={(data) => {
+                if (data.frequency === "none") {
+                  form.setValue("frequency", undefined);
+                  form.setValue("recurrenceType", undefined);
+                  form.setValue("customInterval", undefined);
+                } else {
+                  form.setValue("frequency", data.frequency);
+                  form.setValue("recurrenceType", data.recurrenceType);
+                  if (data.customInterval) {
+                    form.setValue("customInterval", data.customInterval);
+                  } else {
+                    form.setValue("customInterval", undefined);
+                  }
+                  // Don't automatically set due date - let user choose
+                }
+              }}
+              initialData={{
+                frequency: form.getValues("frequency"),
+                recurrenceType: form.getValues("recurrenceType"),
+                customInterval: form.getValues("customInterval"),
+              }}
+            />
+            <div className="flex justify-end">
               <Button
                 disabled={!form.getValues("name")}
                 size="sm"
