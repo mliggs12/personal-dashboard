@@ -173,8 +173,12 @@ export function checkIfShouldGenerate(
     async handler(ctx) {
       // Check if it's 6am Mountain Time (America/Denver) - server runs in UTC
       // Mountain Time is UTC-6 (MST) or UTC-7 (MDT during daylight saving)
+      const serverTimeUTC = dayjs().utc();
       const mountainTime = dayjs().tz("America/Denver");
       
+      console.log(`[generateRecurringTasks] Server time (UTC): ${serverTimeUTC.format("YYYY-MM-DD HH:mm:ss")} UTC`);
+      console.log(`[generateRecurringTasks] Mountain Time: ${mountainTime.format("YYYY-MM-DD HH:mm:ss")} ${mountainTime.format("z")}`);
+
       if (mountainTime.hour() !== 6) {
         console.log(`[generateRecurringTasks] Not 6am Mountain Time, skipping`);
         return { generatedCount: 0, errorCount: 0, skipped: true };
