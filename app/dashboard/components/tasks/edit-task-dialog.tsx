@@ -1,11 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import * as SelectPrimitive from "@radix-ui/react-select";
-import { useMutation, useQuery } from "convex/react";
+import { useMutation } from "convex/react";
 import dayjs from "dayjs";
-import { CalendarIcon, CheckCircleIcon, Trash2 } from "lucide-react";
+import { CalendarIcon, Trash2 } from "lucide-react";
 
 import {
-  frequencies,
   priorities,
   statuses,
 } from "@/app/dashboard/tasks/data/data";
@@ -28,7 +27,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { api } from "@/convex/_generated/api";
-import { Doc, Id } from "@/convex/_generated/dataModel";
+import { Doc } from "@/convex/_generated/dataModel";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
@@ -41,16 +40,10 @@ export default function EditTaskDialog({
   data: Doc<"tasks">;
   onDeleteComplete?: () => void;
 }) {
-  const { name, notes, status, priority, due, recurringTaskId, _id } =
+  const { name, notes, status, priority, due, _id } =
     data;
-  const recurringTask = useQuery(api.recurringTasks.get, {
-    recurringTaskId: recurringTaskId as Id<"recurringTasks">,
-  });
   const remove = useMutation(api.tasks.remove);
   const updateTask = useMutation(api.tasks.update);
-  const updateRecurringTask = useMutation(api.recurringTasks.update);
-  const removeRecurringFromTask = useMutation(api.tasks.removeRecurringFromTask);
-  const convertTaskToRecurring = useMutation(api.tasks.convertTaskToRecurring);
 
   const { toast } = useToast();
 
@@ -61,49 +54,12 @@ export default function EditTaskDialog({
   const [taskPriority, setTaskPriority] = useState(
     priorities.find((priorityInfo) => priorityInfo.value === priority),
   );
-  const [recurFrequency, setRecurFrequency] = useState<
-    (typeof frequencies)[number] | undefined
-  >(undefined);
-  const [recurType, setRecurType] = useState<
-    "onSchedule" | "whenDone" | undefined
-  >(undefined);
   const [calendarDate, setCalendarDate] = useState<Date | undefined>(
     taskDue ? dayjs(due, "YYYY-MM-DD").toDate() : undefined,
   );
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   // eslint-disable-next-line
   const [isSaving, setIsSaving] = useState(false);
-
-  useEffect(() => {
-    if (recurringTask) {
-      // Derive frequency from schedule.interval
-      if (recurringTask.schedule?.interval) {
-        const unit = recurringTask.schedule.interval.unit;
-        const amount = recurringTask.schedule.interval.amount;
-        let frequencyValue: string;
-        if (unit === "day" && amount === 1) {
-          frequencyValue = "daily";
-        } else if (unit === "week" && amount === 1) {
-          frequencyValue = "weekly";
-        } else if (unit === "month" && amount === 1) {
-          frequencyValue = "monthly";
-        } else {
-          frequencyValue = "none"; // Custom intervals not supported in UI yet
-        }
-        
-        // eslint-disable-next-line
-        setRecurFrequency(
-          frequencies.find(
-            (frequencyInfo) => frequencyInfo.value === frequencyValue,
-          ),
-        );
-      }
-       
-      setRecurType(recurringTask.recurrenceType === "schedule" ? "onSchedule" : "whenDone");
-    }
-  }, [recurringTask]);
-
-
 
   const timeoutRef = useRef<NodeJS.Timeout>(undefined);
 
@@ -208,122 +164,6 @@ export default function EditTaskDialog({
     );
   };
 
-  // Helper function to convert frequency string to schedule object
-  const frequencyToSchedule = (frequency: string) => {
-    switch (frequency) {
-      case "daily":
-        return {
-          interval: {
-            amount: 1,
-            unit: "day" as const,
-          },
-        };
-      case "weekly":
-        return {
-          interval: {
-            amount: 1,
-            unit: "week" as const,
-          },
-        };
-      case "monthly":
-        return {
-          interval: {
-            amount: 1,
-            unit: "month" as const,
-          },
-        };
-      default:
-        throw new Error(`Invalid frequency: ${frequency}`);
-    }
-  };
-
-  const handleFrequencyChange = async (frequency: string) => {
-    try {
-      // Case 1: User selected "none" - remove recurring
-      if (frequency === "none" && recurringTaskId) {
-        await removeRecurringFromTask({ taskId: _id });
-        setRecurFrequency(undefined);
-        toast({
-          title: "Recurring removed",
-          description: "This task is no longer part of a recurring series.",
-          duration: 3000,
-        });
-      }
-      // Case 2: User selected frequency but task is not recurring yet - convert to recurring
-      else if (frequency !== "none" && !recurringTaskId) {
-        const schedule = frequencyToSchedule(frequency);
-        const recurrenceType = recurType === "onSchedule" ? "schedule" : "completion";
-        
-        await convertTaskToRecurring({
-          taskId: _id,
-          schedule,
-          recurrenceType,
-        });
-        setRecurFrequency(
-          frequencies.find((frequencyInfo) => frequencyInfo.value === frequency),
-        );
-        toast({
-          title: "Recurring task created",
-          description: "This task is now a recurring task.",
-          duration: 3000,
-        });
-      }
-      // Case 3: User changed frequency on existing recurring task - update recurring task
-      else if (frequency !== "none" && recurringTaskId) {
-        const schedule = frequencyToSchedule(frequency);
-        
-        await updateRecurringTask({
-          recurringTaskId: recurringTaskId as Id<"recurringTasks">,
-          schedule,
-        });
-        setRecurFrequency(
-          frequencies.find((frequencyInfo) => frequencyInfo.value === frequency),
-        );
-        toast({
-          title: "Frequency updated",
-          duration: 3000,
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: `${error instanceof Error ? error.message : 'Unknown error'}`,
-        variant: "destructive",
-        duration: 3000,
-      });
-    }
-  };
-
-  const handleTypeChange = async (type: "onSchedule" | "whenDone") => {
-    if (!recurringTaskId) {
-      toast({
-        title: "Error",
-        description: "This task is not a recurring task.",
-        variant: "destructive",
-        duration: 3000,
-      });
-      return;
-    }
-
-    try {
-      await updateRecurringTask({
-        recurringTaskId: recurringTaskId as Id<"recurringTasks">,
-        recurrenceType: type === "onSchedule" ? "schedule" : "completion",
-      });
-      setRecurType(type);
-      toast({
-        title: "Recurring type updated",
-        duration: 2000,
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: `Failed to update recurring type: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        variant: "destructive",
-        duration: 3000,
-      });
-    }
-  };
 
   if (notes === undefined)
     return (
@@ -425,60 +265,6 @@ export default function EditTaskDialog({
               ))}
             </SelectContent>
           </Select>
-        </div>
-        <div className="grid">
-          <Label className="flex items-start text-lg">Recurring</Label>
-          <div className="flex justify-between">
-            <Select
-              onValueChange={handleFrequencyChange}
-              defaultValue={recurFrequency?.value || "none"}
-            >
-              <SelectPrimitive.Trigger className="w-fit h-8 gap-2 border-none hover:bg-secondary focus:ring-0 focus:ring-offset-0">
-                <SelectPrimitive.Value placeholder="Select a frequency" />
-                <SelectPrimitive.Icon>
-                  <span></span>
-                </SelectPrimitive.Icon>
-              </SelectPrimitive.Trigger>
-              <SelectContent>
-                {frequencies.map((item, index) => (
-                  <SelectItem
-                    key={index}
-                    value={item.value}
-                  >
-                    <div className="flex items-center gap-2">
-                      {item.icon}
-                      <span>{item.label}</span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select
-              onValueChange={handleTypeChange}
-              value={recurType}
-            >
-              <SelectPrimitive.Trigger className="w-fit h-8 pl-0 gap-2 border-none hover:bg-secondary focus:ring-0 focus:ring-offset-0">
-                <SelectPrimitive.Value placeholder="Select a type" />
-                <SelectPrimitive.Icon>
-                  <span></span>
-                </SelectPrimitive.Icon>
-              </SelectPrimitive.Trigger>
-              <SelectContent>
-                <SelectItem value="onSchedule">
-                  <div className="flex items-center gap-2 text-nowrap">
-                    <CalendarIcon className="text-primary w-4 h-4" />
-                    <span>On schedule</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="whenDone">
-                  <div className="flex items-center gap-2 text-nowrap">
-                    <CheckCircleIcon className="text-primary w-4 h-4" />
-                    <span>When done</span>
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
         </div>
       </div>
       <DialogFooter className="flex items-end">
