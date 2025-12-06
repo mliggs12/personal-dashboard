@@ -75,6 +75,8 @@ export function CustomFrequencyDialog({
   
   // Compute initial values based on initialData
   const initialValues = useMemo(() => {
+    const refDate = currentDueDate || new Date();
+    
     if (initialData?.interval) {
       const days = initialData.daysOfWeek || [];
       const recurrenceType = initialData.recurrenceType || "schedule";
@@ -84,7 +86,7 @@ export function CustomFrequencyDialog({
         initialData.interval.unit === "week" && 
         recurrenceType === "schedule" && 
         days.length === 0
-          ? [getDayOfWeekFromDate(getReferenceDate())] // Default to due date's day or today
+          ? [getDayOfWeekFromDate(refDate)] // Default to due date's day or today
           : days;
       
       return {
@@ -96,7 +98,6 @@ export function CustomFrequencyDialog({
     }
     
     // Default values when opening fresh - use due date's day or today
-    const refDate = getReferenceDate();
     return {
       recurrenceType: "schedule" as const,
       amount: 1,
