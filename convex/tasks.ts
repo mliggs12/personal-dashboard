@@ -1,4 +1,3 @@
-import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
 
 import { mutation, query } from "./_generated/server";
@@ -8,14 +7,14 @@ import { calculateNextRunDate, createNextWhenDoneTask } from "./recurringTasksHe
 import { getCurrentUserOrThrow, userByExternalId } from "./users";
 
 export const list = query({
-  args: { paginationOpts: paginationOptsValidator },
-  async handler(ctx, { paginationOpts }) {
+  args: {},
+  async handler(ctx) {
     const user = await getCurrentUserOrThrow(ctx);
 
     return await ctx.db
       .query("tasks")
       .withIndex("by_user", (q) => q.eq("userId", user._id))
-      .paginate(paginationOpts);
+      .collect();
   },
 });
 

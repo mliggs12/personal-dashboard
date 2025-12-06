@@ -12,7 +12,7 @@ import { DataTablePagination } from "./components/data-table-pagination";
 import { DataTableToolbar } from "./components/data-table-toolbar";
 
 export default function TasksPage() {
-  const tasksQuery = useQuery(api.tasks.list, { paginationOpts: { numItems: 100, cursor: null } });
+  const tasksQuery = useQuery(api.tasks.list);
   const tasks = tasksQuery ?? [];
   const { savedState, onStateChange } = useTableState("tasks");
 
