@@ -24,7 +24,7 @@ export default function NotePage() {
 
   const updateNote = useMutation(api.notes.update);
 
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   const handleChange = useCallback(
     (text: string) => {
