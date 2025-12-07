@@ -48,18 +48,18 @@ export default function TasksCard() {
   // Show loading state until client hydration
   if (!isClient) {
     return (
-      <Card className="w-full max-w-[600px] relative max-h-[570px] sm:max-h-[467px]">
-        <CardHeader className="p-3 pr-2">
+      <Card className="w-full max-w-[600px] relative h-full flex flex-col max-h-[570px] sm:max-h-[467px]">
+        <CardHeader className="p-3 pr-2 shrink-0">
           <Skeleton className="h-6 w-32" />
         </CardHeader>
-        <CardContent className="relative h-[445px] sm:h-[346px] p-0 border-t">
+        <CardContent className="relative flex-1 min-h-0 p-0 border-t">
           <div className="p-4 space-y-3">
             <Skeleton className="h-12 w-full" />
             <Skeleton className="h-12 w-full" />
             <Skeleton className="h-12 w-full" />
           </div>
         </CardContent>
-        <CardFooter className="h-[60px] flex items-center justify-between p-3 px-6">
+        <CardFooter className="h-[60px] shrink-0 flex items-center justify-between p-3 px-6">
           <Skeleton className="h-4 w-20" />
           <Skeleton className="h-8 w-24" />
         </CardFooter>
@@ -68,8 +68,8 @@ export default function TasksCard() {
   }
 
   return (
-    <Card className="w-full max-w-[600px] relative max-h-[570px] sm:max-h-[467px]">
-      <CardHeader className="p-3 pr-2">
+    <Card className="w-full max-w-[600px] relative h-full flex flex-col max-h-[570px] sm:max-h-[467px]">
+      <CardHeader className="p-3 pr-2 shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-6">
             <CardTitle>My tasks</CardTitle>
@@ -88,11 +88,11 @@ export default function TasksCard() {
           </Button>
         </div>
       </CardHeader>
-      <CardContent className="relative h-[445px] sm:h-[346px] p-0 border-t overflow-y-auto hide-scrollbar">
+      <CardContent className="relative flex-1 min-h-0 p-0 border-t overflow-y-auto hide-scrollbar">
         <TaskList tasks={tasks} />
       </CardContent>
 
-      <CardFooter className="h-[60px] flex items-center justify-between p-3 px-6 text-xs text-muted-foreground">
+      <CardFooter className="h-[60px] shrink-0 flex items-center justify-between p-3 px-6 text-xs text-muted-foreground">
         {tasks.length} tasks
         <AddTaskDrawerDialog />
       </CardFooter>

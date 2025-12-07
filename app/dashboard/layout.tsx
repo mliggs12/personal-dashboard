@@ -69,7 +69,7 @@ export default function DashboardLayout({
             </header>
             <main className={cn(
               "h-[calc(100vh-64px)] md:h-[calc(100vh-48px)]",
-              isMobile ? "overflow-y-auto" : "overflow-hidden"
+              isMobile && pathname === "/dashboard" ? "overflow-hidden" : isMobile ? "overflow-y-auto" : "overflow-hidden"
             )}>{children}</main>
             <Toaster />
           </SidebarInset>
