@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import * as SelectPrimitive from "@radix-ui/react-select";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import dayjs from "dayjs";
-import { CalendarIcon, Trash2 } from "lucide-react";
+import { CalendarIcon, Repeat, Trash2 } from "lucide-react";
 
 import {
   priorities,
@@ -30,6 +30,7 @@ import { api } from "@/convex/_generated/api";
 import { Doc } from "@/convex/_generated/dataModel";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { formatRecurrenceText } from "@/convex/recurringTasksHelpers";
 
 import TiptapEditor from "../tiptap-editor";
 
@@ -40,10 +41,16 @@ export default function EditTaskDialog({
   data: Doc<"tasks">;
   onDeleteComplete?: () => void;
 }) {
-  const { name, notes, status, priority, due, _id } =
+  const { name, notes, status, priority, due, _id, recurringTaskId } =
     data;
   const remove = useMutation(api.tasks.remove);
   const updateTask = useMutation(api.tasks.update);
+  
+  // Fetch recurring task data if this task is part of a recurring task
+  const recurringTask = useQuery(
+    api.recurringTasks.get,
+    recurringTaskId ? { recurringTaskId } : "skip"
+  );
 
   const { toast } = useToast();
 
@@ -164,6 +171,15 @@ export default function EditTaskDialog({
     );
   };
 
+  // Format recurrence text for display
+  const recurrenceText = recurringTask && recurringTask.schedule
+    ? formatRecurrenceText(
+        recurringTask.schedule,
+        recurringTask.recurrenceType,
+        taskDue || undefined
+      )
+    : null;
+
 
   if (notes === undefined)
     return (
@@ -211,6 +227,14 @@ export default function EditTaskDialog({
               />
             </PopoverContent>
           </Popover>
+          {recurrenceText && (
+            <div className="flex items-center gap-2 mt-1">
+              <Repeat className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">
+                {recurrenceText}
+              </span>
+            </div>
+          )}
         </div>
         <div>
           <Label className="flex items-start text-lg">Status</Label>

@@ -362,3 +362,124 @@ export function checkIfShouldGenerate(
       return await generateRecurringTasksCore(ctx, true, true);
     },
   });
+
+/**
+ * Formats recurrence text from recurring task schema format.
+ * This is a pure function that can be used on both client and server.
+ * @param schedule - The schedule object from recurring task schema
+ * @param recurrenceType - "schedule" or "completion"
+ * @param referenceDate - Optional reference date string (YYYY-MM-DD) for displaying day names (defaults to today)
+ * @returns Formatted recurrence text string, or null if schedule is invalid
+ */
+export function formatRecurrenceText(
+  schedule: {
+    interval?: {
+      amount: number;
+      unit: "day" | "week" | "month";
+    };
+    daysOfWeek?: number[];
+    dayOfMonth?: number;
+  } | undefined,
+  recurrenceType: "schedule" | "completion",
+  referenceDate?: string // YYYY-MM-DD format
+): string | null {
+  if (!schedule?.interval) {
+    return null;
+  }
+
+  const { interval, daysOfWeek } = schedule;
+  const { amount, unit } = interval;
+  const isCompletion = recurrenceType === "completion";
+  const afterCompletion = isCompletion ? " after completion" : "";
+
+  // Helper to format days of week array
+  const formatDaysOfWeek = (days: number[]): string => {
+    const DAYS_OF_WEEK = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    return days
+      .sort((a, b) => a - b)
+      .map((d) => DAYS_OF_WEEK[d])
+      .join(", ");
+  };
+
+  // Helper to get day name from date
+  const getDayNameFromDate = (dateStr: string): string => {
+    const DAYS_OF_WEEK = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const date = dayjs(dateStr, "YYYY-MM-DD");
+    return DAYS_OF_WEEK[date.day()];
+  };
+
+  // Helper to format day of month
+  const formatDayOfMonth = (day: number): string => {
+    const suffix = day === 1 ? "st" : day === 2 ? "nd" : day === 3 ? "rd" : "th";
+    return `The ${day}${suffix} day`;
+  };
+
+  // Helper to get month name
+  const getMonthNameFromDate = (dateStr: string): string => {
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const date = dayjs(dateStr, "YYYY-MM-DD");
+    return months[date.month()];
+  };
+
+  // Get reference date (due date or today)
+  const refDateStr = referenceDate || dayjs().format("YYYY-MM-DD");
+  const refDate = dayjs(refDateStr, "YYYY-MM-DD");
+
+  // Special handling for weekly with specific days
+  if (unit === "week" && daysOfWeek && daysOfWeek.length > 0) {
+    const selectedDayNames = formatDaysOfWeek(daysOfWeek);
+    if (isCompletion) {
+      if (amount === 1) {
+        return `1 week after completion`;
+      } else {
+        return `${amount} weeks after completion`;
+      }
+    }
+    if (amount === 1) {
+      return `Weekly on ${selectedDayNames}`;
+    } else {
+      return `Every ${amount} weeks on ${selectedDayNames}`;
+    }
+  }
+
+  // Handle monthly with day of month
+  if (unit === "month" && amount === 1) {
+    if (isCompletion) {
+      return `1 month after completion`;
+    }
+    const dayOfMonth = refDate.date();
+    return `Monthly (${formatDayOfMonth(dayOfMonth)})`;
+  }
+
+  // Handle yearly (12 months)
+  if (unit === "month" && amount === 12) {
+    if (isCompletion) {
+      return `1 year after completion`;
+    }
+    const month = getMonthNameFromDate(refDateStr);
+    const day = refDate.date();
+    return `Yearly (on ${month} ${day})`;
+  }
+
+  // Handle weekday (Mon-Fri = 1-5)
+  if (unit === "week" && daysOfWeek && daysOfWeek.length === 5 && 
+      daysOfWeek.every(d => [1, 2, 3, 4, 5].includes(d))) {
+    return isCompletion ? "Every Weekday after completion" : "Every Weekday";
+  }
+
+  // Handle daily
+  if (unit === "day" && amount === 1) {
+    return isCompletion ? "Daily after completion" : "Daily";
+  }
+
+  // Generic format for other intervals
+  const unitLabel = unit === "day" ? "day" : unit === "week" ? "week" : "month";
+  const pluralUnit = amount !== 1 ? `${unitLabel}s` : unitLabel;
+  
+  // For weekly without specific days, show the day name
+  if (unit === "week" && amount === 1 && !isCompletion) {
+    return `Weekly on ${getDayNameFromDate(refDateStr)}`;
+  }
+
+  return `${amount} ${pluralUnit}${afterCompletion}`;
+}

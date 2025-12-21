@@ -3,13 +3,21 @@
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 
+const PIXELS_PER_HOUR = 60; // 60px per hour = 1px per minute
+const PIXELS_PER_MINUTE = 1;
+const UPDATE_INTERVAL = 60000; // Update every minute
+
+/**
+ * Displays a visual indicator line showing the current time on the calendar grid.
+ * Updates every minute to reflect the current time position.
+ */
 export default function NowLine() {
   const [currentTime, setCurrentTime] = useState(dayjs());
 
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTime(dayjs());
-    }, 60000); // Update every minute
+    }, UPDATE_INTERVAL);
 
     return () => clearInterval(interval);
   }, []);
@@ -18,20 +26,17 @@ export default function NowLine() {
   const currentHour = currentTime.hour();
   const currentMinute = currentTime.minute();
   
-  // Each hour is 240px, so each minute is 4px
-  const topPosition = (currentHour * 240) + (currentMinute * 4);
+  // Calculate absolute position: (hours * 60) + minutes
+  const topPosition = (currentHour * PIXELS_PER_HOUR) + (currentMinute * PIXELS_PER_MINUTE);
 
   return (
     <div 
-      className="absolute left-0 right-0 z-20 pointer-events-none"
+      className="absolute -left-2 -right-2 z-30 pointer-events-none"
       style={{ top: `${topPosition}px` }}
     >
       <div className="flex items-center">
-        <div className="w-2 h-2 bg-red-500 rounded-full mr-1"></div>
-        <div className="flex-1 h-0.5 bg-red-500"></div>
-        <span className="text-xs text-red-500 ml-2 bg-white px-1 rounded">
-          {currentTime.format('h:mm A')}
-        </span>
+        <div className="w-2 h-2 bg-foreground/60 rounded-full mr-2 shadow-sm ring-2 ring-background"></div>
+        <div className="flex-1 h-0.5 bg-border"></div>
       </div>
     </div>
   );

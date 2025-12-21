@@ -19,7 +19,6 @@ interface GoogleCalendarResponse {
 
 async function getOauthToken(userId: string): Promise<string> {
   const client = await clerkClient();
-  console.log(userId);
   const clerkResponse = await client.users.getUserOauthAccessToken(
     userId,
     "google",
@@ -60,17 +59,20 @@ export async function getUserEvents(): Promise<Event[]> {
   try {
     const token = await getOauthToken(userId);
 
-    const oneWeekFromToday = dayjs().add(7, "day").endOf("day").toISOString();
-    const timeMin = dayjs().startOf("hour").toISOString();
+    // Fetch events from start of today to 7 days ahead
+    // This ensures we get events even if there are timezone issues
+    // We'll filter to today on the client side
+    const now = dayjs();
+    const timeMin = now.startOf("day").utc().toISOString();
+    const timeMax = now.add(7, "days").endOf("day").utc().toISOString();
 
-    const response = await fetch(
-      `https://www.googleapis.com/calendar/v3/calendars/primary/events?maxResults=10&orderBy=startTime&singleEvents=true&timeMin=${timeMin}&timeMax=${oneWeekFromToday}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+    const url = `https://www.googleapis.com/calendar/v3/calendars/primary/events?maxResults=250&orderBy=startTime&singleEvents=true&timeMin=${encodeURIComponent(timeMin)}&timeMax=${encodeURIComponent(timeMax)}`;
+    
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
       },
-    );
+    });
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -79,7 +81,6 @@ export async function getUserEvents(): Promise<Event[]> {
     }
     
     const data: GoogleCalendarResponse = await response.json();
-    
     return mapCalendarEvents(data.items);
   } catch (error) {
     console.error('Error fetching user events:', error);

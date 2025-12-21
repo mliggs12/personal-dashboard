@@ -1,69 +1,84 @@
 import dayjs from "dayjs";
 
-import { timestampToTimeShort } from "@/lib/date.utils";
+import { cn } from "@/lib/utils";
 
 import { formatSecondsVerbose } from "../timer/components/timer/time";
 
+interface CalendarItemProps {
+  duration: number;
+  start: number;
+  description: string;
+  type?: "session" | "event";
+  top: number;
+  height: number;
+  column?: number;
+  totalColumns?: number;
+}
+
+/**
+ * Calendar item component that displays events or focus sessions on the calendar grid.
+ * Supports side-by-side layout for overlapping events.
+ */
 export default function CalendarItem({
   duration,
   start,
   description,
   type = "session",
-  currentHour,
-  calendarDate,
-}: {
-  duration: number;
-  start: number;
-  description: string;
-  type?: "session" | "event";
-  currentHour: number;
-  calendarDate: dayjs.Dayjs;
-}) {
+  top,
+  height,
+  column = 0,
+  totalColumns = 1,
+}: CalendarItemProps) {
   const startTime = dayjs(start);
   const endTime = startTime.add(duration, 'seconds');
   
-  // Calculate the visible portion within this hour
-  const hourStart = calendarDate.hour(currentHour).minute(0).second(0);
-  const hourEnd = calendarDate.hour(currentHour).minute(59).second(59);
+  // Calculate width and left position for side-by-side layout
+  const widthPercent = 100 / totalColumns;
+  const leftPercent = column * widthPercent;
   
-  // Determine the actual start and end times for this hour
-  const visibleStart = startTime.isAfter(hourStart) ? startTime : hourStart;
-  const visibleEnd = endTime.isBefore(hourEnd) ? endTime : hourEnd;
-  
-  // Calculate height based on visible duration
-  const visibleDuration = visibleEnd.diff(visibleStart, 'seconds');
-  const heightPixels = Math.max(4, (visibleDuration / 60) * 4); // Minimum 4px height
-  
-  // Calculate top position within this hour
-  const topPixels = visibleStart.diff(hourStart, 'seconds') / 60 * 4;
+  // Minimum height to ensure readability
+  const minHeight = Math.max(20, height);
 
   const getItemStyles = () => {
-    const baseClasses = "absolute w-[250px] rounded-md border flex items-center justify-between px-2 z-10";
+    const baseClasses = cn(
+      "absolute rounded-md border flex items-center px-2 z-10 transition-all",
+      "hover:shadow-md hover:z-20",
+      "cursor-pointer"
+    );
     
     if (type === "event") {
-      return `${baseClasses} bg-blue-100 border-blue-300 text-blue-800`;
+      return cn(
+        baseClasses,
+        "bg-primary/30 border-0 text-secondary-foreground",
+        "hover:bg-primary/40"
+      );
     }
     
-    return `${baseClasses} bg-green-100 border-green-300 text-green-800`;
+    return cn(
+      baseClasses,
+      "bg-green-500/10 border-green-500/30 text-green-700 dark:text-green-400",
+      "hover:bg-green-500/15 hover:border-green-500/50"
+    );
   };
-
-  // Only show the start time if this is the first hour of the item
-  const showStartTime = startTime.hour() === currentHour;
-  
-  // Show duration for the visible portion
-  const displayDuration = visibleDuration;
 
   return (
     <div 
       className={getItemStyles()} 
-      style={{ height: `${heightPixels}px`, top: `${topPixels}px` }}
-      title={`${description} (${formatSecondsVerbose(duration)})`}
+      style={{ 
+        top: `${top + 1}px`, // Small offset to position slightly within hour lines
+        height: `${minHeight - 1}px`, // Reduce height slightly to maintain bottom alignment
+        left: `${leftPercent}%`,
+        width: `${widthPercent}%`,
+        marginLeft: column > 0 ? '2px' : '0',
+        marginRight: column < totalColumns - 1 ? '2px' : '0',
+      }}
+      title={`${description} - ${startTime.format('h:mm A')} to ${endTime.format('h:mm A')} (${formatSecondsVerbose(duration)})`}
     >
-      {showStartTime && (
-        <span className="text-xs font-medium">{timestampToTimeShort(start)}</span>
-      )}
-      <span className="text-xs truncate mx-2 flex-1">{description}</span>
-      <span className="text-xs">{formatSecondsVerbose(displayDuration)}</span>
+      <div className="flex flex-col justify-center min-w-0 flex-1 py-0.5">
+        <span className="text-xs font-medium truncate leading-tight">
+          {description}
+        </span>
+      </div>
     </div>
   );
 }
