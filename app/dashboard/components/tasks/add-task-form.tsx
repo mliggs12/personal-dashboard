@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "convex/react";
 import dayjs from "dayjs";
@@ -101,6 +101,14 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
   const customInterval = useWatch({ control: form.control, name: "customInterval" });
   const recurrenceType = useWatch({ control: form.control, name: "recurrenceType" });
   const dueDate = useWatch({ control: form.control, name: "due" });
+  const status = useWatch({ control: form.control, name: "status" });
+
+  // Clear due date when status changes to backlog
+  useEffect(() => {
+    if (status === "backlog" && dueDate) {
+      form.setValue("due", undefined);
+    }
+  }, [status, dueDate, form]);
 
   const handleClearRecur = (e: React.MouseEvent) => {
     e.stopPropagation();

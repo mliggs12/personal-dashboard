@@ -196,12 +196,31 @@ export const update = mutation({
     const wasNotDone = task.status !== "done";
     const isNowDone = status === "done";
 
+    // Determine the final status
+    let finalStatus = status !== undefined ? status : task.status;
+    
+    // Determine the final due date value
+    let finalDue = due !== undefined ? (due === "" ? undefined : due) : task.due;
+    
+    // If task is being set to backlog, remove the due date
+    if (status === "backlog" && finalDue !== undefined) {
+      finalDue = undefined;
+    }
+    
+    // If task is backlog and a due date is being set, automatically change status to todo
+    if (task.status === "backlog" && finalDue !== undefined && task.due === undefined) {
+      // Only change to todo if status wasn't explicitly set and due date is being added
+      if (status === undefined) {
+        finalStatus = "todo";
+      }
+    }
+
     await ctx.db.patch(taskId, {
       name: name !== undefined ? name : task.name,
-      status: status !== undefined ? status : task.status,
+      status: finalStatus,
       priority: priority !== undefined ? priority : task.priority,
       notes: notes !== undefined ? notes : task.notes,
-      due: due !== undefined ? (due === "" ? undefined : due) : task.due,
+      due: finalDue,
       completed: completed !== undefined ? completed : (isNowDone && wasNotDone ? now : task.completed),
       recurringTaskId: recurringTaskId !== undefined ? recurringTaskId : task.recurringTaskId,
       intentionId: intentionId !== undefined ? intentionId : task.intentionId,
@@ -263,8 +282,24 @@ export const todayTasks = query({
       )
       .collect();
 
-    // Normalize and filter tasks in memory to handle both YYYY-MM-DD and YYYY/MM/DD formats
-    const allTasks = allTasksWithDue.filter((task) => {
+    // Get todo tasks with no due date (should show in today)
+    const todoTasksNoDue = await ctx.db
+      .query("tasks")
+      .withIndex("by_user_status", (q) =>
+        q
+          .eq("userId", user._id)
+          .eq("status", "todo")
+      )
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("due"), undefined),
+          q.eq(q.field("completed"), undefined)
+        )
+      )
+      .collect();
+
+    // Normalize and filter tasks with due dates in memory to handle both YYYY-MM-DD and YYYY/MM/DD formats
+    const tasksWithDue = allTasksWithDue.filter((task) => {
       if (!task.due) return false;
       
       const normalizedTaskDue = normalizeDateString(task.due);
@@ -274,7 +309,11 @@ export const todayTasks = query({
       return normalizedTaskDue <= normalizedDate;
     });
 
+    // Combine tasks with due dates and todo tasks with no due date
+    const allTasks = [...tasksWithDue, ...todoTasksNoDue];
+
     // Sort by due date ascending (earliest first) using normalized dates
+    // Tasks without due dates come after tasks with due dates
     return allTasks.sort((a, b) => {
       if (!a.due && !b.due) return 0;
       if (!a.due) return 1;
@@ -293,8 +332,9 @@ export const backlogTasks = query({
   async handler(ctx) {
     const user = await getCurrentUserOrThrow(ctx);
 
-    // Get backlog tasks without due dates (not completed, not archived)
-    const backlogTasks = await ctx.db
+    // Get backlog tasks (not completed, not archived)
+    // Backlog should only contain tasks with status "backlog"
+    return await ctx.db
       .query("tasks")
       .withIndex("by_user_status", (q) =>
         q
@@ -302,30 +342,9 @@ export const backlogTasks = query({
           .eq("status", "backlog")
       )
       .filter((q) => 
-        q.and(
-          q.eq(q.field("due"), undefined),
-          q.eq(q.field("completed"), undefined)
-        )
+        q.eq(q.field("completed"), undefined)
       )
       .collect();
-
-    // Get todo tasks without due dates (not completed, not archived)
-    const todoTasks = await ctx.db
-      .query("tasks")
-      .withIndex("by_user_status", (q) =>
-        q
-          .eq("userId", user._id)
-          .eq("status", "todo")
-      )
-      .filter((q) => 
-        q.and(
-          q.eq(q.field("due"), undefined),
-          q.eq(q.field("completed"), undefined)
-        )
-      )
-      .collect();
-
-    return [...backlogTasks, ...todoTasks];
   },
 });
 
