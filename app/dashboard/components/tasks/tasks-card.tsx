@@ -42,7 +42,7 @@ export default function TasksCard() {
     let filtered: Doc<"tasks">[] = [];
 
     if (status === "today") {
-      // Today: status === "todo" | "in_progress" AND (due <= today OR date === today OR (due === undefined AND date === undefined))
+      // Today: status === "todo" | "in_progress" AND (due <= today OR date <= today OR (due === undefined AND date === undefined))
       filtered = allActiveTasks.filter((task) => {
         const isActiveStatus = task.status === "todo" || task.status === "in_progress";
         if (!isActiveStatus) return false;
@@ -55,9 +55,12 @@ export default function TasksCard() {
           }
         }
 
-        // Check if date === today
-        if (task.date && task.date === normalizedToday) {
-          return true;
+        // Check if date <= today (includes past dates and today)
+        if (task.date) {
+          const normalizedDate = normalizeDateString(task.date);
+          if (normalizedDate && normalizedDate <= normalizedToday) {
+            return true;
+          }
         }
 
         // Check if no due and no date (todo tasks with no dates)

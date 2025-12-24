@@ -10,23 +10,11 @@ import {
 } from "@/components/ui/tooltip";
 import { Doc } from "@/convex/_generated/dataModel";
 import dayjs from "@/lib/dayjs.config";
+import { formatTaskDate } from "@/lib/date.utils";
 import { cn } from "@/lib/utils";
 
 import EditTaskDialog from "./edit-task-dialog";
 import { useRecurrenceText } from "./hooks/use-recurrence-text";
-
-function displayDueDate(dueDateString: string) {
-  const dueDate = dayjs(dueDateString, "YYYY-MM-DD");
-  const today = dayjs().startOf("day");
-
-  if (dueDate.isToday()) {
-    return "Today";
-  } else if (dueDate.isYesterday()) {
-    return "Yesterday";
-  } else {
-    return dueDate.from(today);
-  }
-}
 
 export default function Task({
   data,
@@ -95,12 +83,23 @@ export default function Task({
                   {due && (
                     <p
                       className={cn(
-                        "w-[70px] text-xs text-right text-muted-foreground text-nowrap",
+                        "w-[70px] text-xs text-right text-muted-foreground text-nowrap font-medium",
                         dayjs(due, "YYYY-MM-DD").isBefore(dayjs().startOf("day")) &&
                         "text-destructive",
                       )}
                     >
-                      {displayDueDate(due)}
+                      {formatTaskDate(due)}
+                    </p>
+                  )}
+                  {!due && date && (
+                    <p
+                      className={cn(
+                        "w-[70px] text-xs text-right text-muted-foreground/70 text-nowrap",
+                        dayjs(date, "YYYY-MM-DD").isBefore(dayjs().startOf("day")) &&
+                        "text-destructive",
+                      )}
+                    >
+                      {formatTaskDate(date)}
                     </p>
                   )}
                 </div>

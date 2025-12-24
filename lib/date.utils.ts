@@ -37,6 +37,43 @@ export function calculateDuration(end: number, start: number) {
   return timeEnd.diff(timeStart, "hour", true).toFixed(2);
 }
 
+/**
+ * Formats a task due date or scheduled date for display.
+ * 
+ * - Today: "Today"
+ * - Yesterday: "Yesterday"
+ * - Tomorrow: "Tomorrow"
+ * - Future dates: "Jan 2" format (MMM D)
+ * - Past dates: Relative format (e.g., "3 days ago")
+ * 
+ * @param dateString - Date string in YYYY-MM-DD format
+ * @returns Formatted date string for display
+ * 
+ * @example
+ * formatTaskDate("2025-01-15") // "Jan 15" (if in future)
+ * formatTaskDate("2025-01-11") // "Tomorrow" (if tomorrow)
+ * formatTaskDate("2025-01-10") // "Today" (if today)
+ * formatTaskDate("2025-01-09") // "Yesterday" (if yesterday)
+ */
+export function formatTaskDate(dateString: string): string {
+  const date = dayjs(dateString, "YYYY-MM-DD");
+  const today = dayjs().startOf("day");
+
+  if (date.isToday()) {
+    return "Today";
+  } else if (date.isYesterday()) {
+    return "Yesterday";
+  } else if (date.isTomorrow()) {
+    return "Tomorrow";
+  } else if (date.isAfter(today)) {
+    // Future dates: use "Jan 2" format
+    return date.format("MMM D");
+  } else {
+    // Past dates: use relative format
+    return date.from(today);
+  }
+}
+
 // Timezone Utilities
 
 /**
