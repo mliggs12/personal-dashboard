@@ -33,6 +33,7 @@ import { cn } from "@/lib/utils";
 
 import TiptapEditor from "../tiptap-editor";
 import { useRecurrenceText } from "./hooks/use-recurrence-text";
+import DeleteRecurringTaskDialog from "./delete-recurring-task-dialog";
 
 export default function EditTaskDialog({ 
   data,
@@ -67,6 +68,7 @@ export default function EditTaskDialog({
   const [isDateCalendarOpen, setIsDateCalendarOpen] = useState(false);
   // eslint-disable-next-line
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const timeoutRef = useRef<NodeJS.Timeout>(undefined);
 
@@ -108,8 +110,36 @@ export default function EditTaskDialog({
 
   const handleDeleteTask = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // If this is a recurring task, show the delete dialog
+    if (recurringTaskId) {
+      setIsDeleteDialogOpen(true);
+      return;
+    }
+
+    // Otherwise, delete directly
     try {
       await remove({ taskId: _id });
+      toast({
+        title: "Task deleted",
+        description: "The task has been successfully deleted.",
+        duration: 3000,
+      });
+      // Close dialog after successful deletion
+      onDeleteComplete?.();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: `Failed to delete task: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        variant: "destructive",
+        duration: 3000,
+      });
+    }
+  };
+
+  const handleDeleteConfirm = async (deleteScope: "this" | "thisAndFollowing" | "all") => {
+    try {
+      await remove({ taskId: _id, deleteScope });
       toast({
         title: "Task deleted",
         description: "The task has been successfully deleted.",
@@ -257,6 +287,7 @@ export default function EditTaskDialog({
     );
 
   return (
+    <>
     <DialogContent className="flex flex-col md:flex-row w-full md:max-w-4xl h-full md:h-auto p-4">
       <div className="flex flex-col gap-2 w-full md:w-4/6">
         <DialogTitle className="text-xl text-left">{name}</DialogTitle>
@@ -409,5 +440,13 @@ export default function EditTaskDialog({
         </form>
       </DialogFooter>
     </DialogContent>
+      {recurringTaskId && (
+        <DeleteRecurringTaskDialog
+          open={isDeleteDialogOpen}
+          onOpenChange={setIsDeleteDialogOpen}
+          onConfirm={handleDeleteConfirm}
+        />
+      )}
+  </>
   );
 }

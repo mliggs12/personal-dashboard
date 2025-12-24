@@ -276,23 +276,9 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
 
       // For recurring tasks: date is the start date/work date
       // Recurring tasks should not have due dates - they only use the date field
-      if (recurrenceType === "schedule" && dateStr) {
-        // User provided a start date (date), create the initial task instance
-        await createTask({
-          name,
-          status: status as
-            | "done"
-            | "backlog"
-            | "todo"
-            | "in_progress"
-            | "archived",
-          priority: "normal",
-          notes,
-          due: undefined, // Recurring tasks don't use due dates
-          date: dateStr,
-          recurringTaskId,
-        });
-      } else if (recurrenceType === "completion" && dateStr) {
+      // Note: For scheduled recurring tasks, the first instance is automatically created
+      // by the backend when the recurring task is created
+      if (recurrenceType === "completion" && dateStr) {
         // Completion tasks use date field for when to work on the next instance
         await createTask({
           name,
@@ -309,8 +295,8 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
           recurringTaskId,
         });
       }
-      // If scheduled task with no date, just create the recurring task
-      // The task generation system will create instances based on schedule
+      // For scheduled recurring tasks, the first instance is automatically created
+      // by the backend when the recurring task is created (regardless of date)
     } else {
       // Non-recurring task
       await createTask({

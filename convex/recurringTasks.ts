@@ -42,20 +42,6 @@ export const create = mutation({
     // Use the target user's timezone (not the current user's)
     const timezone = user!.timezone ?? "America/Denver";
     
-    // Log timezone context
-    const serverTimeUTC = dayjs().utc();
-    const serverTimeLocal = dayjs();
-    const userTimeLocal = dayjs().tz(timezone);
-    
-    console.log(`[recurringTasks.create] Creating new recurring task`);
-    console.log(`  Task name: "${name}"`);
-    console.log(`  Recurrence type: ${recurrenceType}`);
-    console.log(`  Schedule: ${schedule.interval.amount} ${schedule.interval.unit}(s)`);
-    console.log(`  Server time (UTC): ${serverTimeUTC.format("YYYY-MM-DD HH:mm:ss")} UTC`);
-    console.log(`  Server time (local): ${serverTimeLocal.format("YYYY-MM-DD HH:mm:ss")} ${serverTimeLocal.format("z")}`);
-    console.log(`  User timezone: ${timezone}`);
-    console.log(`  User local time: ${userTimeLocal.format("YYYY-MM-DD HH:mm:ss")} (${userTimeLocal.format("dddd")})`);
-    
     // Calculate nextRunDate from date if provided (start date for the recurring schedule),
     // otherwise from today
     const baseDate = date
@@ -63,9 +49,6 @@ export const create = mutation({
       : dayjs().tz(timezone).startOf("day");
     
     const nextRunDate = calculateNextRunDate(schedule, baseDate);
-    
-    console.log(`  Base date (${date ? `start date (date): ${date}` : `today`} in ${timezone}): ${baseDate.format("YYYY-MM-DD")}`);
-    console.log(`  Calculated nextRunDate: ${nextRunDate}`);
     
     const taskId = await ctx.db.insert("recurringTasks", {
       name,
@@ -78,7 +61,25 @@ export const create = mutation({
       userId: user!._id,
     });
 
-    console.log(`  ✅ Created recurring task with ID: ${taskId}\n`);
+    // For scheduled recurring tasks, always create the first instance
+    // The first instance date should be equal to the first schedule date
+    // (the provided date parameter, or the calculated nextRunDate if no date provided)
+    if (recurrenceType === "schedule") {
+      // First instance date = the provided date (start date) if available,
+      // otherwise use the calculated nextRunDate (first occurrence based on schedule)
+      const firstInstanceDate = date || nextRunDate;
+      
+      await ctx.db.insert("tasks", {
+        name,
+        status: "todo",
+        priority: "normal",
+        notes: "",
+        due: undefined, // Recurring tasks don't use due dates
+        date: firstInstanceDate,
+        recurringTaskId: taskId,
+        userId: user!._id,
+      });
+    }
 
     return taskId;
   },
@@ -137,27 +138,12 @@ export const update = mutation({
       const user = await ctx.db.get(recurringTask.userId);
       const timezone = user?.timezone ?? "America/Denver";
       
-      // Log timezone context
-      const serverTimeUTC = dayjs().utc();
-      const serverTimeLocal = dayjs();
-      
-      console.log(`[recurringTasks.update] Recalculating nextRunDate`);
-      console.log(`  Task: "${recurringTask.name}" (ID: ${recurringTaskId})`);
-      console.log(`  Server time (UTC): ${serverTimeUTC.format("YYYY-MM-DD HH:mm:ss")} UTC`);
-      console.log(`  Server time (local): ${serverTimeLocal.format("YYYY-MM-DD HH:mm:ss")} ${serverTimeLocal.format("z")}`);
-      console.log(`  User timezone: ${timezone}`);
-      console.log(`  Previous nextRunDate: ${recurringTask.nextRunDate}`);
-      console.log(`  New schedule: ${mergedSchedule.interval.amount} ${mergedSchedule.interval.unit}(s)`);
-      
       // Parse date strings directly in the target timezone to avoid date shifts
       // Using dayjs.tz(dateString, timezone) instead of dayjs(dateString).tz(timezone)
       // ensures the date is interpreted as midnight in the target timezone, not server timezone
       const baseDate = nextRunDate 
         ? dayjs.tz(nextRunDate, timezone).startOf("day")
         : dayjs.tz(recurringTask.nextRunDate, timezone).startOf("day");
-      
-      console.log(`  Base date (parsed in ${timezone}): ${baseDate.format("YYYY-MM-DD")} (${baseDate.format("dddd")})`);
-      console.log(`  Using dayjs.tz() to parse directly in ${timezone} - avoids date shift from server timezone`);
       
       calculatedNextRunDate = calculateNextRunDate(
         {
@@ -168,8 +154,6 @@ export const update = mutation({
         },
         baseDate
       );
-      
-      console.log(`  Calculated new nextRunDate: ${calculatedNextRunDate}\n`);
     }
 
     await ctx.db.patch(recurringTaskId, {

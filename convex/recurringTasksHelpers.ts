@@ -143,18 +143,6 @@ export function checkIfShouldGenerate(
     const timezone = user?.timezone ?? "America/Denver";
     const today = dayjs().tz(timezone).startOf("day");
     
-    // Log timezone context
-    const serverTimeUTC = dayjs().utc();
-    const serverTimeLocal = dayjs();
-    
-    console.log(`[createNextWhenDoneTask] Creating next task for "whenDone" recurring task`);
-    console.log(`  Task name: "${recurringTask.name}"`);
-    console.log(`  Completed task ID: ${completedTask._id}`);
-    console.log(`  Server time (UTC): ${serverTimeUTC.format("YYYY-MM-DD HH:mm:ss")} UTC`);
-    console.log(`  Server time (local): ${serverTimeLocal.format("YYYY-MM-DD HH:mm:ss")} ${serverTimeLocal.format("z")}`);
-    console.log(`  User timezone: ${timezone}`);
-    console.log(`  Today in user timezone: ${today.format("YYYY-MM-DD")} (${today.format("dddd")})`);
-    
     if (!recurringTask.schedule?.interval) {
       throw new Error("Recurring task schedule is missing");
     }
@@ -170,29 +158,9 @@ export function checkIfShouldGenerate(
       today
     );
     
-    console.log(`  Schedule: ${recurringTask.schedule.interval.amount} ${recurringTask.schedule.interval.unit}(s)`);
-    console.log(`  Calculated next date: ${nextDate}`);
-    
-    // Prevent duplicates: check if task already exists with this date
-    const existingTask = await ctx.db
-      .query("tasks")
-      .withIndex("by_recurringTaskId", (q) =>
-        q.eq("recurringTaskId", recurringTask._id)
-      )
-      .filter((q) => q.eq(q.field("date"), nextDate))
-      .first();
-    
-    if (existingTask) {
-      // Task already exists, just update nextRunDate if needed
-      console.log(`  ⚠️  Task with date ${nextDate} already exists (ID: ${existingTask._id}), updating nextRunDate only`);
-      await ctx.db.patch(recurringTask._id, {
-        nextRunDate: nextDate,
-        updated: Date.now(),
-      });
-      return;
-    }
-    
-    const newTaskId = await ctx.db.insert("tasks", {
+    // For completion recurring tasks, always create the next task instance
+    // No duplicate checking - create regardless of existing tasks
+    await ctx.db.insert("tasks", {
       name: recurringTask.name,
       status: "todo",
       priority: "normal",
@@ -207,10 +175,6 @@ export function checkIfShouldGenerate(
       updated: Date.now(),
     });
     
-    console.log(`  ✅ Created new task instance`);
-    console.log(`    New task ID: ${newTaskId}`);
-    console.log(`    Date: ${nextDate}`);
-    console.log(`    Updated recurring task nextRunDate to: ${nextDate}`);
   }
   
   /**
@@ -225,22 +189,11 @@ export function checkIfShouldGenerate(
   ) {
     // Check if it's 6am Mountain Time (America/Denver) - server runs in UTC
     // Mountain Time is UTC-6 (MST) or UTC-7 (MDT during daylight saving)
-    const serverTimeUTC = dayjs().utc();
     const mountainTime = dayjs().tz("America/Denver");
     
-    console.log(`[generateRecurringTasks] Server time (UTC): ${serverTimeUTC.format("YYYY-MM-DD HH:mm:ss")} UTC`);
-    console.log(`[generateRecurringTasks] Mountain Time: ${mountainTime.format("YYYY-MM-DD HH:mm:ss")} ${mountainTime.format("z")}`);
-    
-    if (dryRun || forceRun) {
-      console.log(`[generateRecurringTasks] ${dryRun ? "DRY RUN MODE" : "FORCE RUN MODE"} - ${dryRun ? "no database writes will be performed" : "bypassing 6am check"}`);
-    }
-
     if (!forceRun && mountainTime.hour() !== 6) {
-      console.log(`[generateRecurringTasks] Not 6am Mountain Time, skipping`);
       return { generatedCount: 0, errorCount: 0, skipped: true };
     }
-    
-    console.log(`[generateRecurringTasks] ${forceRun ? "Force running" : "6am Mountain Time"}, proceeding with task generation`);
     
     const recurringTasks = await ctx.db
       .query("recurringTasks")
@@ -250,7 +203,6 @@ export function checkIfShouldGenerate(
       .collect();
 
     if (recurringTasks.length === 0) {
-      console.log(`[generateRecurringTasks] No active recurring tasks found`);
       return { generatedCount: 0, errorCount: 0, skipped: true };
     }
 

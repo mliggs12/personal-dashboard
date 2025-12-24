@@ -70,8 +70,14 @@ export async function createRecurringTask(
   return recurringTaskId;
 }
 
-export async function deleteTask(taskId: string) {
-  await fetchMutation(api.tasks.remove, { taskId: taskId as Id<"tasks"> });
+export async function deleteTask(
+  taskId: string,
+  deleteScope?: "this" | "thisAndFollowing" | "all"
+) {
+  await fetchMutation(api.tasks.remove, { 
+    taskId: taskId as Id<"tasks">,
+    deleteScope,
+  });
 }
 
 export async function completeTask( 

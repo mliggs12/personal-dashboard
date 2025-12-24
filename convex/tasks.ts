@@ -1,9 +1,7 @@
 import { v } from "convex/values";
 
 import { mutation, query } from "./_generated/server";
-import { normalizeDateString } from "./lib/date.utils";
-import dayjs from "./lib/dayjs.config";
-import { calculateNextRunDate, createNextWhenDoneTask } from "./recurringTasksHelpers";
+import { createNextWhenDoneTask } from "./recurringTasksHelpers";
 import { getCurrentUserOrThrow, userByExternalId } from "./users";
 
 export const list = query({
@@ -89,18 +87,98 @@ export const create = mutation({
 
 
 export const remove = mutation({
-  args: { taskId: v.id("tasks") },
-  async handler(ctx, { taskId }) {
+  args: { 
+    taskId: v.id("tasks"),
+    deleteScope: v.optional(v.union(v.literal("this"), v.literal("thisAndFollowing"), v.literal("all"))),
+  },
+  async handler(ctx, { taskId, deleteScope = "this" }) {
     const task = await ctx.db.get(taskId);
     if (task === null) throw new Error("Could not find task");
 
     const recurringTaskId = task.recurringTaskId;
 
-    // Delete the task
-    await ctx.db.delete(taskId);
+    // If this is not a recurring task, just delete it
+    if (!recurringTaskId) {
+      await ctx.db.delete(taskId);
+      return;
+    }
 
-    // If this was a recurring task instance, check if we need to clean up the parent recurring task
-    if (recurringTaskId) {
+    // Handle different delete scopes for recurring tasks
+    if (deleteScope === "all") {
+      // Delete all instances with the same recurringTaskId
+      const allInstances = await ctx.db
+        .query("tasks")
+        .withIndex("by_recurringTaskId", (q) => q.eq("recurringTaskId", recurringTaskId))
+        .collect();
+
+      // Delete all instances
+      for (const instance of allInstances) {
+        await ctx.db.delete(instance._id);
+      }
+
+      // Delete the parent recurring task
+      await ctx.db.delete(recurringTaskId);
+      console.log(
+        `Deleted all instances of recurring task "${task.name}" (${allInstances.length} instances) and parent recurring task (${recurringTaskId})`
+      );
+    } else if (deleteScope === "thisAndFollowing") {
+      // Delete this instance and all future instances (date >= current task date)
+      const taskDate = task.date;
+      
+      if (!taskDate) {
+        // If task has no date, treat as "this" only
+        await ctx.db.delete(taskId);
+        
+        // Check if there are any other task instances still using this recurring task
+        const remainingInstances = await ctx.db
+          .query("tasks")
+          .withIndex("by_recurringTaskId", (q) => q.eq("recurringTaskId", recurringTaskId))
+          .collect();
+
+        // If no other instances exist, delete the base recurring task
+        if (remainingInstances.length === 0) {
+          await ctx.db.delete(recurringTaskId);
+          console.log(
+            `Deleted task "${task.name}" (${taskId}) and cleaned up unused recurring task (${recurringTaskId})`
+          );
+        } else {
+          console.log(
+            `Deleted task "${task.name}" (${taskId}). Recurring task (${recurringTaskId}) kept active with ${remainingInstances.length} remaining instances.`
+          );
+        }
+      } else {
+        // Get all instances with same recurringTaskId and date >= taskDate
+        const allInstances = await ctx.db
+          .query("tasks")
+          .withIndex("by_recurringTaskId", (q) => q.eq("recurringTaskId", recurringTaskId))
+          .collect();
+
+        // Filter to instances with date >= taskDate (or no date, which we'll treat as future)
+        const instancesToDelete = allInstances.filter((instance) => {
+          if (instance._id === taskId) return true; // Always delete the current task
+          if (!instance.date) return false; // Don't delete instances without dates (they're not "following")
+          return instance.date >= taskDate; // Delete if date is >= current task date
+        });
+
+        // Delete all matching instances
+        for (const instance of instancesToDelete) {
+          await ctx.db.delete(instance._id);
+        }
+
+        // Deactivate the recurring task to prevent future generation
+        await ctx.db.patch(recurringTaskId, {
+          isActive: false,
+          updated: Date.now(),
+        });
+
+        console.log(
+          `Deleted task "${task.name}" (${taskId}) and ${instancesToDelete.length - 1} following instances. Recurring task (${recurringTaskId}) deactivated.`
+        );
+      }
+    } else {
+      // Default: "this" - Delete only the current task instance
+      await ctx.db.delete(taskId);
+
       // Check if there are any other task instances still using this recurring task
       const remainingInstances = await ctx.db
         .query("tasks")
