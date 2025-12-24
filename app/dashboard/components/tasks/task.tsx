@@ -13,6 +13,7 @@ import dayjs from "@/lib/dayjs.config";
 import { cn } from "@/lib/utils";
 
 import EditTaskDialog from "./edit-task-dialog";
+import { useRecurrenceText } from "./hooks/use-recurrence-text";
 
 function displayDueDate(dueDateString: string) {
   const dueDate = dayjs(dueDateString, "YYYY-MM-DD");
@@ -38,6 +39,8 @@ export default function Task({
   handleOnChange: () => void;
 }) {
   const { name, due, recurringTaskId } = data;
+
+  const recurrenceText = useRecurrenceText(recurringTaskId, due);
 
   return (
     <div
@@ -84,9 +87,8 @@ export default function Task({
                           )}
                         />
                       </TooltipTrigger>
-                      {/* TODO: show recur type */}
                       <TooltipContent>
-                        <p>{"Recurring"}</p>
+                        <p>{recurrenceText || "Recurring"}</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>

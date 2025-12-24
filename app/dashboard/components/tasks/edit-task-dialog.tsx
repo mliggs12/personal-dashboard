@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import * as SelectPrimitive from "@radix-ui/react-select";
-import { useMutation, useQuery } from "convex/react";
+import { useMutation } from "convex/react";
 import dayjs from "dayjs";
 import { CalendarIcon, Repeat, Trash2 } from "lucide-react";
 
@@ -30,9 +30,9 @@ import { api } from "@/convex/_generated/api";
 import { Doc } from "@/convex/_generated/dataModel";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { formatRecurrenceText } from "@/convex/recurringTasksHelpers";
 
 import TiptapEditor from "../tiptap-editor";
+import { useRecurrenceText } from "./hooks/use-recurrence-text";
 
 export default function EditTaskDialog({ 
   data,
@@ -45,12 +45,6 @@ export default function EditTaskDialog({
     data;
   const remove = useMutation(api.tasks.remove);
   const updateTask = useMutation(api.tasks.update);
-  
-  // Fetch recurring task data if this task is part of a recurring task
-  const recurringTask = useQuery(
-    api.recurringTasks.get,
-    recurringTaskId ? { recurringTaskId } : "skip"
-  );
 
   const { toast } = useToast();
 
@@ -69,6 +63,9 @@ export default function EditTaskDialog({
   const [isSaving, setIsSaving] = useState(false);
 
   const timeoutRef = useRef<NodeJS.Timeout>(undefined);
+
+  // Get formatted recurrence text
+  const recurrenceText = useRecurrenceText(recurringTaskId, taskDue);
 
   const handleChange = useCallback(
     (notes: string) => {
@@ -171,14 +168,6 @@ export default function EditTaskDialog({
     );
   };
 
-  // Format recurrence text for display
-  const recurrenceText = recurringTask && recurringTask.schedule
-    ? formatRecurrenceText(
-        recurringTask.schedule,
-        recurringTask.recurrenceType,
-        taskDue || undefined
-      )
-    : null;
 
 
   if (notes === undefined)
