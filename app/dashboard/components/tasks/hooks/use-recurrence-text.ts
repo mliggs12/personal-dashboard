@@ -6,12 +6,12 @@ import { formatRecurrenceText } from "@/convex/recurringTasksHelpers";
 /**
  * Custom hook to get formatted recurrence text for a task
  * @param recurringTaskId - The ID of the recurring task (optional)
- * @param dueDate - The due date of the task in YYYY-MM-DD format (optional)
+ * @param date - The date of the task in YYYY-MM-DD format (optional, used as reference for formatting)
  * @returns The formatted recurrence text, or null if not applicable
  */
 export function useRecurrenceText(
   recurringTaskId: Id<"recurringTasks"> | undefined,
-  dueDate?: string
+  date?: string
 ): string | null {
   // Fetch recurring task data if this task is part of a recurring task
   const recurringTask = useQuery(
@@ -24,7 +24,7 @@ export function useRecurrenceText(
     return formatRecurrenceText(
       recurringTask.schedule,
       recurringTask.recurrenceType,
-      dueDate || undefined
+      date || undefined
     );
   }
 

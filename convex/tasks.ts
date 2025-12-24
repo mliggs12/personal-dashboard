@@ -42,6 +42,7 @@ export const create = mutation({
     ),
     notes: v.optional(v.string()),
     due: v.optional(v.string()),
+    date: v.optional(v.string()),
     recurringTaskId: v.optional(v.id("recurringTasks")),
     intentionId: v.optional(v.id("intentions")),
     parentTaskId: v.optional(v.id("tasks")),
@@ -55,6 +56,7 @@ export const create = mutation({
       priority,
       notes,
       due,
+      date,
       recurringTaskId,
       intentionId,
       parentTaskId,
@@ -68,17 +70,20 @@ export const create = mutation({
       user = await getCurrentUserOrThrow(ctx);
     }
 
-    return await ctx.db.insert("tasks", {
+    const taskId = await ctx.db.insert("tasks", {
       name,
       status: status || "todo",
       priority: priority || "normal",
       notes: notes || "",
       due,
+      date,
       recurringTaskId,
       intentionId,
       parentTaskId,
       userId: user!._id,
     });
+
+    return taskId;
   },
 });
 
@@ -167,6 +172,7 @@ export const update = mutation({
     ),
     notes: v.optional(v.string()),
     due: v.optional(v.string()),
+    date: v.optional(v.string()),
     completed: v.optional(v.number()),
     recurringTaskId: v.optional(v.id("recurringTasks")),
     intentionId: v.optional(v.id("intentions")),
@@ -182,6 +188,7 @@ export const update = mutation({
       priority,
       notes,
       due,
+      date,
       completed,
       recurringTaskId,
       intentionId,
@@ -202,25 +209,36 @@ export const update = mutation({
     // Determine the final due date value
     let finalDue = due !== undefined ? (due === "" ? undefined : due) : task.due;
     
-    // If task is being set to backlog, remove the due date
-    if (status === "backlog" && finalDue !== undefined) {
+    // Determine the final date value
+    let finalDate = date !== undefined ? (date === "" ? undefined : date) : task.date;
+    
+    // Backlog tasks cannot have dates or due dates
+    // If task is being set to backlog, remove both due date and date
+    if (status === "backlog") {
       finalDue = undefined;
+      finalDate = undefined;
     }
     
-    // If task is backlog and a due date is being set, automatically change status to todo
-    if (task.status === "backlog" && finalDue !== undefined && task.due === undefined) {
-      // Only change to todo if status wasn't explicitly set and due date is being added
-      if (status === undefined) {
+    // If task is currently backlog and a due date or date is being set,
+    // automatically change status to todo (unless status is explicitly being set)
+    // This allows users to set dates on backlog tasks, which promotes them to todo
+    if (task.status === "backlog") {
+      const isSettingDue = due !== undefined && due !== "";
+      const isSettingDate = date !== undefined && date !== "";
+      
+      if ((isSettingDue || isSettingDate) && status === undefined) {
+        // Only change to todo if status wasn't explicitly set and date/due is being set
         finalStatus = "todo";
       }
     }
-
+    
     await ctx.db.patch(taskId, {
       name: name !== undefined ? name : task.name,
       status: finalStatus,
       priority: priority !== undefined ? priority : task.priority,
       notes: notes !== undefined ? notes : task.notes,
       due: finalDue,
+      date: finalDate,
       completed: completed !== undefined ? completed : (isNowDone && wasNotDone ? now : task.completed),
       recurringTaskId: recurringTaskId !== undefined ? recurringTaskId : task.recurringTaskId,
       intentionId: intentionId !== undefined ? intentionId : task.intentionId,
@@ -258,231 +276,24 @@ export const search = query({
 // TASKS CARD
 // ============================================================================
 
-export const todayTasks = query({
-  args: { date: v.string() },
-  async handler(ctx, { date }) {
-    const user = await getCurrentUserOrThrow(ctx);
-
-    // Normalize the input date to YYYY-MM-DD format (handles legacy YYYY/MM/DD format)
-    const normalizedDate = normalizeDateString(date) ?? date;
-
-    // Get all tasks with due dates (we'll filter in memory to handle legacy YYYY/MM/DD format)
-    const allTasksWithDue = await ctx.db
-      .query("tasks")
-      .withIndex("by_user_due", (q) => q.eq("userId", user._id))
-      .filter((q) =>
-        q.and(
-          q.neq(q.field("due"), undefined),
-          q.eq(q.field("completed"), undefined),
-          q.or(
-            q.eq(q.field("status"), "todo"),
-            q.eq(q.field("status"), "in_progress")
-          )
-        )
-      )
-      .collect();
-
-    // Get todo tasks with no due date (should show in today)
-    const todoTasksNoDue = await ctx.db
-      .query("tasks")
-      .withIndex("by_user_status", (q) =>
-        q
-          .eq("userId", user._id)
-          .eq("status", "todo")
-      )
-      .filter((q) =>
-        q.and(
-          q.eq(q.field("due"), undefined),
-          q.eq(q.field("completed"), undefined)
-        )
-      )
-      .collect();
-
-    // Normalize and filter tasks with due dates in memory to handle both YYYY-MM-DD and YYYY/MM/DD formats
-    const tasksWithDue = allTasksWithDue.filter((task) => {
-      if (!task.due) return false;
-      
-      const normalizedTaskDue = normalizeDateString(task.due);
-      if (!normalizedTaskDue) return false;
-      
-      // Compare normalized dates
-      return normalizedTaskDue <= normalizedDate;
-    });
-
-    // Combine tasks with due dates and todo tasks with no due date
-    const allTasks = [...tasksWithDue, ...todoTasksNoDue];
-
-    // Sort by due date ascending (earliest first) using normalized dates
-    // Tasks without due dates come after tasks with due dates
-    return allTasks.sort((a, b) => {
-      if (!a.due && !b.due) return 0;
-      if (!a.due) return 1;
-      if (!b.due) return -1;
-      
-      const normalizedA = normalizeDateString(a.due) ?? a.due;
-      const normalizedB = normalizeDateString(b.due) ?? b.due;
-      
-      return normalizedA.localeCompare(normalizedB);
-    });
-  },
-});
-
-export const backlogTasks = query({
+/**
+ * Fetches all active tasks for the current user.
+ * Active tasks are those that are:
+ * - Not completed (completed === undefined)
+ * - Not archived (status !== "archived")
+ * 
+ * Filtering by view (Today/Backlog/Deadline) happens client-side.
+ */
+export const allActiveTasks = query({
   args: {},
   async handler(ctx) {
     const user = await getCurrentUserOrThrow(ctx);
 
-    // Get backlog tasks (not completed, not archived)
-    // Backlog should only contain tasks with status "backlog"
+    // Fetch all active tasks (not completed, not archived)
     return await ctx.db
       .query("tasks")
-      .withIndex("by_user_status", (q) =>
-        q
-          .eq("userId", user._id)
-          .eq("status", "backlog")
-      )
-      .filter((q) => 
-        q.eq(q.field("completed"), undefined)
-      )
+      .withIndex("by_user_completed", (q) => q.eq("userId", user._id).eq("completed", undefined))
       .collect();
-  },
-});
-
-export const deadlineTasks = query({
-  args: { date: v.string() },
-  async handler(ctx, { date }) {
-    const user = await getCurrentUserOrThrow(ctx);
-
-    // Normalize the input date to YYYY-MM-DD format (handles legacy YYYY/MM/DD format)
-    const normalizedDate = normalizeDateString(date) ?? date;
-
-    // Get all tasks with due dates (we'll filter in memory to handle legacy YYYY/MM/DD format)
-    const allTasksWithDue = await ctx.db
-      .query("tasks")
-      .withIndex("by_user_due", (q) => q.eq("userId", user._id))
-      .filter((q) =>
-        q.and(
-          q.neq(q.field("status"), "archived"),
-          q.neq(q.field("due"), undefined),
-          q.eq(q.field("completed"), undefined)
-        ))
-      .collect();
-
-    // Normalize and filter tasks in memory to handle both YYYY-MM-DD and YYYY/MM/DD formats
-    return allTasksWithDue.filter((task) => {
-      if (!task.due) return false;
-      
-      const normalizedTaskDue = normalizeDateString(task.due);
-      if (!normalizedTaskDue) return false;
-      
-      // Compare normalized dates (due > today)
-      return normalizedTaskDue > normalizedDate;
-    });
-  },
-});
-
-// ============================================================================
-// RECURRING TASKS
-// ============================================================================
-
-export const removeRecurringFromTask = mutation({
-  args: { taskId: v.id("tasks") },
-  async handler(ctx, { taskId }) {
-    const task = await ctx.db.get(taskId);
-    if (task === null) throw new Error("Could not find task");
-
-    if (!task.recurringTaskId) {
-      throw new Error("Task is not associated with a recurring task");
-    }
-
-    const recurringTaskId = task.recurringTaskId;
-
-    // Remove the recurringTaskId association from this task
-    await ctx.db.patch(taskId, {
-      recurringTaskId: undefined,
-      updated: Date.now(),
-    });
-
-    // Check if there are any other task instances still using this recurring task
-    const remainingInstances = await ctx.db
-      .query("tasks")
-      .withIndex("by_recurringTaskId", (q) => q.eq("recurringTaskId", recurringTaskId))
-      .collect();
-
-    // If no other instances exist, delete the base recurring task
-    if (remainingInstances.length === 0) {
-      await ctx.db.delete(recurringTaskId);
-      console.log(
-        `Removed recurring association from task "${task.name}" (${taskId}) and deleted unused recurring task (${recurringTaskId})`
-      );
-    } else {
-      console.log(
-        `Removed recurring association from task "${task.name}" (${taskId}). Recurring task (${recurringTaskId}) kept active with ${remainingInstances.length} remaining instances.`
-      );
-    }
-
-    return task;
-  },
-});
-
-// Convert a regular task to a recurring task by creating a new recurring task
-export const convertTaskToRecurring = mutation({
-  args: {
-    taskId: v.id("tasks"),
-    schedule: v.object({
-      interval: v.object({
-        amount: v.number(),
-        unit: v.union(v.literal("day"), v.literal("week"), v.literal("month")),
-      }),
-      time: v.optional(v.string()),
-      daysOfWeek: v.optional(v.array(v.number())),
-      dayOfMonth: v.optional(v.number()),
-    }),
-    recurrenceType: v.union(v.literal("schedule"), v.literal("completion")),
-  },
-  async handler(ctx, { taskId, schedule, recurrenceType }) {
-    const task = await ctx.db.get(taskId);
-    if (task === null) throw new Error("Could not find task");
-
-    // Get user to access timezone
-    const user = await ctx.db.get(task.userId!);
-    if (!user) throw new Error("Could not find user");
-    
-    const timezone = user.timezone ?? "America/Denver";
-
-    // Normalize due date to YYYY-MM-DD format (handle legacy YYYY/MM/DD format)
-    const normalizedDueDate = normalizeDateString(task.due);
-    
-    // Calculate nextRunDate based on schedule
-    // Use task's due date if available, otherwise use today in user's timezone
-    const baseDate = normalizedDueDate
-      ? dayjs.tz(normalizedDueDate, timezone).startOf("day")
-      : dayjs.tz(timezone).startOf("day");
-    
-    const nextRunDate = calculateNextRunDate(schedule, baseDate);
-
-    // Create a new recurring task based on the current task
-    const recurringTaskId = await ctx.db.insert("recurringTasks", {
-      name: task.name,
-      schedule,
-      recurrenceType,
-      nextRunDate,
-      isActive: true,
-      updated: Date.now(),
-      userId: task.userId!,
-    });
-
-    // Update the task to reference the new recurring task
-    await ctx.db.patch(taskId, {
-      recurringTaskId,
-      updated: Date.now(),
-    });
-
-    console.log(
-      `Converted task "${task.name}" (${taskId}) to recurring task (${recurringTaskId})`
-    );
-
-    return { taskId, recurringTaskId };
   },
 });
 

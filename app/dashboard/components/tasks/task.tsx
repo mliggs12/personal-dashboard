@@ -38,9 +38,9 @@ export default function Task({
    
   handleOnChange: () => void;
 }) {
-  const { name, due, recurringTaskId } = data;
+  const { name, due, date, recurringTaskId } = data;
 
-  const recurrenceText = useRecurrenceText(recurringTaskId, due);
+  const recurrenceText = useRecurrenceText(recurringTaskId, date);
 
   return (
     <div
@@ -92,7 +92,6 @@ export default function Task({
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
-                  {/* TODO: add tooltip */}
                   {due && (
                     <p
                       className={cn(

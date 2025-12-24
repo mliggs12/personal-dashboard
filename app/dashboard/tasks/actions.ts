@@ -12,6 +12,7 @@ export async function createTask(
   priority?: string,
   notes?: string,
   due?: string,
+  date?: string,
   recurringTaskId?: string,
   intentionId?: string,
   parentTaskId?: string,
@@ -29,6 +30,7 @@ export async function createTask(
     priority: priority as "low" | "normal" | "high",
     notes,
     due,
+    date,
     recurringTaskId: recurringTaskId as Id<"recurringTasks">,
     intentionId: intentionId as Id<"intentions">,
     parentTaskId: parentTaskId as Id<"tasks">,
@@ -48,6 +50,7 @@ export async function createRecurringTask(
     dayOfMonth?: number;
   },
   recurrenceType: "schedule" | "completion",
+  date?: string, // Start date for the recurring schedule
 ) {
   const { userId } = await auth();
   if (!userId) {
@@ -60,6 +63,7 @@ export async function createRecurringTask(
     name,
     schedule,
     recurrenceType,
+    date, // Pass it through
     userId,
   });
 

@@ -201,6 +201,7 @@ export default defineSchema({
     ),
     notes: v.optional(v.string()),
     due: v.optional(v.string()), // YYYY-MM-DD format (legacy YYYY/MM/DD format also supported in queries)
+    date: v.optional(v.string()), // YYYY-MM-DD format - arbitrary date parameter for work scheduling
     completed: v.optional(v.number()),
     updated: v.optional(v.number()),
     recurringTaskId: v.optional(v.id("recurringTasks")),
@@ -212,9 +213,12 @@ export default defineSchema({
     .index("by_recurringTaskId", ["recurringTaskId"])
     .index("by_project", ["projectId"])
     .index("by_user", ["userId"])
-    .index("by_user_status", ["userId", "status"])
-    .index("by_user_due", ["userId", "due"])
-    .index("by_user_status_due", ["userId", "status", "due"])
+    .index("by_user_completed", ["userId", "completed"])
+    .index("by_user_completed_status", ["userId", "completed", "status"])
+    .index("by_user_completed_due", ["userId", "completed", "due"])
+    .index("by_user_completed_date", ["userId", "completed", "date"])
+    .index("by_user_completed_status_due", ["userId", "completed", "status", "due"])
+    .index("by_user_completed_status_date", ["userId", "completed", "status", "date"])
     .searchIndex("search_name", {
       searchField: "name",
       filterFields: ["userId"],
@@ -233,6 +237,7 @@ export default defineSchema({
     })),
     recurrenceType: v.union(v.literal("schedule"), v.literal("completion")),
     nextRunDate: v.string(), // YYYY-MM-DD format
+    date: v.optional(v.string()), // YYYY-MM-DD format - start date for the recurring schedule
     isActive: v.boolean(),
     updated: v.number(),
     userId: v.id("users"),

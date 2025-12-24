@@ -28,9 +28,10 @@ export const create = mutation({
       dayOfMonth: v.optional(v.number()),
     }),
     recurrenceType: v.union(v.literal("schedule"), v.literal("completion")),
+    date: v.optional(v.string()), // Start date for the recurring schedule
     userId: v.optional(v.string()),
   },
-  async handler(ctx, { name, schedule, recurrenceType, userId }) {
+  async handler(ctx, { name, schedule, recurrenceType, date, userId }) {
     let user;
     if (userId) {
       user = await userByExternalId(ctx, userId);
@@ -55,10 +56,15 @@ export const create = mutation({
     console.log(`  User timezone: ${timezone}`);
     console.log(`  User local time: ${userTimeLocal.format("YYYY-MM-DD HH:mm:ss")} (${userTimeLocal.format("dddd")})`);
     
-    const baseDate = dayjs().tz(timezone).startOf("day");
+    // Calculate nextRunDate from date if provided (start date for the recurring schedule),
+    // otherwise from today
+    const baseDate = date
+      ? dayjs.tz(date, timezone).startOf("day")
+      : dayjs().tz(timezone).startOf("day");
+    
     const nextRunDate = calculateNextRunDate(schedule, baseDate);
     
-    console.log(`  Base date (today in ${timezone}): ${baseDate.format("YYYY-MM-DD")}`);
+    console.log(`  Base date (${date ? `start date (date): ${date}` : `today`} in ${timezone}): ${baseDate.format("YYYY-MM-DD")}`);
     console.log(`  Calculated nextRunDate: ${nextRunDate}`);
     
     const taskId = await ctx.db.insert("recurringTasks", {
@@ -66,6 +72,7 @@ export const create = mutation({
       schedule,
       recurrenceType,
       nextRunDate,
+      date,
       isActive: true,
       updated: Date.now(),
       userId: user!._id,
@@ -92,10 +99,11 @@ export const update = mutation({
     })),
     recurrenceType: v.optional(v.union(v.literal("schedule"), v.literal("completion"))),
     nextRunDate: v.optional(v.string()),
+    date: v.optional(v.string()),
   },
   async handler(
     ctx,
-    { recurringTaskId, name, schedule, recurrenceType, nextRunDate },
+    { recurringTaskId, name, schedule, recurrenceType, nextRunDate, date },
   ) {
     const recurringTask = await ctx.db.get(recurringTaskId);
     if (!recurringTask) {
@@ -169,6 +177,7 @@ export const update = mutation({
       schedule: mergedSchedule,
       recurrenceType: recurrenceType !== undefined ? recurrenceType : recurringTask.recurrenceType,
       nextRunDate: calculatedNextRunDate !== undefined ? calculatedNextRunDate : recurringTask.nextRunDate,
+      date: date !== undefined ? date : recurringTask.date,
       updated: Date.now(),
     });
   },

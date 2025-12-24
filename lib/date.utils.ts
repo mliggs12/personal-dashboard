@@ -124,3 +124,23 @@ export function getTodayInUTC(): string {
 export function convertUTCToUserTimezone(utcDate: string, timezone: string): string {
   return dayjs.utc(utcDate).tz(timezone).format("YYYY-MM-DD");
 }
+
+/**
+ * Normalizes a date string to YYYY-MM-DD format.
+ * Handles both legacy YYYY/MM/DD format and current YYYY-MM-DD format.
+ * 
+ * **Client-side utility** - For server-side, use `convex/lib/date.utils.ts`
+ * 
+ * @param date - Date string in YYYY-MM-DD or YYYY/MM/DD format
+ * @returns Normalized date string in YYYY-MM-DD format, or the original string if invalid
+ * 
+ * @example
+ * normalizeDateString("2025/10/31") // "2025-10-31"
+ * normalizeDateString("2025-10-31") // "2025-10-31"
+ * normalizeDateString(undefined) // undefined
+ */
+export function normalizeDateString(date: string | undefined): string | undefined {
+  if (!date) return undefined;
+  const parsed = dayjs(date, ["YYYY-MM-DD", "YYYY/MM/DD"]);
+  return parsed.isValid() ? parsed.format("YYYY-MM-DD") : date;
+}

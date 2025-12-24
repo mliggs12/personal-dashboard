@@ -41,14 +41,16 @@ export default function EditTaskDialog({
   data: Doc<"tasks">;
   onDeleteComplete?: () => void;
 }) {
-  const { name, notes, status, priority, due, _id, recurringTaskId } =
+  const { name, notes, status, priority, due, date, _id, recurringTaskId } =
     data;
   const remove = useMutation(api.tasks.remove);
   const updateTask = useMutation(api.tasks.update);
 
   const { toast } = useToast();
 
-  const [taskDue, setTaskDue] = useState<string | undefined>(due);
+  // Recurring tasks don't use due dates, so clear it if this is a recurring task
+  const [taskDue, setTaskDue] = useState<string | undefined>(recurringTaskId ? undefined : due);
+  const [taskDate, setTaskDate] = useState<string | undefined>(date);
   const [taskStatus, setTaskStatus] = useState(
     statuses.find((statusInfo) => statusInfo.value === status),
   );
@@ -58,14 +60,18 @@ export default function EditTaskDialog({
   const [calendarDate, setCalendarDate] = useState<Date | undefined>(
     taskDue ? dayjs(due, "YYYY-MM-DD").toDate() : undefined,
   );
+  const [dateCalendarDate, setDateCalendarDate] = useState<Date | undefined>(
+    taskDate ? dayjs(date, "YYYY-MM-DD").toDate() : undefined,
+  );
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [isDateCalendarOpen, setIsDateCalendarOpen] = useState(false);
   // eslint-disable-next-line
   const [isSaving, setIsSaving] = useState(false);
 
   const timeoutRef = useRef<NodeJS.Timeout>(undefined);
 
   // Get formatted recurrence text
-  const recurrenceText = useRecurrenceText(recurringTaskId, taskDue);
+  const recurrenceText = useRecurrenceText(recurringTaskId, taskDate);
 
   const handleChange = useCallback(
     (notes: string) => {
@@ -89,6 +95,16 @@ export default function EditTaskDialog({
       }
     };
   }, []);
+
+  // Clear due date if this is a recurring task (recurring tasks don't use due dates)
+  useEffect(() => {
+    if (recurringTaskId && due) {
+      updateTask({
+        taskId: _id,
+        due: "",
+      });
+    }
+  }, [recurringTaskId, due, _id, updateTask]);
 
   const handleDeleteTask = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -115,6 +131,9 @@ export default function EditTaskDialog({
     setCalendarDate(selectedDate);
     setIsCalendarOpen(false);
     
+    // If task is backlog, setting a due date will automatically change status to todo
+    const willChangeStatus = status === "backlog";
+    
     if (selectedDate === undefined) {
       // Use empty string to indicate clearing the date
       updateTask({
@@ -135,10 +154,55 @@ export default function EditTaskDialog({
         updateTask({
           taskId: _id,
           due: formattedDate,
+          // If backlog, status will be changed to todo by the mutation
         });
         setTaskDue(formattedDate);
+        if (willChangeStatus) {
+          setTaskStatus(statuses.find((statusInfo) => statusInfo.value === "todo"));
+        }
         toast({
-          title: "Due date updated",
+          title: willChangeStatus ? "Status changed to Todo" : "Due date updated",
+          duration: 3000,
+        });
+      }
+    }
+  };
+
+  const handleDateChange = (selectedDate: Date | undefined) => {
+    setDateCalendarDate(selectedDate);
+    setIsDateCalendarOpen(false);
+    
+    // If task is backlog, setting a date will automatically change status to todo
+    const willChangeStatus = status === "backlog";
+    
+    if (selectedDate === undefined) {
+      // Use empty string to indicate clearing the date
+      updateTask({
+        taskId: _id,
+        date: "",
+      });
+      setTaskDate(undefined);
+      toast({
+        title: "Date cleared",
+        duration: 3000,
+      });
+    } else if (selectedDate) {
+      const formattedDate = dayjs(selectedDate).format("YYYY-MM-DD");
+      // Normalize both dates for comparison (date is already YYYY-MM-DD from backend)
+      const normalizedDate = date ? dayjs(date, "YYYY-MM-DD").format("YYYY-MM-DD") : undefined;
+      
+      if (formattedDate !== normalizedDate) {
+        updateTask({
+          taskId: _id,
+          date: formattedDate,
+          // If backlog, status will be changed to todo by the mutation
+        });
+        setTaskDate(formattedDate);
+        if (willChangeStatus) {
+          setTaskStatus(statuses.find((statusInfo) => statusInfo.value === "todo"));
+        }
+        toast({
+          title: willChangeStatus ? "Status changed to Todo" : "Date updated",
           duration: 3000,
         });
       }
@@ -146,6 +210,9 @@ export default function EditTaskDialog({
   };
 
   const handleStatusChange = (status: string) => {
+    // If setting to backlog, dates will be cleared by the mutation
+    const willClearDates = status === "backlog";
+    
     updateTask({
       taskId: _id,
       status: status as
@@ -156,6 +223,18 @@ export default function EditTaskDialog({
         | "archived",
     });
     setTaskStatus(statuses.find((statusInfo) => statusInfo.value === status));
+    
+    if (willClearDates) {
+      setTaskDue(undefined);
+      setTaskDate(undefined);
+      setCalendarDate(undefined);
+      setDateCalendarDate(undefined);
+      toast({
+        title: "Dates cleared",
+        description: "Backlog tasks cannot have dates or due dates",
+        duration: 3000,
+      });
+    }
   };
 
   const handlePriorityChange = (priority: string) => {
@@ -185,22 +264,22 @@ export default function EditTaskDialog({
       </div>
       <div className="flex flex-col gap-1 w-full md:w-1/2 border-b-2 md:border-none space-y-2 pb-4">
         <div>
-          <Label className="flex items-start text-lg">Due date</Label>
-          <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+          <Label className="flex items-start text-lg">Date</Label>
+          <Popover open={isDateCalendarOpen} onOpenChange={setIsDateCalendarOpen}>
             <PopoverTrigger asChild>
               <Button
                 size="sm"
                 variant="ghost"
                 className={cn(
                   "mr-auto pl-0 h-8 data-[state=open]:bg-accent text-base font-normal",
-                  taskDue === undefined && "text-muted-foreground",
+                  taskDate === undefined && "text-muted-foreground",
                 )}
               >
                 <CalendarIcon className="w-4 h-4 capitalize" />
-                {calendarDate ? (
-                  dayjs(calendarDate).format("MMMM DD, YYYY")
+                {dateCalendarDate ? (
+                  dayjs(dateCalendarDate).format("MMMM DD, YYYY")
                 ) : (
-                  <span>Pick a due date</span>
+                  <span>Pick a date</span>
                 )}
               </Button>
             </PopoverTrigger>
@@ -211,20 +290,58 @@ export default function EditTaskDialog({
             >
               <Calendar
                 mode="single"
-                selected={calendarDate}
-                onSelect={handleDueChange}
+                selected={dateCalendarDate}
+                onSelect={handleDateChange}
               />
             </PopoverContent>
           </Popover>
-          {recurrenceText && (
-            <div className="flex items-center gap-2 mt-1">
-              <Repeat className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">
-                {recurrenceText}
-              </span>
-            </div>
-          )}
         </div>
+        {!recurringTaskId ? (
+          <div>
+            <Label className="flex items-start text-lg">Due date</Label>
+            <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className={cn(
+                    "mr-auto pl-0 h-8 data-[state=open]:bg-accent text-base font-normal",
+                    taskDue === undefined && "text-muted-foreground",
+                  )}
+                >
+                  <CalendarIcon className="w-4 h-4 capitalize" />
+                  {calendarDate ? (
+                    dayjs(calendarDate).format("MMMM DD, YYYY")
+                  ) : (
+                    <span>Pick a due date</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent
+                className="w-auto p-0 z-[100] pointer-events-auto"
+                align="start"
+                onOpenAutoFocus={(e) => e.preventDefault()}
+              >
+                <Calendar
+                  mode="single"
+                  selected={calendarDate}
+                  onSelect={handleDueChange}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+        ) : (
+          <div>
+            {recurrenceText && (
+              <div className="flex items-center gap-2 mt-1">
+                <Repeat className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">
+                  {recurrenceText}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
         <div>
           <Label className="flex items-start text-lg">Status</Label>
           <Select

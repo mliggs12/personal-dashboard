@@ -49,6 +49,7 @@ const formSchema = z
     ),
     notes: z.string().optional(),
     due: z.date().optional(),
+    date: z.date().optional(),
     frequency: z
       .enum(["none", "daily", "weekly", "monthly", "yearly", "weekday", "custom"])
       .optional(),
@@ -63,17 +64,17 @@ const formSchema = z
   })
   .refine(
     (data) => {
-      // Only require due date for completion-type recurring tasks
-      if (data.frequency && data.frequency !== "none" && data.recurrenceType === "completion" && !data.due) {
+      // Date is required for recurring tasks (it's the start date)
+      if (data.frequency && data.frequency !== "none" && !data.date) {
         return false;
       }
       return true;
     },
     {
-      message: "Due date is required for completion-based recurring tasks",
-      path: ["due"],
+      message: "Date is required for recurring tasks",
+      path: ["date"],
     },
-  );
+  )
 
 interface AddTaskFormProps extends React.ComponentProps<"form"> {
   onSuccess?: () => void;
@@ -93,6 +94,7 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
       priority: "normal",
       notes: "",
       due: undefined,
+      date: undefined,
     },
   });
 
@@ -100,15 +102,29 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
   const frequency = useWatch({ control: form.control, name: "frequency" });
   const customInterval = useWatch({ control: form.control, name: "customInterval" });
   const recurrenceType = useWatch({ control: form.control, name: "recurrenceType" });
+  const date = useWatch({ control: form.control, name: "date" });
   const dueDate = useWatch({ control: form.control, name: "due" });
   const status = useWatch({ control: form.control, name: "status" });
 
-  // Clear due date when status changes to backlog
+  // Clear due date and date when status changes to backlog
   useEffect(() => {
-    if (status === "backlog" && dueDate) {
-      form.setValue("due", undefined);
+    if (status === "backlog") {
+      if (dueDate) {
+        form.setValue("due", undefined);
+      }
+      if (date) {
+        form.setValue("date", undefined);
+      }
     }
-  }, [status, dueDate, form]);
+  }, [status, dueDate, date, form]);
+
+  // Change status to todo when date or due is set on a backlog task
+  // This runs after the date/due is set, so it won't conflict with the clearing logic above
+  useEffect(() => {
+    if (status === "backlog" && (date || dueDate)) {
+      form.setValue("status", "todo");
+    }
+  }, [status, date, dueDate, form]);
 
   const handleClearRecur = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -118,9 +134,9 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
   };
 
   const getRecurButtonText = () => {
-    // Helper to get reference date (due date or today) - only used when custom is NOT set
+    // Helper to get reference date (date or today) - only used when custom is NOT set
     const getReferenceDate = () => {
-      return dueDate || new Date();
+      return date || new Date();
     };
     
     const isCompletion = recurrenceType === "completion";
@@ -171,7 +187,7 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
       return `${amount} ${pluralUnit}${afterCompletion}`;
     }
 
-    // When custom is NOT set, use due date (or today) for labels
+    // When custom is NOT set, use date (or today) for labels
     switch (frequency) {
       case "daily":
         return isCompletion ? "Daily after completion" : "Daily";
@@ -199,16 +215,18 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
       case "weekday":
         return isCompletion ? "Every Weekday after completion" : "Every Weekday";
       default:
-        // Use due date or today for preview when no frequency is set
+        // Use date or today for preview when no frequency is set
         const refDateDefault = getReferenceDate();
         return `Weekly on ${getDayNameFromDate(refDateDefault)}`;
     }
   };
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
-    const { name, status, priority, notes, due, frequency, recurrenceType, customInterval } = data;
+    const { name, status, notes, due, date, frequency, recurrenceType, customInterval } = data;
 
     const dueDate = due ? dayjs(due).format("YYYY-MM-DD") : undefined;
+    const dateStr = date ? dayjs(date).format("YYYY-MM-DD") : undefined;
+    const priority = "normal"; // Always default to normal priority
 
     // Handle recurring tasks
     if (frequency && frequency !== "none" && recurrenceType) {
@@ -245,6 +263,7 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
         }
       }
 
+      // For recurring tasks, date serves as the start date for the schedule
       const recurringTaskId = await createRecurringTask(
         name,
         {
@@ -252,12 +271,13 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
           daysOfWeek,
         },
         recurrenceType,
+        dateStr, // Pass date as start date for recurring schedule
       );
 
-      // For scheduled tasks: only create task instance if due date is provided
-      // For completion tasks: due date is required (enforced by validation)
-      if (recurrenceType === "schedule" && dueDate) {
-        // User provided a due date, create the task instance
+      // For recurring tasks: date is the start date/work date
+      // Recurring tasks should not have due dates - they only use the date field
+      if (recurrenceType === "schedule" && dateStr) {
+        // User provided a start date (date), create the initial task instance
         await createTask({
           name,
           status: status as
@@ -266,13 +286,14 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
             | "todo"
             | "in_progress"
             | "archived",
-          priority: priority as "low" | "normal" | "high",
+          priority: "normal",
           notes,
-          due: dueDate,
+          due: undefined, // Recurring tasks don't use due dates
+          date: dateStr,
           recurringTaskId,
         });
-      } else if (recurrenceType === "completion" && dueDate) {
-        // Completion tasks always need a due date (enforced by validation)
+      } else if (recurrenceType === "completion" && dateStr) {
+        // Completion tasks use date field for when to work on the next instance
         await createTask({
           name,
           status: status as
@@ -281,13 +302,14 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
             | "todo"
             | "in_progress"
             | "archived",
-          priority: priority as "low" | "normal" | "high",
+          priority: "normal",
           notes,
-          due: dueDate,
+          due: undefined, // Recurring tasks don't use due dates
+          date: dateStr,
           recurringTaskId,
         });
       }
-      // If scheduled task with no due date, just create the recurring task
+      // If scheduled task with no date, just create the recurring task
       // The task generation system will create instances based on schedule
     } else {
       // Non-recurring task
@@ -302,6 +324,7 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
         priority: priority as "low" | "normal" | "high",
         notes,
         due: due ? dueDate : undefined,
+        date: dateStr,
       });
     }
 
@@ -361,48 +384,113 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
           <div className="flex gap-2">
             <FormField
               control={form.control}
-              name="due"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <Popover open={isDatePickerOpen} onOpenChange={setIsDatePickerOpen}>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant={"outline"}
-                          className={cn(
-                            "flex gap-2 w-[135px] text-left font-normal",
-                            !field.value && "text-muted-foreground",
-                          )}
-                        >
-                          {field.value ? (
-                            dayjs(field.value).format("ddd, MMM D")
-                          ) : (
-                            <span>Due date</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent
-                      className="w-auto p-0 z-[100] pointer-events-auto"
-                      align="start"
-                      onOpenAutoFocus={(e) => e.preventDefault()}
-                    >
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={(date) => {
-                          field.onChange(date);
-                          setIsDatePickerOpen(false);
-                        }}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-              )}
+              name="date"
+              render={({ field }) => {
+                const isRecurring = frequency && frequency !== "none";
+                const isBacklog = status === "backlog";
+                return (
+                  <FormItem className="flex flex-col">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "flex gap-2 w-[135px] text-left font-normal",
+                              !field.value && "text-muted-foreground",
+                            )}
+                            disabled={isRecurring && !field.value}
+                          >
+                            {field.value ? (
+                              dayjs(field.value).format("ddd, MMM D")
+                            ) : (
+                              <span>Date</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        className="w-auto p-0 z-[100] pointer-events-auto"
+                        align="start"
+                        onOpenAutoFocus={(e) => e.preventDefault()}
+                      >
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={(date) => {
+                            // For recurring tasks, don't allow clearing the date
+                            if (isRecurring && !date) {
+                              return;
+                            }
+                            // If backlog, change status to todo when date is set
+                            if (isBacklog && date) {
+                              form.setValue("status", "todo");
+                            }
+                            field.onChange(date);
+                          }}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
             />
+            {!frequency || frequency === "none" ? (
+              <FormField
+                control={form.control}
+                name="due"
+                render={({ field }) => {
+                  const isBacklog = status === "backlog";
+                  return (
+                    <FormItem className="flex flex-col">
+                      <Popover open={isDatePickerOpen} onOpenChange={setIsDatePickerOpen}>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant={"outline"}
+                              className={cn(
+                              "flex gap-2 w-[135px] text-left font-normal",
+                              !field.value && "text-muted-foreground",
+                            )}
+                          >
+                            {field.value ? (
+                              dayjs(field.value).format("ddd, MMM D")
+                            ) : (
+                              <span>Due date</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        className="w-auto p-0 z-[100] pointer-events-auto"
+                        align="start"
+                        onOpenAutoFocus={(e) => e.preventDefault()}
+                      >
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={(date) => {
+                            // If backlog, change status to todo when due date is set
+                            if (isBacklog && date) {
+                              form.setValue("status", "todo");
+                            }
+                            field.onChange(date);
+                            setIsDatePickerOpen(false);
+                          }}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                  );
+                }}
+              />
+            ) : null}
             <FormField
               control={form.control}
               name="status"
@@ -419,36 +507,6 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
                     </FormControl>
                     <SelectContent>
                       {statuses.map((item, idx) => (
-                        <SelectItem
-                          key={idx}
-                          value={item.value}
-                        >
-                          {item.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="priority"
-              render={({ field }) => (
-                <FormItem>
-                  <Select
-                    defaultValue={field.value}
-                    onValueChange={field.onChange}
-                  >
-                    <FormControl>
-                      <SelectTrigger className="gap-2">
-                        <SelectValue placeholder="Select a priority" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {priorities.map((item, idx) => (
                         <SelectItem
                           key={idx}
                           value={item.value}
@@ -508,9 +566,11 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
                   form.setValue("frequency", data.frequency);
                   form.setValue("recurrenceType", data.recurrenceType);
                   form.setValue("customInterval", data.customInterval);
-                  // Set due date to today if not already set when any recurrence option is selected
-                  if (!form.getValues("due")) {
-                    form.setValue("due", new Date());
+                  // Clear due date when recurring task is selected (recurring tasks don't use due dates)
+                  form.setValue("due", undefined);
+                  // Set date to today if not already set when any recurrence option is selected
+                  if (!form.getValues("date")) {
+                    form.setValue("date", new Date());
                   }
                 }
               }}
@@ -519,9 +579,9 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
                 recurrenceType: form.getValues("recurrenceType"),
                 customInterval: form.getValues("customInterval"),
               }}
-              currentDueDate={dueDate}
-              onSetDueDate={(date) => {
-                form.setValue("due", date);
+              currentDueDate={date}
+              onSetDueDate={(dateValue) => {
+                form.setValue("date", dateValue);
               }}
             />
             <div className="flex flex-1 justify-end">

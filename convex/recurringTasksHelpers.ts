@@ -29,21 +29,38 @@ export function calculateNextRunDate(
         // This ensures we skip today even if today is one of the selected days
         const nextDayInWeek = sortedDays.find(day => day > currentDayOfWeek);
         
+        let candidateDate: dayjs.Dayjs;
+        
         if (nextDayInWeek !== undefined) {
           // Next day is in the current week
           const daysToAdd = nextDayInWeek - currentDayOfWeek;
-          return baseDate.add(daysToAdd, "day").format("YYYY-MM-DD");
+          candidateDate = baseDate.add(daysToAdd, "day");
         } else {
           // No day found in current week, wrap to first day of next week
           // Calculate: days to end of week + days to first selected day
           const firstDay = sortedDays[0];
           const daysToEndOfWeek = 7 - currentDayOfWeek;
           const daysToAdd = daysToEndOfWeek + firstDay;
-          
-          // If interval amount > 1, add additional weeks
-          const additionalWeeks = (schedule.interval.amount - 1) * 7;
-          return baseDate.add(daysToAdd + additionalWeeks, "day").format("YYYY-MM-DD");
+          candidateDate = baseDate.add(daysToAdd, "day");
         }
+        
+        // For intervals > 1, ensure we're at least 'amount' weeks from baseDate
+        // This handles cases like "Every 2 weeks on Sun" where we need to skip weeks
+        if (schedule.interval.amount > 1) {
+          // Calculate the difference in days for more precise calculation
+          const daysFromBase = candidateDate.diff(baseDate, "day");
+          const requiredDays = schedule.interval.amount * 7;
+          
+          if (daysFromBase < requiredDays) {
+            // Need to skip to the occurrence that is at least 'amount' weeks away
+            // Calculate how many more weeks we need to add
+            const additionalDaysNeeded = requiredDays - daysFromBase;
+            const additionalWeeks = Math.ceil(additionalDaysNeeded / 7);
+            candidateDate = candidateDate.add(additionalWeeks, "week");
+          }
+        }
+        
+        return candidateDate.format("YYYY-MM-DD");
       }
       // No daysOfWeek specified, use simple week addition
       return baseDate.add(schedule.interval.amount, "week").format("YYYY-MM-DD");
@@ -85,7 +102,7 @@ export function checkIfShouldGenerate(
     const nextRunDate = dayjs.tz(recurringTask.nextRunDate, timezone).startOf("day");
     const todayStart = targetDate.startOf("day");
     
-    // Don't generate if today is before the next due date
+    // Don't generate if today is before the nextRunDate
     if (todayStart.isBefore(nextRunDate)) {
       return false;
     }
@@ -142,8 +159,8 @@ export function checkIfShouldGenerate(
       throw new Error("Recurring task schedule is missing");
     }
     
-    // Calculate next due date using schedule interval amount
-    const nextDueDate = calculateNextRunDate(
+    // Calculate next date using schedule interval amount
+    const nextDate = calculateNextRunDate(
       {
         interval: recurringTask.schedule.interval,
         time: recurringTask.schedule.time,
@@ -154,22 +171,22 @@ export function checkIfShouldGenerate(
     );
     
     console.log(`  Schedule: ${recurringTask.schedule.interval.amount} ${recurringTask.schedule.interval.unit}(s)`);
-    console.log(`  Calculated next due date: ${nextDueDate}`);
+    console.log(`  Calculated next date: ${nextDate}`);
     
-    // Prevent duplicates: check if task already exists with this due date
+    // Prevent duplicates: check if task already exists with this date
     const existingTask = await ctx.db
       .query("tasks")
       .withIndex("by_recurringTaskId", (q) =>
         q.eq("recurringTaskId", recurringTask._id)
       )
-      .filter((q) => q.eq(q.field("due"), nextDueDate))
+      .filter((q) => q.eq(q.field("date"), nextDate))
       .first();
     
     if (existingTask) {
       // Task already exists, just update nextRunDate if needed
-      console.log(`  ⚠️  Task with due date ${nextDueDate} already exists (ID: ${existingTask._id}), updating nextRunDate only`);
+      console.log(`  ⚠️  Task with date ${nextDate} already exists (ID: ${existingTask._id}), updating nextRunDate only`);
       await ctx.db.patch(recurringTask._id, {
-        nextRunDate: nextDueDate,
+        nextRunDate: nextDate,
         updated: Date.now(),
       });
       return;
@@ -180,20 +197,20 @@ export function checkIfShouldGenerate(
       status: "todo",
       priority: "normal",
       notes: completedTask.notes || "",
-      due: nextDueDate,
+      date: nextDate,
       recurringTaskId: recurringTask._id,
       userId: recurringTask.userId,
     });
     
     await ctx.db.patch(recurringTask._id, {
-      nextRunDate: nextDueDate,
+      nextRunDate: nextDate,
       updated: Date.now(),
     });
     
     console.log(`  ✅ Created new task instance`);
     console.log(`    New task ID: ${newTaskId}`);
-    console.log(`    Due date: ${nextDueDate}`);
-    console.log(`    Updated recurring task nextRunDate to: ${nextDueDate}`);
+    console.log(`    Date: ${nextDate}`);
+    console.log(`    Updated recurring task nextRunDate to: ${nextDate}`);
   }
   
   /**
@@ -280,18 +297,58 @@ export function checkIfShouldGenerate(
           continue;
         }
         
-        const taskDueDate = todayLocal.format("YYYY-MM-DD");
+        // For scheduled recurring tasks, date is set to the generation date
+        // The task runs on schedule regardless of due date
+        const nextRunDateObj = dayjs.tz(recurringTask.nextRunDate, timezone).startOf("day");
+        const nextRunDateStr = nextRunDateObj.format("YYYY-MM-DD");
+        const nextRunDateMatchesToday = nextRunDateObj.isSame(todayLocal, "day");
         
-        // Prevent duplicates
+        // Check if task already exists for this nextRunDate
+        // We check for:
+        // 1. Task with date matching nextRunDate (user manually set it or auto-generated)
+        // 2. Task with no date AND nextRunDate is today (edge case for auto-generated today)
         const existingTask = await ctx.db
           .query("tasks")
           .withIndex("by_recurringTaskId", (q) =>
             q.eq("recurringTaskId", recurringTask._id)
           )
-          .filter((q) => q.eq(q.field("due"), taskDueDate))
+          .filter((q) => {
+            // User manually created task or auto-generated task for this date
+            const hasMatchingDate = q.and(
+              q.neq(q.field("date"), undefined),
+              q.eq(q.field("date"), nextRunDateStr)
+            );
+            
+            // Auto-generated task without date (only check if nextRunDate is today)
+            if (nextRunDateMatchesToday) {
+              return q.or(hasMatchingDate, q.eq(q.field("date"), undefined));
+            }
+            return hasMatchingDate;
+          })
           .first();
         
+        // Calculate next occurrence from the date we're generating for (nextRunDate)
+        // This ensures proper interval spacing, even when catching up on missed generations
+        const newNextRunDate = calculateNextRunDate(
+          {
+            interval: interval,
+            time: schedule.time,
+            daysOfWeek: schedule.daysOfWeek,
+            dayOfMonth: schedule.dayOfMonth,
+          },
+          nextRunDateObj  // Advance from the target generation date, not from today
+        );
+        
         if (existingTask) {
+          // Task already exists - just advance nextRunDate and continue
+          // This handles:
+          // - User manually created initial task with date = nextRunDate
+          // - Task was already auto-generated with date = nextRunDate
+          // - Multiple generation runs in the same day
+          await ctx.db.patch(recurringTask._id, {
+            nextRunDate: newNextRunDate,
+            updated: Date.now(),
+          });
           continue;
         }
         
@@ -301,29 +358,22 @@ export function checkIfShouldGenerate(
         }
         
         // Create the new task instance
+        // Date is set to the generation date (nextRunDate) so it shows in Today tab
+        // Recurring tasks don't use due dates
         await ctx.db.insert("tasks", {
           name: recurringTask.name,
           status: "todo",
           notes: "",
           priority: "normal",
-          due: taskDueDate,
+          due: undefined, // Recurring tasks don't use due dates
+          date: nextRunDateStr, // Set date to generation date so it shows in Today tab
           recurringTaskId: recurringTask._id,
           userId: recurringTask.userId,
         });
         
         // Update recurring task's next run date
-        const nextRunDate = calculateNextRunDate(
-          {
-            interval: interval,
-            time: schedule.time,
-            daysOfWeek: schedule.daysOfWeek,
-            dayOfMonth: schedule.dayOfMonth,
-          },
-          todayLocal
-        );
-        
         await ctx.db.patch(recurringTask._id, {
-          nextRunDate: nextRunDate,
+          nextRunDate: newNextRunDate,
           updated: Date.now(),
         });
         
@@ -344,8 +394,9 @@ export function checkIfShouldGenerate(
    * Runs via cron job hourly, but only executes at 6am local time.
    * 
    * onSchedule tasks generate based purely on schedule/frequency, regardless of
-   * whether previous instances were completed. Duplicate prevention ensures we
-   * don't create multiple tasks with the same due date.
+   * whether previous instances were completed. Date is set to the generation date
+   * so tasks show in Today tab. Recurring tasks don't use due dates.
+   * Duplicate prevention ensures we don't create multiple tasks for the same nextRunDate.
    */
   export const generateRecurringTasks = internalMutation({
     async handler(ctx) {
@@ -421,7 +472,7 @@ export function formatRecurrenceText(
     return months[date.month()];
   };
 
-  // Get reference date (due date or today)
+  // Get reference date (date or today)
   const refDateStr = referenceDate || dayjs().format("YYYY-MM-DD");
   const refDate = dayjs(refDateStr, "YYYY-MM-DD");
 
