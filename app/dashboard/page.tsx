@@ -18,17 +18,17 @@ import { api } from "@/convex/_generated/api";
 import { useIsMobile } from "@/hooks/use-mobile";
 import dayjs from "@/lib/dayjs.config";
 
-import CalendarScheduleView from "./components/calendar/calendar-schedule-view";
 import DashboardBanner from "./components/dashboard-banner";
 import Scratchpad from "./components/scratch-pad/scratch-pad";
 import AddTaskDrawerDialog from "./components/tasks/add-task-drawer-dialog";
 import TasksCard from "./components/tasks/tasks-card";
-import Timer from "./components/timer/timer";
+import { useScratchpadPinned } from "@/hooks/use-scratchpad-pinned";
 
 export default function DashboardPage() {
   const isMobile = useIsMobile();
   const router = useRouter();
   const createNote = useMutation(api.notes.create);
+  const { isPinned } = useScratchpadPinned();
 
   const handleCreateNote = async () => {
     try {
@@ -120,23 +120,15 @@ export default function DashboardPage() {
     );
   }
 
-  // Desktop layout (existing)
+  // Desktop layout
   return (
     <div className="h-full flex flex-col flex-1 overflow-y-auto overflow-x-hidden w-full">
       <DashboardBanner />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-1 md:p-4 w-full">
-        <div className="flex justify-center">
+      <div className="flex flex-col items-start px-8 py-6 w-full gap-12">
           <TasksCard />
-        </div>
-        <div className="flex justify-center">
+        {isPinned && (
           <Scratchpad />
-        </div>
-        <div className="flex justify-center">
-          <Timer />
-        </div>
-        <div className="flex justify-center">
-          <CalendarScheduleView />
-        </div>
+        )}
       </div>
     </div>
   );

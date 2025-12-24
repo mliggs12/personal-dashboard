@@ -2,18 +2,20 @@ import { useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery } from "convex/react";
 import dayjs from "dayjs";
-import { Ellipsis } from "lucide-react";
+import { Ellipsis, PinOff } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTrigger } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { api } from "@/convex/_generated/api";
+import { useScratchpadPinned } from "@/hooks/use-scratchpad-pinned";
 
 import ScratchPadEditor, { ScratchPadEditorRef } from "./scratch-pad-editor";
 
 export default function ScratchPad() {
   const router = useRouter();
   const editorRef = useRef<ScratchPadEditorRef>(null);
+  const { togglePinned } = useScratchpadPinned();
   const scratchPad = useQuery(api.scratchPads.getByUser);
 
   const createScratchPad = useMutation(api.scratchPads.create);
@@ -65,25 +67,37 @@ export default function ScratchPad() {
   }
 
   return (
-    <div className="w-full max-w-[600px]">
+    <div className="w-full max-w-[550px]">
       <div className="flex items-center justify-between mb-1">
         <h2 className="prose dark:prose-invert text-lg font-semibold">Scratch Pad</h2>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="ghost" size="sm"
-              className="p-2 prose dark:prose-invert">
-              <Ellipsis />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent align="end" className="w-fit p-2">
-            <div className="grid">
-              <Button variant="ghost" size="sm" onClick={handleConvertToNote} className="prose dark:prose-invert">
-                <span className="mr-auto">Convert to note</span>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline" 
+            size="sm"
+            onClick={togglePinned}
+            className="flex items-center gap-2 h-9"
+            title="Unpin scratchpad"
+          >
+            <PinOff className="h-4 w-4" />
+            <span>Unpin</span>
+          </Button>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="sm"
+                className="p-2 prose dark:prose-invert">
+                <Ellipsis />
               </Button>
-              <ClearDialog editorRef={editorRef} />
-            </div>
-          </PopoverContent>
-        </Popover>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-fit p-2">
+              <div className="grid">
+                <Button variant="ghost" size="sm" onClick={handleConvertToNote} className="prose dark:prose-invert">
+                  <span className="mr-auto">Convert to note</span>
+                </Button>
+                <ClearDialog editorRef={editorRef} />
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
       </div>
       <div className="border bg-blue-300 rounded p-4">
         <ScratchPadEditor

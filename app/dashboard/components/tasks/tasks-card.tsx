@@ -189,7 +189,7 @@ export default function TasksCard() {
   }
 
   return (
-    <Card className="w-full max-w-[600px] relative flex flex-col h-[570px] sm:h-[478px]">
+    <Card className="w-full max-w-[550px] relative flex flex-col h-[570px] sm:h-[478px]">
       <CardHeader className="p-3 pr-2 shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-6">
