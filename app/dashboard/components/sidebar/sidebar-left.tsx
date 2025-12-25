@@ -1,7 +1,11 @@
+"use client";
+
 import Link from "next/link";
 import { UserButton } from "@clerk/nextjs";
-import { LayoutDashboard } from "lucide-react";
+import { LayoutDashboard, ShieldCheck } from "lucide-react";
+import { useQuery } from "convex/react";
 
+import { api } from "@/convex/_generated/api";
 import { ModeToggle } from "@/components/ui/mode-toggle";
 import {
   Sidebar,
@@ -20,6 +24,14 @@ import NavMain from "./nav-main";
 export default function SidebarLeft({
   ...props
 }: React.ComponentProps<typeof Sidebar>) {
+  const currentUser = useQuery(api.users.current);
+  const isAuthorized =
+    currentUser &&
+    [
+      process.env.NEXT_PUBLIC_USER_1,
+      process.env.NEXT_PUBLIC_USER_2,
+    ].includes(currentUser._id);
+
   return (
     <Sidebar
       collapsible="icon"
@@ -51,7 +63,13 @@ export default function SidebarLeft({
           )}
         >
           <ModeToggle />
-          <UserButton />
+          <UserButton>
+            {isAuthorized && (
+              <UserButton.MenuItems>
+                <UserButton.Link label="DSTP Admin" href="/dashboard/dstp-admin" labelIcon={<ShieldCheck className="w-4 h-4" />} />
+              </UserButton.MenuItems>
+            )}
+          </UserButton>
         </div>
       </SidebarFooter>
       <SidebarRail />
