@@ -102,27 +102,56 @@ export function checkIfShouldGenerate(
     const nextRunDate = dayjs.tz(recurringTask.nextRunDate, timezone).startOf("day");
     const todayStart = targetDate.startOf("day");
     
-    // Don't generate if today is before the nextRunDate
-    if (todayStart.isBefore(nextRunDate)) {
-      return false;
-    }
-    
     const interval = recurringTask.schedule.interval;
     
     switch (interval.unit) {
       case "day":
-        return true; // Generate if today >= nextRunDate (already checked above)
+        // Don't generate if today is before the nextRunDate
+        if (todayStart.isBefore(nextRunDate)) {
+          return false;
+        }
+        return true; // Generate if today >= nextRunDate
       case "week":
         // For weekly schedules with specific days, check if today is one of the selected days
         if (recurringTask.schedule?.daysOfWeek && recurringTask.schedule.daysOfWeek.length > 0) {
           const todayDayOfWeek = todayStart.day(); // 0 = Sunday, 6 = Saturday
           const isTodaySelected = recurringTask.schedule.daysOfWeek.includes(todayDayOfWeek);
-          // Only generate if today is a selected day AND today >= nextRunDate
-          return isTodaySelected && !todayStart.isBefore(nextRunDate);
+          
+          if (!isTodaySelected) {
+            return false;
+          }
+          
+          // For multi-day weekly schedules, we generate if today is selected
+          // For interval > 1, we need to validate we're in the correct week interval
+          if (interval.amount > 1) {
+            // For intervals > 1, we need to check if we're in the correct week cycle
+            // We'll use nextRunDate as a reference point - if today is >= nextRunDate,
+            // we're in the correct interval period. Otherwise, we need to check week alignment.
+            
+            // If today is before nextRunDate, don't generate (we're not there yet)
+            if (todayStart.isBefore(nextRunDate)) {
+              return false;
+            }
+            
+            // If today matches or is after nextRunDate, we're in the correct period
+            // The generateRecurringTasksCore will handle advancing nextRunDate correctly
+            return true;
+          }
+          
+          // For interval === 1 (every week), generate if today is selected
+          // We don't need to check nextRunDate for multi-day schedules since
+          // we'll generate for today and advance nextRunDate accordingly
+          return true;
         }
         // For weekly schedules without specific days, check if today matches nextRunDate
+        if (todayStart.isBefore(nextRunDate)) {
+          return false;
+        }
         return todayStart.isSame(nextRunDate, "day");
       case "month":
+        if (todayStart.isBefore(nextRunDate)) {
+          return false;
+        }
         return todayStart.isSame(nextRunDate, "day");
       default:
         return false;
@@ -175,7 +204,7 @@ export function checkIfShouldGenerate(
       updated: Date.now(),
     });
     
-  }
+  }``
   
   /**
    * Core logic for generating recurring tasks.
@@ -249,16 +278,32 @@ export function checkIfShouldGenerate(
           continue;
         }
         
-        // For scheduled recurring tasks, date is set to the generation date
-        // The task runs on schedule regardless of due date
-        const nextRunDateObj = dayjs.tz(recurringTask.nextRunDate, timezone).startOf("day");
-        const nextRunDateStr = nextRunDateObj.format("YYYY-MM-DD");
-        const nextRunDateMatchesToday = nextRunDateObj.isSame(todayLocal, "day");
+        // Determine the date to generate the task for
+        // For multi-day weekly schedules, generate for TODAY if today is selected
+        // For other schedules, generate for nextRunDate
+        const isMultiDayWeekly = interval.unit === "week" && 
+          schedule.daysOfWeek && 
+          schedule.daysOfWeek.length > 0;
         
-        // Check if task already exists for this nextRunDate
+        let targetDateObj: dayjs.Dayjs;
+        let targetDateStr: string;
+        
+        if (isMultiDayWeekly) {
+          // For multi-day weekly schedules, generate for today
+          targetDateObj = todayLocal;
+          targetDateStr = todayLocal.format("YYYY-MM-DD");
+        } else {
+          // For other schedules, generate for nextRunDate
+          targetDateObj = dayjs.tz(recurringTask.nextRunDate, timezone).startOf("day");
+          targetDateStr = targetDateObj.format("YYYY-MM-DD");
+        }
+        
+        const targetDateMatchesToday = targetDateObj.isSame(todayLocal, "day");
+        
+        // Check if task already exists for the target date
         // We check for:
-        // 1. Task with date matching nextRunDate (user manually set it or auto-generated)
-        // 2. Task with no date AND nextRunDate is today (edge case for auto-generated today)
+        // 1. Task with date matching target date (user manually set it or auto-generated)
+        // 2. Task with no date AND target date is today (edge case for auto-generated today)
         const existingTask = await ctx.db
           .query("tasks")
           .withIndex("by_recurringTaskId", (q) =>
@@ -268,18 +313,18 @@ export function checkIfShouldGenerate(
             // User manually created task or auto-generated task for this date
             const hasMatchingDate = q.and(
               q.neq(q.field("date"), undefined),
-              q.eq(q.field("date"), nextRunDateStr)
+              q.eq(q.field("date"), targetDateStr)
             );
             
-            // Auto-generated task without date (only check if nextRunDate is today)
-            if (nextRunDateMatchesToday) {
+            // Auto-generated task without date (only check if target date is today)
+            if (targetDateMatchesToday) {
               return q.or(hasMatchingDate, q.eq(q.field("date"), undefined));
             }
             return hasMatchingDate;
           })
           .first();
         
-        // Calculate next occurrence from the date we're generating for (nextRunDate)
+        // Calculate next occurrence from the date we're generating for (targetDate)
         // This ensures proper interval spacing, even when catching up on missed generations
         const newNextRunDate = calculateNextRunDate(
           {
@@ -288,14 +333,14 @@ export function checkIfShouldGenerate(
             daysOfWeek: schedule.daysOfWeek,
             dayOfMonth: schedule.dayOfMonth,
           },
-          nextRunDateObj  // Advance from the target generation date, not from today
+          targetDateObj  // Advance from the target generation date
         );
         
         if (existingTask) {
           // Task already exists - just advance nextRunDate and continue
           // This handles:
-          // - User manually created initial task with date = nextRunDate
-          // - Task was already auto-generated with date = nextRunDate
+          // - User manually created initial task with date = target date
+          // - Task was already auto-generated with date = target date
           // - Multiple generation runs in the same day
           await ctx.db.patch(recurringTask._id, {
             nextRunDate: newNextRunDate,
@@ -310,7 +355,7 @@ export function checkIfShouldGenerate(
         }
         
         // Create the new task instance
-        // Date is set to the generation date (nextRunDate) so it shows in Today tab
+        // Date is set to the target date so it shows in Today tab
         // Recurring tasks don't use due dates
         await ctx.db.insert("tasks", {
           name: recurringTask.name,
@@ -318,7 +363,7 @@ export function checkIfShouldGenerate(
           notes: "",
           priority: "normal",
           due: undefined, // Recurring tasks don't use due dates
-          date: nextRunDateStr, // Set date to generation date so it shows in Today tab
+          date: targetDateStr, // Set date to target date so it shows in Today tab
           recurringTaskId: recurringTask._id,
           userId: recurringTask.userId,
         });
