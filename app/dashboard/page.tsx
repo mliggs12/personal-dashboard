@@ -122,9 +122,9 @@ export default function DashboardPage() {
 
   // Desktop layout
   return (
-    <div className="h-full flex flex-col flex-1 overflow-y-auto overflow-x-hidden w-full">
+    <div className="h-full w-full flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
       <DashboardBanner />
-      <div className="flex flex-col items-start px-8 py-6 w-full gap-12">
+      <div className="flex items-start px-8 py-6 w-full gap-12">
           <TasksCard />
         {isPinned && (
           <Scratchpad />
