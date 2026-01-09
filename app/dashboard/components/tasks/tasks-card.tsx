@@ -98,11 +98,11 @@ export default function TasksCard() {
       // Backlog: status === "backlog"
       filtered = allActiveTasks.filter((task) => task.status === "backlog");
       
-      // Sort by creation date (newest first) or updated date
+      // Sort by last update (oldest first) or creation date
       filtered.sort((a, b) => {
         const aTime = a.updated || a._creationTime;
         const bTime = b.updated || b._creationTime;
-        return bTime - aTime;
+        return aTime - bTime;
       });
     } else if (status === "deadline") {
       // Deadline/Upcoming: (due !== undefined AND due > today) OR (date !== undefined AND date > today) AND status !== "archived"
