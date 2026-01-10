@@ -3,6 +3,8 @@ import * as SelectPrimitive from "@radix-ui/react-select";
 import { useMutation } from "convex/react";
 import dayjs from "dayjs";
 import { CalendarIcon, Repeat, Trash2 } from "lucide-react";
+import { EditorContent, useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
 
 import {
   priorities,
@@ -71,9 +73,68 @@ export default function EditTaskDialog({
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const timeoutRef = useRef<NodeJS.Timeout>(undefined);
+  const originalNameRef = useRef<string>(name); // Name when editing started
 
   // Get formatted recurrence text
   const recurrenceText = useRecurrenceText(recurringTaskId, taskDate);
+
+  // Editor for task name
+  const nameEditor = useEditor({
+    extensions: [StarterKit],
+    autofocus: false,
+    content: name,
+    editorProps: {
+      attributes: {
+        class:
+          "prose dark:prose-invert prose-xl font-semibold border-none bg-background ring-offset-background focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none pb-2",
+      },
+      handleKeyDown: (view, event) => {
+        // Handle Enter key - save and prevent new line
+        if (event.key === "Enter") {
+          event.preventDefault();
+          const newName = view.state.doc.textContent.trim();
+          
+          // Revert to original if blank
+          if (newName === "") {
+            if (nameEditor) {
+              nameEditor.commands.setContent(originalNameRef.current);
+            }
+            view.dom.blur();
+            return true;
+          }
+          
+          // Save if different from original
+          if (newName !== originalNameRef.current) {
+            updateTask({ taskId: _id, name: newName });
+            originalNameRef.current = newName;
+          }
+          
+          view.dom.blur();
+          return true;
+        }
+        return false;
+      },
+    },
+    // No onUpdate - we don't auto-save while typing
+    onBlur: ({ editor }) => {
+      const newName = editor.getText().trim();
+      
+      // If content matches original, no need to save
+      if (newName === originalNameRef.current) {
+        return;
+      }
+      
+      // Revert to original if blank (UI only, no database change)
+      if (newName === "") {
+        editor.commands.setContent(originalNameRef.current);
+        return;
+      }
+      
+      // Save if we have a valid name that's different from original
+      updateTask({ taskId: _id, name: newName });
+      originalNameRef.current = newName;
+    },
+  });
 
   const handleChange = useCallback(
     (notes: string) => {
@@ -97,6 +158,14 @@ export default function EditTaskDialog({
       }
     };
   }, []);
+
+  // Update editor content and original name when name changes externally
+  useEffect(() => {
+    if (nameEditor && name !== nameEditor.getText().trim()) {
+      nameEditor.commands.setContent(name);
+      originalNameRef.current = name;
+    }
+  }, [name, nameEditor]);
 
   // Clear due date if this is a recurring task (recurring tasks don't use due dates)
   useEffect(() => {
@@ -290,7 +359,10 @@ export default function EditTaskDialog({
     <>
     <DialogContent className="flex flex-col md:flex-row w-full md:max-w-4xl h-full md:h-auto p-4">
       <div className="flex flex-col gap-2 w-full md:w-4/6">
-        <DialogTitle className="text-xl text-left">{name}</DialogTitle>
+        <DialogTitle className="sr-only">Edit Task</DialogTitle>
+        <div className="text-xl font-semibold">
+          {nameEditor && <EditorContent editor={nameEditor} />}
+        </div>
         <TiptapEditor initialContent={notes} onChange={handleChange} />
       </div>
       <div className="flex flex-col gap-1 w-full md:w-1/2 border-b-2 md:border-none space-y-2 pb-4">
