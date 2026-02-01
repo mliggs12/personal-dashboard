@@ -42,6 +42,7 @@ import type * as statements from "../statements.js";
 import type * as systemExerciseCategories from "../systemExerciseCategories.js";
 import type * as systemExercises from "../systemExercises.js";
 import type * as tableStates from "../tableStates.js";
+import type * as tags from "../tags.js";
 import type * as tasks from "../tasks.js";
 import type * as timers from "../timers.js";
 import type * as users from "../users.js";
@@ -85,6 +86,7 @@ declare const fullApi: ApiFromModules<{
   systemExerciseCategories: typeof systemExerciseCategories;
   systemExercises: typeof systemExercises;
   tableStates: typeof tableStates;
+  tags: typeof tags;
   tasks: typeof tasks;
   timers: typeof timers;
   users: typeof users;

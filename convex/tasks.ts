@@ -44,6 +44,7 @@ export const create = mutation({
     recurringTaskId: v.optional(v.id("recurringTasks")),
     intentionId: v.optional(v.id("intentions")),
     parentTaskId: v.optional(v.id("tasks")),
+    tagIds: v.optional(v.array(v.id("tags"))),
     userId: v.optional(v.string()),
   },
   async handler(
@@ -58,6 +59,7 @@ export const create = mutation({
       recurringTaskId,
       intentionId,
       parentTaskId,
+      tagIds,
       userId,
     },
   ) {
@@ -78,6 +80,7 @@ export const create = mutation({
       recurringTaskId,
       intentionId,
       parentTaskId,
+      tagIds,
       userId: user!._id,
     });
 
@@ -255,6 +258,7 @@ export const update = mutation({
     recurringTaskId: v.optional(v.id("recurringTasks")),
     intentionId: v.optional(v.id("intentions")),
     parentTaskId: v.optional(v.id("tasks")),
+    tagIds: v.optional(v.array(v.id("tags"))),
     userId: v.optional(v.id("users")),
   },
   async handler(
@@ -271,6 +275,7 @@ export const update = mutation({
       recurringTaskId,
       intentionId,
       parentTaskId,
+      tagIds,
       userId,
     },
   ) {
@@ -321,6 +326,7 @@ export const update = mutation({
       recurringTaskId: recurringTaskId !== undefined ? recurringTaskId : task.recurringTaskId,
       intentionId: intentionId !== undefined ? intentionId : task.intentionId,
       parentTaskId: parentTaskId !== undefined ? parentTaskId : task.parentTaskId,
+      tagIds: tagIds !== undefined ? tagIds : task.tagIds,
       userId: userId !== undefined ? userId : task.userId,
       updated: now,
     });

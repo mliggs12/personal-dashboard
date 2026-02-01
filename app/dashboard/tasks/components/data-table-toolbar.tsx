@@ -2,16 +2,19 @@
 
 import { Cross2Icon } from "@radix-ui/react-icons";
 import { Table } from "@tanstack/react-table";
+import { useQuery } from "convex/react";
 import { PlusIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { api } from "@/convex/_generated/api";
 
 import AddTaskDrawerDialog from "../../components/tasks/add-task-drawer-dialog";
 import { priorities, statuses } from "../data/data";
 
 import { DataTableFacetedFilter } from "./data-table-faceted-filter";
 import { DataTableViewOptions } from "./data-table-view-options";
+import { TagManagementDialog } from "./tag-management-dialog";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
@@ -21,6 +24,12 @@ export function DataTableToolbar<TData>({
   table,
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0;
+  const tags = useQuery(api.tags.list);
+  const tagOptions =
+    tags?.map((tag) => ({
+      label: tag.name,
+      value: tag._id,
+    })) || [];
 
   return (
     <div className="flex items-center justify-between">
@@ -47,6 +56,13 @@ export function DataTableToolbar<TData>({
             options={priorities}
           />
         )}
+        {table.getColumn("tagIds") && tagOptions.length > 0 && (
+          <DataTableFacetedFilter
+            column={table.getColumn("tagIds")}
+            title="Tags"
+            options={tagOptions}
+          />
+        )}
         {isFiltered && (
           <Button
             variant="ghost"
@@ -59,6 +75,7 @@ export function DataTableToolbar<TData>({
         )}
       </div>
       <div className="flex items-center space-x-2">
+        <TagManagementDialog />
         <DataTableViewOptions table={table} />
         <AddTaskDrawerDialog>
           <Button size="sm" className="h-8">

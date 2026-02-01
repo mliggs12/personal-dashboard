@@ -1,3 +1,4 @@
+import { useQuery } from "convex/react";
 import { Repeat } from "lucide-react";
 
 import { Checkbox } from "@/components/ui/checkbox";
@@ -8,6 +9,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { api } from "@/convex/_generated/api";
 import { Doc } from "@/convex/_generated/dataModel";
 import dayjs from "@/lib/dayjs.config";
 import { formatTaskDate } from "@/lib/date.utils";
@@ -26,9 +28,10 @@ export default function Task({
    
   handleOnChange: () => void;
 }) {
-  const { name, due, date, recurringTaskId } = data;
+  const { name, due, date, recurringTaskId, tagIds } = data;
 
   const recurrenceText = useRecurrenceText(recurringTaskId, date);
+  const tags = useQuery(api.tags.getMany, { tagIds: tagIds || [] });
 
   return (
     <div
@@ -64,7 +67,31 @@ export default function Task({
                 >
                   {name}
                 </button>
-                <div className="flex justify-end items-center">
+                <div className="flex justify-end items-center gap-2">
+                  {tags && tags.length > 0 && (
+                    <div className="flex gap-0.5">
+                      {tags.slice(0, 3).map((tag) => (
+                        <TooltipProvider key={tag._id}>
+                          <Tooltip>
+                            <TooltipTrigger>
+                              <div
+                                className="w-2 h-2 rounded-full"
+                                style={{ backgroundColor: tag.color }}
+                              />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{tag.name}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      ))}
+                      {tags.length > 3 && (
+                        <span className="text-xs text-muted-foreground">
+                          +{tags.length - 3}
+                        </span>
+                      )}
+                    </div>
+                  )}
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger>

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import * as SelectPrimitive from "@radix-ui/react-select";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import dayjs from "dayjs";
 import { CalendarIcon, Repeat, Trash2 } from "lucide-react";
 import { EditorContent, useEditor } from "@tiptap/react";
@@ -29,13 +29,15 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { api } from "@/convex/_generated/api";
-import { Doc } from "@/convex/_generated/dataModel";
+import { Doc, Id } from "@/convex/_generated/dataModel";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
 import TiptapEditor from "../tiptap-editor";
 import { useRecurrenceText } from "./hooks/use-recurrence-text";
 import DeleteRecurringTaskDialog from "./delete-recurring-task-dialog";
+import { TagBadge } from "./tag-badge";
+import { TagSelect } from "./tag-select";
 
 export default function EditTaskDialog({ 
   data,
@@ -44,10 +46,11 @@ export default function EditTaskDialog({
   data: Doc<"tasks">;
   onDeleteComplete?: () => void;
 }) {
-  const { name, notes, status, priority, due, date, _id, recurringTaskId } =
+  const { name, notes, status, priority, due, date, _id, recurringTaskId, tagIds } =
     data;
   const remove = useMutation(api.tasks.remove);
   const updateTask = useMutation(api.tasks.update);
+  const tags = useQuery(api.tags.list);
 
   const { toast } = useToast();
 
@@ -71,6 +74,7 @@ export default function EditTaskDialog({
   // eslint-disable-next-line
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [taskTagIds, setTaskTagIds] = useState<Id<"tags">[]>(tagIds || []);
 
   const timeoutRef = useRef<NodeJS.Timeout>(undefined);
   const originalNameRef = useRef<string>(name); // Name when editing started
@@ -346,7 +350,10 @@ export default function EditTaskDialog({
     );
   };
 
-
+  const handleTagsChange = (newTagIds: Id<"tags">[]) => {
+    setTaskTagIds(newTagIds);
+    updateTask({ taskId: _id, tagIds: newTagIds });
+  };
 
   if (notes === undefined)
     return (
@@ -498,6 +505,30 @@ export default function EditTaskDialog({
               ))}
             </SelectContent>
           </Select>
+        </div>
+        <div>
+          <Label className="flex items-start text-lg">Tags</Label>
+          <div className="flex flex-wrap gap-1 mt-1 mb-2">
+            {taskTagIds.map((tagId) => {
+              const tag = tags?.find((t) => t._id === tagId);
+              if (!tag) return null;
+              return (
+                <TagBadge
+                  key={tag._id}
+                  name={tag.name}
+                  color={tag.color}
+                  onRemove={() =>
+                    handleTagsChange(taskTagIds.filter((id) => id !== tagId))
+                  }
+                />
+              );
+            })}
+          </div>
+          <TagSelect
+            selectedTagIds={taskTagIds}
+            onTagsChange={handleTagsChange}
+            compact
+          />
         </div>
       </div>
       <DialogFooter className="flex items-end">

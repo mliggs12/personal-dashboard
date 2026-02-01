@@ -14,6 +14,7 @@ import { TaskStatusSelect } from "../../components/tasks/task-status-select";
 import { DataTableColumnHeader } from "./data-table-column-header";
 import { DataTableCreatedCell } from "./data-table-created-cell";
 import { DataTableRowActions } from "./data-table-row-actions";
+import { TaskTagsCell } from "./task-tags-cell";
 
 export const columns: ColumnDef<Doc<"tasks">>[] = [
     {
@@ -84,6 +85,22 @@ export const columns: ColumnDef<Doc<"tasks">>[] = [
     filterFn: (row, id, value) => {
       return value.includes(row.getValue(id));
     },
+  },
+  {
+    accessorKey: "tagIds",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Tags" />
+    ),
+    cell: ({ row }) => {
+      const task = row.original;
+      return <TaskTagsCell task={task} />;
+    },
+    filterFn: (row, id, value: string[]) => {
+      const tagIds = row.getValue(id) as string[] | undefined;
+      if (!tagIds || tagIds.length === 0) return value.length === 0;
+      return value.some((v) => tagIds.includes(v));
+    },
+    enableSorting: false,
   },
   {
     accessorKey: "due",

@@ -169,6 +169,15 @@ export default defineSchema({
   }).index("by_user", ["userId"]),
 
   // Task Management
+  tags: defineTable({
+    name: v.string(),
+    color: v.string(), // Hex color (e.g., "#3b82f6")
+    userId: v.id("users"),
+    updated: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_name", ["userId", "name"]),
+
   projects: defineTable({
     name: v.string(),
     status: v.union(
@@ -208,6 +217,7 @@ export default defineSchema({
     intentionId: v.optional(v.id("intentions")),
     parentTaskId: v.optional(v.id("tasks")),
     projectId: v.optional(v.id("projects")),
+    tagIds: v.optional(v.array(v.id("tags"))),
     userId: v.optional(v.id("users")),
   })
     .index("by_recurringTaskId", ["recurringTaskId"])

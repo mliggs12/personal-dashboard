@@ -15,17 +15,40 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/convex/_generated/api";
-import { Doc } from "@/convex/_generated/dataModel";
+import { Doc, Id } from "@/convex/_generated/dataModel";
 import { useClientDate } from "@/hooks/useClientDate";
 import { normalizeDateString } from "@/lib/date.utils";
 
 import AddTaskDrawerDialog from "./add-task-drawer-dialog";
 import StatusDropdown from "./status-dropdown";
+import { TagFilterDropdown } from "./tag-filter-dropdown";
 import TaskList from "./task-list";
+
+const EXCLUDED_TAGS_STORAGE_KEY = "tasksCard:excludedTagIds";
+
+function getStoredExcludedTags(): Id<"tags">[] {
+  if (typeof window === "undefined") return [];
+  const stored = localStorage.getItem(EXCLUDED_TAGS_STORAGE_KEY);
+  if (stored) {
+    try {
+      return JSON.parse(stored);
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
 
 export default function TasksCard() {
   const [status, setStatus] = useState<"today" | "deadline" | "backlog">("today");
+  const [excludedTagIds, setExcludedTagIds] = useState<Id<"tags">[]>(getStoredExcludedTags);
   const { isClient, today } = useClientDate();
+
+  // Save excluded tags to localStorage when changed
+  const handleExcludedTagsChange = (tagIds: Id<"tags">[]) => {
+    setExcludedTagIds(tagIds);
+    localStorage.setItem(EXCLUDED_TAGS_STORAGE_KEY, JSON.stringify(tagIds));
+  };
 
   // Fetch all active tasks once
   const allActiveTasks = useQuery(
@@ -39,11 +62,20 @@ export default function TasksCard() {
     // Normalize today's date (handles both YYYY-MM-DD and YYYY/MM/DD formats)
     const normalizedToday = normalizeDateString(today) ?? today;
 
+    // Helper to check if a task has any excluded tags
+    const hasExcludedTag = (task: Doc<"tasks">) => {
+      if (excludedTagIds.length === 0 || !task.tagIds) return false;
+      return task.tagIds.some((tagId) => excludedTagIds.includes(tagId));
+    };
+
     let filtered: Doc<"tasks">[] = [];
 
     if (status === "today") {
       // Today: status === "todo" | "in_progress" AND (due <= today OR date <= today OR (due === undefined AND date === undefined))
       filtered = allActiveTasks.filter((task) => {
+        // Skip tasks with excluded tags
+        if (hasExcludedTag(task)) return false;
+
         const isActiveStatus = task.status === "todo" || task.status === "in_progress";
         if (!isActiveStatus) return false;
 
@@ -96,7 +128,10 @@ export default function TasksCard() {
       });
     } else if (status === "backlog") {
       // Backlog: status === "backlog"
-      filtered = allActiveTasks.filter((task) => task.status === "backlog");
+      filtered = allActiveTasks.filter((task) => {
+        if (hasExcludedTag(task)) return false;
+        return task.status === "backlog";
+      });
       
       // Sort by last update (oldest first) or creation date
       filtered.sort((a, b) => {
@@ -107,8 +142,11 @@ export default function TasksCard() {
     } else if (status === "deadline") {
       // Deadline/Upcoming: (due !== undefined AND due > today) OR (date !== undefined AND date > today) AND status !== "archived"
       filtered = allActiveTasks.filter((task) => {
+        // Skip tasks with excluded tags
+        if (hasExcludedTag(task)) return false;
+
         if (task.status === "archived") return false;
-        
+
         // Check if due date is in the future
         if (task.due) {
           const normalizedDue = normalizeDateString(task.due);
@@ -116,7 +154,7 @@ export default function TasksCard() {
             return true;
           }
         }
-        
+
         // Check if date is in the future
         if (task.date) {
           const normalizedDate = normalizeDateString(task.date);
@@ -124,7 +162,7 @@ export default function TasksCard() {
             return true;
           }
         }
-        
+
         return false;
       });
 
@@ -164,7 +202,7 @@ export default function TasksCard() {
     }
 
     return filtered;
-  }, [status, allActiveTasks, today]);
+  }, [status, allActiveTasks, today, excludedTagIds]);
 
   // Show loading state until client hydration
   if (!isClient) {
@@ -194,7 +232,13 @@ export default function TasksCard() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-6">
             <CardTitle>My tasks</CardTitle>
-            <StatusDropdown status={status} onStatusChange={setStatus} />
+            <div className="flex items-center gap-1">
+              <StatusDropdown status={status} onStatusChange={setStatus} />
+              <TagFilterDropdown
+                excludedTagIds={excludedTagIds}
+                onExcludedTagsChange={handleExcludedTagsChange}
+              />
+            </div>
           </div>
           <Button
             asChild
