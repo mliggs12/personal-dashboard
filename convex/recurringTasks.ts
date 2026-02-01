@@ -29,9 +29,10 @@ export const create = mutation({
     }),
     recurrenceType: v.union(v.literal("schedule"), v.literal("completion")),
     date: v.optional(v.string()), // Start date for the recurring schedule
+    tagIds: v.optional(v.array(v.id("tags"))),
     userId: v.optional(v.string()),
   },
-  async handler(ctx, { name, schedule, recurrenceType, date, userId }) {
+  async handler(ctx, { name, schedule, recurrenceType, date, tagIds, userId }) {
     let user;
     if (userId) {
       user = await userByExternalId(ctx, userId);
@@ -56,6 +57,7 @@ export const create = mutation({
       recurrenceType,
       nextRunDate,
       date,
+      tagIds,
       isActive: true,
       updated: Date.now(),
       userId: user!._id,
@@ -76,6 +78,7 @@ export const create = mutation({
         notes: "",
         due: undefined, // Recurring tasks don't use due dates
         date: firstInstanceDate,
+        tagIds,
         recurringTaskId: taskId,
         userId: user!._id,
       });
@@ -101,10 +104,11 @@ export const update = mutation({
     recurrenceType: v.optional(v.union(v.literal("schedule"), v.literal("completion"))),
     nextRunDate: v.optional(v.string()),
     date: v.optional(v.string()),
+    tagIds: v.optional(v.array(v.id("tags"))),
   },
   async handler(
     ctx,
-    { recurringTaskId, name, schedule, recurrenceType, nextRunDate, date },
+    { recurringTaskId, name, schedule, recurrenceType, nextRunDate, date, tagIds },
   ) {
     const recurringTask = await ctx.db.get(recurringTaskId);
     if (!recurringTask) {
@@ -162,6 +166,7 @@ export const update = mutation({
       recurrenceType: recurrenceType !== undefined ? recurrenceType : recurringTask.recurrenceType,
       nextRunDate: calculatedNextRunDate !== undefined ? calculatedNextRunDate : recurringTask.nextRunDate,
       date: date !== undefined ? date : recurringTask.date,
+      tagIds: tagIds !== undefined ? tagIds : recurringTask.tagIds,
       updated: Date.now(),
     });
   },

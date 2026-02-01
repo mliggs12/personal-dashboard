@@ -31,12 +31,14 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
 import { createRecurringTask } from "../../tasks/actions";
 import { RecurDialog } from "./recurring/recur-dialog";
 import { formatDaysOfWeek, getDayNameFromDate, getDayOfMonthFromDate, formatDayOfMonth, getMonthNameFromDate } from "./recurring/recurrence-utils";
+import { TagSelect } from "./tag-select";
 
 const formSchema = z
   .object({
@@ -83,6 +85,7 @@ interface AddTaskFormProps extends React.ComponentProps<"form"> {
 export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [isRecurDialogOpen, setIsRecurDialogOpen] = useState(false);
+  const [selectedTagIds, setSelectedTagIds] = useState<Id<"tags">[]>([]);
   const createTask = useMutation(api.tasks.create);
   const { toast } = useToast();
 
@@ -272,6 +275,7 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
         },
         recurrenceType,
         dateStr, // Pass date as start date for recurring schedule
+        selectedTagIds.length > 0 ? selectedTagIds : undefined,
       );
 
       // For recurring tasks: date is the start date/work date
@@ -292,6 +296,7 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
           notes,
           due: undefined, // Recurring tasks don't use due dates
           date: dateStr,
+          tagIds: selectedTagIds.length > 0 ? selectedTagIds : undefined,
           recurringTaskId,
         });
       }
@@ -311,6 +316,7 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
         notes,
         due: due ? dueDate : undefined,
         date: dateStr,
+        tagIds: selectedTagIds.length > 0 ? selectedTagIds : undefined,
       });
     }
 
@@ -319,6 +325,7 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
       duration: 3000,
     });
     form.reset();
+    setSelectedTagIds([]);
     onSuccess?.();
   }
 
@@ -509,37 +516,43 @@ export function AddTaskForm({ className, onSuccess }: AddTaskFormProps) {
             />
           </div>
           <div className="flex gap-1 md:gap-8 items-center">
-            <Button
-              size="lg"
-              variant="outline"
-              type="button"
-              className={cn(
-                "h-10 w-full flex items-center relative px-4 pr-8",
-                frequency ? "justify-between" : "justify-start gap-2"
-              )}
-              onClick={() => {
-                setIsRecurDialogOpen(true);
-              }}
-            >
-              <div className="flex items-center gap-2">
-                <RotateCcw className="h-4 w-4" />
-                <span>Recur</span>
-              </div>
-              {frequency && (
-                <>
-                  <span className="text-muted-foreground">{getRecurButtonText()}</span>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 absolute right-1 hover:bg-transparent"
-                    onClick={handleClearRecur}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </>
-              )}
-            </Button>
+            <div className="flex gap-2 flex-1">
+              <Button
+                size="lg"
+                variant="outline"
+                type="button"
+                className={cn(
+                  "h-10 flex-1 flex items-center relative px-4 pr-8",
+                  frequency ? "justify-between" : "justify-start gap-2"
+                )}
+                onClick={() => {
+                  setIsRecurDialogOpen(true);
+                }}
+              >
+                <div className="flex items-center gap-2">
+                  <RotateCcw className="h-4 w-4" />
+                  <span>Recur</span>
+                </div>
+                {frequency && (
+                  <>
+                    <span className="text-muted-foreground">{getRecurButtonText()}</span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 absolute right-1 hover:bg-transparent"
+                      onClick={handleClearRecur}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </>
+                )}
+              </Button>
+              <TagSelect
+                selectedTagIds={selectedTagIds}
+                onTagsChange={setSelectedTagIds}
+              />
+            </div>
             <RecurDialog
               open={isRecurDialogOpen}
               onOpenChange={setIsRecurDialogOpen}

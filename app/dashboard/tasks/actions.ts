@@ -51,6 +51,7 @@ export async function createRecurringTask(
   },
   recurrenceType: "schedule" | "completion",
   date?: string, // Start date for the recurring schedule
+  tagIds?: string[], // Tags to apply to generated task instances
 ) {
   const { userId } = await auth();
   if (!userId) {
@@ -64,6 +65,7 @@ export async function createRecurringTask(
     schedule,
     recurrenceType,
     date, // Pass it through
+    tagIds: tagIds as Id<"tags">[],
     userId,
   });
 

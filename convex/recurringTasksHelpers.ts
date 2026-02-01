@@ -195,6 +195,7 @@ export function checkIfShouldGenerate(
       priority: "normal",
       notes: completedTask.notes || "",
       date: nextDate,
+      tagIds: recurringTask.tagIds,
       recurringTaskId: recurringTask._id,
       userId: recurringTask.userId,
     });
@@ -204,7 +205,7 @@ export function checkIfShouldGenerate(
       updated: Date.now(),
     });
     
-  }``
+  }
   
   /**
    * Core logic for generating recurring tasks.
@@ -364,6 +365,7 @@ export function checkIfShouldGenerate(
           priority: "normal",
           due: undefined, // Recurring tasks don't use due dates
           date: targetDateStr, // Set date to target date so it shows in Today tab
+          tagIds: recurringTask.tagIds,
           recurringTaskId: recurringTask._id,
           userId: recurringTask.userId,
         });

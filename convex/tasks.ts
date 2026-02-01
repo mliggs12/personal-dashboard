@@ -331,6 +331,15 @@ export const update = mutation({
       updated: now,
     });
 
+    // When tags are updated on a recurring task instance, also update the recurring task template
+    // This ensures future instances inherit the updated tags
+    if (tagIds !== undefined && task.recurringTaskId) {
+      await ctx.db.patch(task.recurringTaskId, {
+        tagIds: tagIds,
+        updated: now,
+      });
+    }
+
     // Handle "whenDone" recurring tasks - create next instance immediately
     // Only trigger if transitioning from not-done to done (prevents duplicate calls)
     if (wasNotDone && isNowDone && task.recurringTaskId) {

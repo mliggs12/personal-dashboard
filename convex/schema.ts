@@ -248,6 +248,7 @@ export default defineSchema({
     recurrenceType: v.union(v.literal("schedule"), v.literal("completion")),
     nextRunDate: v.string(), // YYYY-MM-DD format
     date: v.optional(v.string()), // YYYY-MM-DD format - start date for the recurring schedule
+    tagIds: v.optional(v.array(v.id("tags"))), // Tags to apply to generated task instances
     isActive: v.boolean(),
     updated: v.number(),
     userId: v.id("users"),
