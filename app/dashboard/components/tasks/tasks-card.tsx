@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useQuery } from "convex/react";
 import { ArrowUpRight } from "lucide-react";
@@ -24,11 +24,13 @@ import StatusDropdown from "./status-dropdown";
 import { TagFilterDropdown } from "./tag-filter-dropdown";
 import TaskList from "./task-list";
 
-const EXCLUDED_TAGS_STORAGE_KEY = "tasksCard:excludedTagIds";
+const INCLUDED_TAGS_STORAGE_KEY = "tasksCard:includedTagIds";
+const INCLUDE_NO_TAGS_STORAGE_KEY = "tasksCard:includeNoTags";
 
-function getStoredExcludedTags(): Id<"tags">[] {
+// Helper to get initial includedTagIds from localStorage
+function getInitialIncludedTagIds(): Id<"tags">[] {
   if (typeof window === "undefined") return [];
-  const stored = localStorage.getItem(EXCLUDED_TAGS_STORAGE_KEY);
+  const stored = localStorage.getItem(INCLUDED_TAGS_STORAGE_KEY);
   if (stored) {
     try {
       return JSON.parse(stored);
@@ -39,15 +41,55 @@ function getStoredExcludedTags(): Id<"tags">[] {
   return [];
 }
 
+// Helper to get initial includeNoTags from localStorage
+function getInitialIncludeNoTags(): boolean {
+  if (typeof window === "undefined") return true;
+  const stored = localStorage.getItem(INCLUDE_NO_TAGS_STORAGE_KEY);
+  if (stored !== null) {
+    try {
+      return JSON.parse(stored);
+    } catch {
+      return true;
+    }
+  }
+  return true;
+}
+
 export default function TasksCard() {
   const [status, setStatus] = useState<"today" | "deadline" | "backlog">("today");
-  const [excludedTagIds, setExcludedTagIds] = useState<Id<"tags">[]>(getStoredExcludedTags);
+  const [includedTagIds, setIncludedTagIds] = useState<Id<"tags">[]>(getInitialIncludedTagIds);
+  const [includeNoTags, setIncludeNoTags] = useState<boolean>(getInitialIncludeNoTags);
   const { isClient, today } = useClientDate();
 
-  // Save excluded tags to localStorage when changed
-  const handleExcludedTagsChange = (tagIds: Id<"tags">[]) => {
-    setExcludedTagIds(tagIds);
-    localStorage.setItem(EXCLUDED_TAGS_STORAGE_KEY, JSON.stringify(tagIds));
+  // Fetch tags to determine default state
+  const tags = useQuery(api.tags.list);
+  const hasInitialized = useRef(false);
+
+  // Update includedTagIds to default (all tags) if no stored value exists and tags are loaded
+  useEffect(() => {
+    if (!tags || !isClient || hasInitialized.current) return;
+    
+    // Only set default if no stored value exists (empty array means no stored value)
+    const storedTags = localStorage.getItem(INCLUDED_TAGS_STORAGE_KEY);
+    if (!storedTags && tags.length > 0) {
+      startTransition(() => {
+        setIncludedTagIds(tags.map((tag) => tag._id));
+      });
+    }
+    
+    hasInitialized.current = true;
+  }, [tags, isClient]);
+
+  // Save included tags to localStorage when changed
+  const handleIncludedTagsChange = (tagIds: Id<"tags">[]) => {
+    setIncludedTagIds(tagIds);
+    localStorage.setItem(INCLUDED_TAGS_STORAGE_KEY, JSON.stringify(tagIds));
+  };
+
+  // Save includeNoTags to localStorage when changed
+  const handleIncludeNoTagsChange = (value: boolean) => {
+    setIncludeNoTags(value);
+    localStorage.setItem(INCLUDE_NO_TAGS_STORAGE_KEY, JSON.stringify(value));
   };
 
   // Fetch all active tasks once
@@ -56,16 +98,85 @@ export default function TasksCard() {
     isClient ? {} : "skip"
   );
 
+  // Helper to check if a task matches the status filter (without tag filtering)
+  const matchesStatusFilter = useCallback((task: Doc<"tasks">): boolean => {
+    if (!allActiveTasks || !today) return false;
+    
+    const normalizedToday = normalizeDateString(today) ?? today;
+
+    if (status === "today") {
+      const isActiveStatus = task.status === "todo" || task.status === "in_progress";
+      if (!isActiveStatus) return false;
+
+      // Check if due <= today
+      if (task.due) {
+        const normalizedDue = normalizeDateString(task.due);
+        if (normalizedDue && normalizedDue <= normalizedToday) {
+          return true;
+        }
+      }
+
+      // Check if date <= today (includes past dates and today)
+      if (task.date) {
+        const normalizedDate = normalizeDateString(task.date);
+        if (normalizedDate && normalizedDate <= normalizedToday) {
+          return true;
+        }
+      }
+
+      // Check if no due and no date (todo tasks with no dates)
+      if (!task.due && !task.date) {
+        return true;
+      }
+
+      return false;
+    } else if (status === "backlog") {
+      return task.status === "backlog";
+    } else if (status === "deadline") {
+      if (task.status === "archived") return false;
+
+      // Check if due date is in the future
+      if (task.due) {
+        const normalizedDue = normalizeDateString(task.due);
+        if (normalizedDue && normalizedDue > normalizedToday) {
+          return true;
+        }
+      }
+
+      // Check if date is in the future
+      if (task.date) {
+        const normalizedDate = normalizeDateString(task.date);
+        if (normalizedDate && normalizedDate > normalizedToday) {
+          return true;
+        }
+      }
+
+      return false;
+    }
+    return false;
+  }, [status, allActiveTasks, today]);
+
   const tasks = useMemo(() => {
     if (!allActiveTasks || !today) return [];
 
     // Normalize today's date (handles both YYYY-MM-DD and YYYY/MM/DD formats)
     const normalizedToday = normalizeDateString(today) ?? today;
 
-    // Helper to check if a task has any excluded tags
-    const hasExcludedTag = (task: Doc<"tasks">) => {
-      if (excludedTagIds.length === 0 || !task.tagIds) return false;
-      return task.tagIds.some((tagId) => excludedTagIds.includes(tagId));
+    // Helper to check if a task matches the included tags filter
+    const matchesTagFilter = (task: Doc<"tasks">) => {
+      const hasNoTags = !task.tagIds || task.tagIds.length === 0;
+      
+      // Handle tasks with no tags
+      if (hasNoTags) {
+        return includeNoTags;
+      }
+      
+      // If no tags are selected, show all tasks (but we already handled no-tag tasks above)
+      if (includedTagIds.length === 0) return false;
+      // If all available tags are selected, show all tasks (same as no filter)
+      if (tags && includedTagIds.length === tags.length) return true;
+      // Show task only if ALL of its tags are selected (if any tag is unselected, filter it out)
+      return task.tagIds?.every((tagId) => includedTagIds.includes(tagId)) ?? false;
     };
 
     let filtered: Doc<"tasks">[] = [];
@@ -73,8 +184,8 @@ export default function TasksCard() {
     if (status === "today") {
       // Today: status === "todo" | "in_progress" AND (due <= today OR date <= today OR (due === undefined AND date === undefined))
       filtered = allActiveTasks.filter((task) => {
-        // Skip tasks with excluded tags
-        if (hasExcludedTag(task)) return false;
+        // Apply tag filter
+        if (!matchesTagFilter(task)) return false;
 
         const isActiveStatus = task.status === "todo" || task.status === "in_progress";
         if (!isActiveStatus) return false;
@@ -129,7 +240,7 @@ export default function TasksCard() {
     } else if (status === "backlog") {
       // Backlog: status === "backlog"
       filtered = allActiveTasks.filter((task) => {
-        if (hasExcludedTag(task)) return false;
+        if (!matchesTagFilter(task)) return false;
         return task.status === "backlog";
       });
       
@@ -142,8 +253,8 @@ export default function TasksCard() {
     } else if (status === "deadline") {
       // Deadline/Upcoming: (due !== undefined AND due > today) OR (date !== undefined AND date > today) AND status !== "archived"
       filtered = allActiveTasks.filter((task) => {
-        // Skip tasks with excluded tags
-        if (hasExcludedTag(task)) return false;
+        // Apply tag filter
+        if (!matchesTagFilter(task)) return false;
 
         if (task.status === "archived") return false;
 
@@ -202,7 +313,43 @@ export default function TasksCard() {
     }
 
     return filtered;
-  }, [status, allActiveTasks, today, excludedTagIds]);
+  }, [status, allActiveTasks, today, includedTagIds, includeNoTags, tags]);
+
+  // Calculate number of tasks filtered out by tag filter
+  const filteredOutTaskCount = useMemo(() => {
+    if (!allActiveTasks || !tags) return 0;
+    
+    // If all tags are selected and no tags are included, check if we're filtering anything
+    const allTagsSelected = includedTagIds.length === tags.length;
+    const noTagsSelected = includedTagIds.length === 0;
+    
+    // If all tags selected and includeNoTags is true, nothing is filtered out
+    if (allTagsSelected && includeNoTags) {
+      return 0;
+    }
+    
+    // If no tags selected and includeNoTags is false, everything is filtered out
+    if (noTagsSelected && !includeNoTags) {
+      const tasksMatchingStatus = allActiveTasks.filter(matchesStatusFilter);
+      return tasksMatchingStatus.length;
+    }
+
+    // Count tasks that match status but are filtered out by tags
+    const tasksMatchingStatus = allActiveTasks.filter(matchesStatusFilter);
+    const tasksMatchingStatusAndTags = tasksMatchingStatus.filter((task) => {
+      const hasNoTags = !task.tagIds || task.tagIds.length === 0;
+      // Handle tasks with no tags
+      if (hasNoTags) {
+        return includeNoTags;
+      }
+      // If no tags are selected, tasks with tags don't match
+      if (noTagsSelected) return false;
+      // Task matches if ALL of its tags are selected
+      return task.tagIds?.every((tagId) => includedTagIds.includes(tagId)) ?? false;
+    });
+
+    return tasksMatchingStatus.length - tasksMatchingStatusAndTags.length;
+  }, [allActiveTasks, tags, includedTagIds, includeNoTags, matchesStatusFilter]);
 
   // Show loading state until client hydration
   if (!isClient) {
@@ -235,8 +382,11 @@ export default function TasksCard() {
             <div className="flex items-center gap-1">
               <StatusDropdown status={status} onStatusChange={setStatus} />
               <TagFilterDropdown
-                excludedTagIds={excludedTagIds}
-                onExcludedTagsChange={handleExcludedTagsChange}
+                includedTagIds={includedTagIds}
+                onIncludedTagsChange={handleIncludedTagsChange}
+                includeNoTags={includeNoTags}
+                onIncludeNoTagsChange={handleIncludeNoTagsChange}
+                filteredOutTaskCount={filteredOutTaskCount}
               />
             </div>
           </div>
