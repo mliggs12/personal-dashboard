@@ -412,4 +412,63 @@ export default defineSchema({
     updated: v.number(),
   })
     .index("by_user", ["userId"]),
+
+  // Per-user catalog of turrets the player has used. Keyed by a stable
+  // lowercase snake_case identifier ("sniper", "green_laser", etc.) so
+  // turrets can be aggregated across matches even if the display name
+  // shifts or the icon isn't recognized.
+  gdTurrets: defineTable({
+    key: v.string(),
+    displayName: v.optional(v.string()),
+    iconStorageId: v.optional(v.id("_storage")),
+    usesCount: v.number(),
+    userId: v.id("users"),
+    updated: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_key", ["userId", "key"]),
+
+  // One row per completed match (victory or defeat). A match can be
+  // composed of multiple screenshots when the turret list scrolls.
+  gdMatches: defineTable({
+    result: v.union(v.literal("victory"), v.literal("defeat")),
+    stageNumber: v.number(),
+    stageDifficulty: v.optional(
+      v.union(v.literal("normal"), v.literal("elite")),
+    ),
+    stageId: v.optional(v.id("gdStages")),
+    remainingHpPct: v.optional(v.number()), // 0-100
+    durationSeconds: v.optional(v.number()),
+    coins: v.optional(v.number()),
+    rewardCubes: v.optional(v.number()),
+    playedAt: v.number(),
+    notes: v.optional(v.string()),
+    screenshotStorageIds: v.array(v.id("_storage")),
+    modelUsed: v.optional(v.string()),
+    confidence: v.optional(v.number()),
+    userId: v.id("users"),
+    updated: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_playedAt", ["userId", "playedAt"])
+    .index("by_user_stage", ["userId", "stageNumber"]),
+
+  // Per-turret row from an end-game screen.
+  gdMatchTurrets: defineTable({
+    matchId: v.id("gdMatches"),
+    slot: v.number(),
+    turretKey: v.string(),
+    turretDisplayName: v.optional(v.string()),
+    level: v.optional(v.number()),
+    gemsFilled: v.optional(v.number()),
+    gemsTotal: v.optional(v.number()),
+    hasEpicGem: v.optional(v.boolean()),
+    damage: v.number(),
+    damageDisplay: v.string(),
+    dps: v.number(),
+    dpsDisplay: v.string(),
+    userId: v.id("users"),
+  })
+    .index("by_match", ["matchId"])
+    .index("by_user_turretKey", ["userId", "turretKey"]),
 });
