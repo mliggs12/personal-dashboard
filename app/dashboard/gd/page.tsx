@@ -180,6 +180,12 @@ export default function GDPage() {
             variant="outline"
             asChild
           >
+            <Link href="/dashboard/gd/matches">View Matches</Link>
+          </Button>
+          <Button
+            variant="outline"
+            asChild
+          >
             <Link href="/dashboard/gd/enemies">View Enemies</Link>
           </Button>
           <Button
