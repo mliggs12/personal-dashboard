@@ -22,6 +22,7 @@ import DashboardBanner from "./components/dashboard-banner";
 import Scratchpad from "./components/scratch-pad/scratch-pad";
 import AddTaskDrawerDialog from "./components/tasks/add-task-drawer-dialog";
 import TasksCard from "./components/tasks/tasks-card";
+import WaterCard from "./components/water-card";
 import { useScratchpadPinned } from "@/hooks/use-scratchpad-pinned";
 
 export default function DashboardPage() {
@@ -124,11 +125,10 @@ export default function DashboardPage() {
   return (
     <div className="h-full w-full flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
       <DashboardBanner />
-      <div className="flex items-start px-8 py-6 w-full gap-12">
-          <TasksCard />
-        {isPinned && (
-          <Scratchpad />
-        )}
+      <div className="flex items-start flex-wrap px-8 py-6 w-full gap-8">
+        <TasksCard />
+        {isPinned && <Scratchpad />}
+        <WaterCard />
       </div>
     </div>
   );
